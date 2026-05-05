@@ -1,0 +1,24 @@
+{
+  "name": "@codecon/auth",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@codecon/db": "workspace:*",
+    "@codecon/env": "workspace:*",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@codecon/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
