@@ -1,5 +1,9 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
-import { todoRouter } from "./todo";
+import { betRouter } from "./bet";
+import { matchRouter } from "./match";
+import { rankingRouter } from "./ranking";
+import { roundRouter } from "./round";
+import { teamRouter } from "./team";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -7,10 +11,14 @@ export const appRouter = router({
   }),
   privateData: protectedProcedure.query(({ ctx }) => {
     return {
-      message: "This is private",
+      message: "Este conteúdo é privado",
       user: ctx.session.user,
     };
   }),
-  todo: todoRouter,
+  bet: betRouter,
+  match: matchRouter,
+  ranking: rankingRouter,
+  round: roundRouter,
+  team: teamRouter,
 });
 export type AppRouter = typeof appRouter;

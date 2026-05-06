@@ -2,10 +2,13 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import Header from "@/components/header";
 
-import Dashboard from "./dashboard";
-
-export default async function DashboardPage() {
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await authClient.getSession({
     fetchOptions: {
       headers: await headers(),
@@ -18,10 +21,9 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome {session.user.name}</p>
-      <Dashboard session={session} />
-    </div>
+    <>
+      <Header />
+      {children}
+    </>
   );
 }
