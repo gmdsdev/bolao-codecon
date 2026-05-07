@@ -8,11 +8,13 @@ import {
   DialogTitle,
 } from "@codecon/ui/components/dialog";
 import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemTitle,
-} from "@codecon/ui/components/item";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@codecon/ui/components/table";
 import { Button } from "@codecon/ui/components/button";
 import { Input } from "@codecon/ui/components/input";
 import { Label } from "@codecon/ui/components/label";
@@ -227,47 +229,59 @@ function MatchList({
 
   return (
     <>
-      {matches.map((match) => {
-        const savedBet = savedBets.get(match.id);
-        const betScoreA = savedBet?.scoreA ?? match.betScoreA;
-        const betScoreB = savedBet?.scoreB ?? match.betScoreB;
-        const betModifier = savedBet?.modifier ?? match.betModifier;
-        const isScored = match.scoreA !== null || match.scoreB !== null;
-        const hasBet = match.hasBet || savedBet !== undefined;
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Partida</TableHead>
+            <TableHead>Sua aposta</TableHead>
+            <TableHead>Roleta</TableHead>
+            <TableHead>Placar final</TableHead>
+            <TableHead className="text-right">Ação</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {matches.map((match) => {
+            const savedBet = savedBets.get(match.id);
+            const betScoreA = savedBet?.scoreA ?? match.betScoreA;
+            const betScoreB = savedBet?.scoreB ?? match.betScoreB;
+            const betModifier = savedBet?.modifier ?? match.betModifier;
+            const isScored = match.scoreA !== null || match.scoreB !== null;
+            const hasBet = match.hasBet || savedBet !== undefined;
+            const betLabel =
+              hasBet && betScoreA !== null && betScoreB !== null
+                ? `${betScoreA} - ${betScoreB}`
+                : "-";
+            const modifierLabel =
+              hasBet && betModifier ? getBetModifierLabel(betModifier) : "-";
+            const finalScoreLabel = isScored
+              ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
+              : "-";
 
-        return (
-          <Item key={match.id} variant="outline">
-            <ItemContent>
-              <ItemTitle>
+            return (
+              <TableRow key={match.id}>
+                <TableCell className="font-medium">
                   {match.teamAName} x {match.teamBName}
-              </ItemTitle>
-              {hasBet && betScoreA !== null && betScoreB !== null && (
-                <p className="text-xs text-muted-foreground">
-                  Sua aposta: {betScoreA} - {betScoreB}
-                </p>
-              )}
-              {hasBet && betModifier && (
-                <p className="text-xs text-muted-foreground">
-                  Roleta: {getBetModifierLabel(betModifier)}
-                </p>
-              )}
-              {isScored && (
-                <p className="text-xs text-muted-foreground">
-                  Placar final: {match.scoreA ?? "-"} - {match.scoreB ?? "-"}
-                </p>
-              )}
-            </ItemContent>
-            <ItemActions>
-              <Button
-                onClick={() => openBetModal(match)}
-                disabled={isScored || hasBet || createBet.isPending}
-              >
-                {isScored ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
-              </Button>
-            </ItemActions>
-          </Item>
-        );
-      })}
+                </TableCell>
+                <TableCell>{betLabel}</TableCell>
+                <TableCell>{modifierLabel}</TableCell>
+                <TableCell>{finalScoreLabel}</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    onClick={() => openBetModal(match)}
+                    disabled={isScored || hasBet || createBet.isPending}
+                  >
+                    {isScored
+                      ? "Encerrada"
+                      : hasBet
+                        ? "Aposta feita"
+                        : "Apostar"}
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       <Dialog
         open={selectedMatch !== null}

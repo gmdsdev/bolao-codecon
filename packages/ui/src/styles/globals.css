@@ -31,7 +31,8 @@
   --chart-4: #cecece;
   --chart-5: #f0f0f0;
   --radius: 0.5rem;
-  --shadow-elevated: 0px 0px 1px 0px rgb(0 0 0 / 8%), 0px 2px 12px 0px rgb(0 0 0 / 15%);
+  --shadow-elevated:
+    0px 0px 1px 0px rgb(0 0 0 / 8%), 0px 2px 12px 0px rgb(0 0 0 / 15%);
   --sidebar: #ffffff;
   --sidebar-foreground: #202020;
   --sidebar-primary: #202020;
