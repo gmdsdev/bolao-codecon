@@ -236,7 +236,7 @@ function MatchList({
             <TableHead>Sua aposta</TableHead>
             <TableHead>Roleta</TableHead>
             <TableHead>Placar final</TableHead>
-            <TableHead className="text-right">Ação</TableHead>
+            <TableHead className="text-right"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -428,7 +428,14 @@ function getBetModifierLabel(modifier: string) {
 }
 
 function getWheelBackground() {
-  const colors = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed", "#0891b2"];
+  const colors = [
+    "#2563eb",
+    "#16a34a",
+    "#f59e0b",
+    "#dc2626",
+    "#7c3aed",
+    "#0891b2",
+  ];
 
   return `conic-gradient(${BET_WHEEL_OPTIONS.map((_, index) => {
     const start = index * WHEEL_SEGMENT_DEGREES;

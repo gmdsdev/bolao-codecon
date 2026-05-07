@@ -10,6 +10,7 @@ export default function Header() {
   const links = [
     { to: "/admin/rounds/1", label: "Rodadas" },
     { to: "/admin/ranking", label: "Classificação" },
+    { to: "/admin/manager", label: "Manager" },
   ] as const;
 
   return (
