@@ -53,8 +53,10 @@ export default function SignInForm({
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Bem-vindo de volta</h1>
+    <div className="mx-auto mt-10 w-full max-w-md rounded border border-border bg-card p-4">
+      <h1 className="mb-4 border-b border-border pb-3 font-mono text-xs font-medium">
+        Bem-vindo de volta
+      </h1>
 
       <form
         onSubmit={(e) => {
@@ -132,7 +134,7 @@ export default function SignInForm({
         <Button
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="text-muted-foreground hover:text-foreground"
         >
           Precisa de uma conta? Cadastre-se
         </Button>

@@ -29,9 +29,9 @@ export default function Layout({ children }: PropsWithChildren) {
   }
 
   return (
-    <div className="container mx-auto py-10 flex gap-4">
+    <div className="flex min-h-[calc(100vh-2.5rem)] gap-3 p-3">
       <Tabs value={roundId} orientation="vertical">
-        <TabsList>
+        <TabsList className="min-w-36">
           {rounds.data.map((round) => (
             <TabsTrigger
               key={round.id}
@@ -43,7 +43,7 @@ export default function Layout({ children }: PropsWithChildren) {
           ))}
         </TabsList>
       </Tabs>
-      <Card className="w-full">
+      <Card className="w-full flex-1">
         <CardHeader>
           <CardTitle>Partidas</CardTitle>
         </CardHeader>

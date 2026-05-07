@@ -21,7 +21,7 @@ export default function Page() {
   const ranking = useQuery(trpc.ranking.getAll.queryOptions());
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="min-h-[calc(100vh-2.5rem)] p-3">
       <Card>
         <CardHeader>
           <CardTitle>Classificação</CardTitle>

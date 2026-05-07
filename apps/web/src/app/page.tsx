@@ -23,11 +23,15 @@ export default function Home() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-2">
-      <pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-      <div className="grid gap-6">
-        <section className="rounded-lg border p-4">
-          <h2 className="mb-2 font-medium">Status da API</h2>
+    <div className="min-h-screen bg-background p-3">
+      <div className="rounded border border-border bg-card">
+        <div className="border-b border-border px-4 py-3">
+          <pre className="overflow-x-auto font-mono text-xs leading-tight text-foreground">
+            {TITLE_TEXT}
+          </pre>
+        </div>
+        <section className="p-4">
+          <h2 className="mb-2 font-mono text-xs font-medium">Status da API</h2>
           <div className="flex items-center gap-2">
             <div
               className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}

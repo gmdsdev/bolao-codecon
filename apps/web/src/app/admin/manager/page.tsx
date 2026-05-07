@@ -69,7 +69,7 @@ export default function Page() {
   }
 
   return (
-    <div className="container mx-auto grid gap-4 py-10">
+    <div className="grid min-h-[calc(100vh-2.5rem)] gap-3 p-3">
       {rounds.data.map((round) => (
         <RoundMatches
           key={round.id}
@@ -130,8 +130,8 @@ function RoundMatches({
   };
 
   return (
-    <section className="grid gap-3">
-      <div className="flex items-center justify-between gap-3">
+    <section className="grid gap-3 rounded border border-border bg-background p-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <div>
           <h2 className="text-sm font-semibold">{round.title}</h2>
           <p className="text-xs text-muted-foreground">
@@ -248,7 +248,7 @@ function AddMatchForm({
                 value={teamAId}
                 onChange={(event) => setTeamAId(event.target.value)}
                 disabled={createMatch.isPending || teams.length === 0}
-                className="h-8 w-full min-w-0 rounded-none border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50"
+                className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
                 required
               >
                 <option value="">Selecione um time</option>
@@ -266,7 +266,7 @@ function AddMatchForm({
                 value={teamBId}
                 onChange={(event) => setTeamBId(event.target.value)}
                 disabled={createMatch.isPending || teams.length === 0}
-                className="h-8 w-full min-w-0 rounded-none border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50"
+                className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
                 required
               >
                 <option value="">Selecione um time</option>
