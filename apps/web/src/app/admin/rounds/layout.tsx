@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@codecon/ui/components/card";
 import { useQuery } from "@tanstack/react-query";
 
 import { TableRanking } from "@/components/tables/table-ranking";
@@ -26,12 +20,7 @@ export default function Layout({ children }: PropsWithChildren) {
           redirect(`/admin/rounds/${round.id}`);
         }}
       />
-      <Card className="w-full flex-1">
-        <CardHeader>
-          <CardTitle>Partidas</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">{children}</CardContent>
-      </Card>
+      <div className="w-full flex-1">{children}</div>
       <TableRanking ranking={ranking as never} />
     </div>
   );

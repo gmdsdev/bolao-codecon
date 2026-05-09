@@ -3,15 +3,18 @@ import { bet } from "@codecon/db/schema/bet.schema";
 import { match } from "@codecon/db/schema/match.schema";
 import { round } from "@codecon/db/schema/round.schema";
 import { team } from "@codecon/db/schema/team.schema";
+import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
 import { protectedProcedure, router } from "../index";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 const teamA = alias(team, "teamA");
 const teamB = alias(team, "teamB");
+const teamAGroup = alias(teamGroup, "teamAGroup");
+const teamBGroup = alias(teamGroup, "teamBGroup");
 const expectedWinner = alias(team, "expectedWinner");
 
 export const matchRouter = router({
@@ -29,8 +32,12 @@ export const matchRouter = router({
         .select({
           id: match.id,
           roundId: match.roundId,
+          roundNumber: round.number,
+          teamAGroupId: teamAGroup.id,
+          teamAGroupName: teamAGroup.name,
           teamAName: teamA.name,
           teamAFlag: teamA.flag,
+          teamBGroupId: teamBGroup.id,
           teamBName: teamB.name,
           teamBFlag: teamB.flag,
           scoreA: match.scoreA,
@@ -42,14 +49,18 @@ export const matchRouter = router({
           betModifier: bet.modifier,
         })
         .from(match)
+        .innerJoin(round, eq(match.roundId, round.id))
         .innerJoin(teamA, eq(match.teamAId, teamA.id))
         .innerJoin(teamB, eq(match.teamBId, teamB.id))
+        .innerJoin(teamAGroup, eq(teamA.teamGroupId, teamAGroup.id))
+        .innerJoin(teamBGroup, eq(teamB.teamGroupId, teamBGroup.id))
         .leftJoin(expectedWinner, eq(match.expectedWinnerId, expectedWinner.id))
         .leftJoin(
           bet,
           and(eq(bet.matchId, match.id), eq(bet.userId, ctx.session.user.id)),
         )
-        .where(eq(match.roundId, input.roundId));
+        .where(eq(match.roundId, input.roundId))
+        .orderBy(asc(match.id));
     }),
 
   create: protectedProcedure

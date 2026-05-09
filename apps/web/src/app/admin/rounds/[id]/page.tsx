@@ -16,9 +16,14 @@ import {
   TableRow,
 } from "@codecon/ui/components/table";
 import { Button } from "@codecon/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@codecon/ui/components/card";
 import { Input } from "@codecon/ui/components/input";
 import { Label } from "@codecon/ui/components/label";
-import { Separator } from "@codecon/ui/components/separator";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -30,8 +35,12 @@ import { trpc } from "@/utils/trpc";
 
 type Match = {
   id: number;
+  roundNumber: number;
+  teamAGroupId: number;
+  teamAGroupName: string;
   teamAName: string;
   teamAFlag: string;
+  teamBGroupId: number;
   teamBName: string;
   teamBFlag: string;
   scoreA: number | null;
@@ -40,6 +49,12 @@ type Match = {
   betScoreA: number | null;
   betScoreB: number | null;
   betModifier: string | null;
+};
+
+type MatchGroup = {
+  id: number;
+  name: string;
+  matches: Match[];
 };
 
 type BetModifier =
@@ -229,72 +244,43 @@ function MatchList({
     Number(scoreB) >= 0 &&
     Number.isInteger(Number(scoreA)) &&
     Number.isInteger(Number(scoreB));
+  const matchGroups = getGroupStageMatchGroups(matches);
 
   return (
     <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-full">Partida</TableHead>
-            <TableHead>Sua aposta</TableHead>
-            <TableHead>Roleta</TableHead>
-            <TableHead className="text-right"></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {matches.map((match) => {
-            const savedBet = savedBets.get(match.id);
-            const betScoreA = savedBet?.scoreA ?? match.betScoreA;
-            const betScoreB = savedBet?.scoreB ?? match.betScoreB;
-            const betModifier = savedBet?.modifier ?? match.betModifier;
-            const isScored = match.scoreA !== null || match.scoreB !== null;
-            const hasBet = match.hasBet || savedBet !== undefined;
-            const betLabel =
-              hasBet && betScoreA !== null && betScoreB !== null
-                ? `${betScoreA} - ${betScoreB}`
-                : "-";
-            const modifierLabel =
-              hasBet && betModifier ? getBetModifierLabel(betModifier) : "-";
-            const finalScoreLabel = isScored
-              ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
-              : "-";
-
-            return (
-              <TableRow key={match.id}>
-                <TableCell className="font-medium flex flex-col gap-1.5">
-                  <span className="block">
-                    {match.teamAFlag} {match.teamAName} x {match.teamBName}{" "}
-                    {match.teamBFlag}
-                  </span>
-                  {!isScored ? (
-                    <span className="text-muted-foreground">
-                      Partida não concluída
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      Placar final: {finalScoreLabel}
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-center">{betLabel}</TableCell>
-                <TableCell>{modifierLabel}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    onClick={() => openBetModal(match)}
-                    disabled={isScored || hasBet || createBet.isPending}
-                  >
-                    {isScored
-                      ? "Encerrada"
-                      : hasBet
-                        ? "Aposta feita"
-                        : "Apostar"}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+      {matchGroups ? (
+        <div className="grid gap-3">
+          {matchGroups.map((group) => (
+            <Card key={group.id} size="sm">
+              <CardHeader>
+                <CardTitle>{group.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <MatchTable
+                  matches={group.matches}
+                  savedBets={savedBets}
+                  isBetPending={createBet.isPending}
+                  onOpenBet={openBetModal}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Partidas</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <MatchTable
+              matches={matches}
+              savedBets={savedBets}
+              isBetPending={createBet.isPending}
+              onOpenBet={openBetModal}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog
         open={selectedMatch !== null}
@@ -424,6 +410,115 @@ function MatchList({
         )}
       </Dialog>
     </>
+  );
+}
+
+function MatchTable({
+  matches,
+  savedBets,
+  isBetPending,
+  onOpenBet,
+}: {
+  matches: Match[];
+  savedBets: Map<
+    number,
+    { scoreA: number; scoreB: number; modifier: BetModifier }
+  >;
+  isBetPending: boolean;
+  onOpenBet: (match: Match) => void;
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-full">Partida</TableHead>
+          <TableHead>Sua aposta</TableHead>
+          <TableHead>Roleta</TableHead>
+          <TableHead className="text-right"></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {matches.map((match) => {
+          const savedBet = savedBets.get(match.id);
+          const betScoreA = savedBet?.scoreA ?? match.betScoreA;
+          const betScoreB = savedBet?.scoreB ?? match.betScoreB;
+          const betModifier = savedBet?.modifier ?? match.betModifier;
+          const isScored = match.scoreA !== null || match.scoreB !== null;
+          const hasBet = match.hasBet || savedBet !== undefined;
+          const betLabel =
+            hasBet && betScoreA !== null && betScoreB !== null
+              ? `${betScoreA} - ${betScoreB}`
+              : "-";
+          const modifierLabel =
+            hasBet && betModifier ? getBetModifierLabel(betModifier) : "-";
+          const finalScoreLabel = isScored
+            ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
+            : "-";
+
+          return (
+            <TableRow key={match.id}>
+              <TableCell className="flex flex-col gap-1.5 font-medium">
+                <span className="block">
+                  {match.teamAFlag} {match.teamAName} x {match.teamBName}{" "}
+                  {match.teamBFlag}
+                </span>
+                {!isScored ? (
+                  <span className="text-muted-foreground">
+                    Partida não concluída
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    Placar final: {finalScoreLabel}
+                  </span>
+                )}
+              </TableCell>
+              <TableCell className="text-center">{betLabel}</TableCell>
+              <TableCell>{modifierLabel}</TableCell>
+              <TableCell className="text-right">
+                <Button
+                  onClick={() => onOpenBet(match)}
+                  disabled={isScored || hasBet || isBetPending}
+                >
+                  {isScored ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
+                </Button>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
+
+function getGroupStageMatchGroups(matches: Match[]) {
+  const isGroupStageRound = matches.every(
+    (match) =>
+      match.roundNumber <= 3 && match.teamAGroupId === match.teamBGroupId,
+  );
+
+  if (!isGroupStageRound) {
+    return null;
+  }
+
+  const groups = new Map<number, MatchGroup>();
+
+  matches.forEach((match) => {
+    const group = groups.get(match.teamAGroupId);
+
+    if (group) {
+      group.matches.push(match);
+      return;
+    }
+
+    groups.set(match.teamAGroupId, {
+      id: match.teamAGroupId,
+      name: match.teamAGroupName,
+      matches: [match],
+    });
+  });
+
+  return [...groups.values()].sort((groupA, groupB) =>
+    groupA.name.localeCompare(groupB.name, "pt-BR"),
   );
 }
 
