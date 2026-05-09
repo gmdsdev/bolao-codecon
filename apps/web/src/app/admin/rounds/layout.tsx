@@ -11,13 +11,10 @@ import { useQuery } from "@tanstack/react-query";
 import { TableRanking } from "@/components/tables/table-ranking";
 import { TableSelectRound } from "@/components/tables/table-select-round";
 import { trpc } from "@/utils/trpc";
-import { redirect, useParams } from "next/navigation";
+import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
 export default function Layout({ children }: PropsWithChildren) {
-  const params = useParams<{ id: string }>();
-  const roundId = Number(params.id);
-
   const rounds = useQuery(trpc.round.getAll.queryOptions());
   const ranking = useQuery(trpc.ranking.getAll.queryOptions());
 

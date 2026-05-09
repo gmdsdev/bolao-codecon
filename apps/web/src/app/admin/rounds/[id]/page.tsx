@@ -18,6 +18,7 @@ import {
 import { Button } from "@codecon/ui/components/button";
 import { Input } from "@codecon/ui/components/input";
 import { Label } from "@codecon/ui/components/label";
+import { Separator } from "@codecon/ui/components/separator";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -30,7 +31,9 @@ import { trpc } from "@/utils/trpc";
 type Match = {
   id: number;
   teamAName: string;
+  teamAFlag: string;
   teamBName: string;
+  teamBFlag: string;
   scoreA: number | null;
   scoreB: number | null;
   hasBet: boolean;
@@ -232,10 +235,9 @@ function MatchList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Partida</TableHead>
+            <TableHead className="w-full">Partida</TableHead>
             <TableHead>Sua aposta</TableHead>
             <TableHead>Roleta</TableHead>
-            <TableHead>Placar final</TableHead>
             <TableHead className="text-right"></TableHead>
           </TableRow>
         </TableHeader>
@@ -259,12 +261,23 @@ function MatchList({
 
             return (
               <TableRow key={match.id}>
-                <TableCell className="font-medium">
-                  {match.teamAName} x {match.teamBName}
+                <TableCell className="font-medium flex flex-col gap-1.5">
+                  <span className="block">
+                    {match.teamAFlag} {match.teamAName} x {match.teamBName}{" "}
+                    {match.teamBFlag}
+                  </span>
+                  {!isScored ? (
+                    <span className="text-muted-foreground">
+                      Partida não concluída
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      Placar final: {finalScoreLabel}
+                    </span>
+                  )}
                 </TableCell>
-                <TableCell>{betLabel}</TableCell>
+                <TableCell className="text-center">{betLabel}</TableCell>
                 <TableCell>{modifierLabel}</TableCell>
-                <TableCell>{finalScoreLabel}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     onClick={() => openBetModal(match)}

@@ -28,7 +28,7 @@ type TableSelectRoundProps = {
 
 export function TableSelectRound(props: TableSelectRoundProps) {
   return (
-    <Card className="h-min">
+    <Card className="w-full h-min shrink-0 lg:w-56">
       <CardHeader>
         <CardTitle>Rodadas</CardTitle>
       </CardHeader>
@@ -77,7 +77,7 @@ function TableSelectRoundData({
         {data?.map((row) => (
           <TableRow key={row.id}>
             <TableCell
-              className="font-medium hover:bg-accent cursor-pointer"
+              className="font-medium cursor-pointer"
               onClick={() => onClick(row)}
             >
               {row.title}

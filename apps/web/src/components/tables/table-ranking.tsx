@@ -71,7 +71,7 @@ function TableRankingData({ data }: { data: User[] }) {
         {data.map((row, index) => (
           <TableRow
             key={row.id}
-            className="nth-[1]:text-green-300 nth-[2]:text-amber-300 nth-last-[3]:text-cyan-300"
+            className="nth-[1]:text-amber-300 nth-[2]:text-green-300 nth-[3]:text-blue-300"
           >
             <TableCell className="text-muted-foreground">{index + 1}</TableCell>
             <TableCell className="font-medium">{row.userName}</TableCell>

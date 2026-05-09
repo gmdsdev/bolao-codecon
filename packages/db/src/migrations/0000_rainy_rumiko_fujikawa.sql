@@ -56,12 +56,6 @@ CREATE TABLE "bet" (
 	"match_id" serial NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "todo" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"text" text NOT NULL,
-	"completed" boolean DEFAULT false NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "match" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"team_a_id" integer NOT NULL,
@@ -87,6 +81,13 @@ CREATE TABLE "round" (
 --> statement-breakpoint
 CREATE TABLE "team" (
 	"id" serial PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"flag" text NOT NULL,
+	"team_group_id" integer NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "team_group" (
+	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL
 );
 --> statement-breakpoint
@@ -99,6 +100,7 @@ ALTER TABLE "match" ADD CONSTRAINT "match_team_b_id_team_id_fk" FOREIGN KEY ("te
 ALTER TABLE "match" ADD CONSTRAINT "match_round_id_round_id_fk" FOREIGN KEY ("round_id") REFERENCES "public"."round"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "match" ADD CONSTRAINT "match_expected_winner_id_team_id_fk" FOREIGN KEY ("expected_winner_id") REFERENCES "public"."team"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ranking" ADD CONSTRAINT "ranking_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "team" ADD CONSTRAINT "team_team_group_id_team_group_id_fk" FOREIGN KEY ("team_group_id") REFERENCES "public"."team_group"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");
