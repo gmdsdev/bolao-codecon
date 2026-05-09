@@ -1,6 +1,7 @@
+"use client";
+
 import { Button } from "@codecon/ui/components/button";
 import { Input } from "@codecon/ui/components/input";
-import { Label } from "@codecon/ui/components/label";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -8,13 +9,18 @@ import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@codecon/ui/components/card";
+import { Field, FieldError, FieldLabel } from "@codecon/ui/components/field";
+import Link from "next/link";
 import Loader from "./loader";
 
-export default function SignInForm({
-  onSwitchToSignUp,
-}: {
-  onSwitchToSignUp: () => void;
-}) {
+export default function SignInForm() {
   const router = useRouter();
   const { isPending } = authClient.useSession();
 
@@ -53,24 +59,23 @@ export default function SignInForm({
   }
 
   return (
-    <div className="mx-auto mt-10 w-full max-w-md rounded border border-border bg-card p-4">
-      <h1 className="mb-4 border-b border-border pb-3 font-mono text-xs font-medium">
-        Bem-vindo de volta
-      </h1>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Bem-vindo de volta</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+          className="space-y-4"
+        >
           <form.Field name="email">
             {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
+              <Field>
+                <FieldLabel htmlFor={field.name}>Email</FieldLabel>
                 <Input
                   id={field.name}
                   name={field.name}
@@ -80,20 +85,15 @@ export default function SignInForm({
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
+                  <FieldError key={error?.message}>{error?.message}</FieldError>
                 ))}
-              </div>
+              </Field>
             )}
           </form.Field>
-        </div>
-
-        <div>
           <form.Field name="password">
             {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Senha</Label>
+              <Field>
+                <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
                 <Input
                   id={field.name}
                   name={field.name}
@@ -103,42 +103,38 @@ export default function SignInForm({
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
+                  <FieldError key={error?.message}>{error?.message}</FieldError>
                 ))}
-              </div>
+              </Field>
             )}
           </form.Field>
-        </div>
 
-        <form.Subscribe
-          selector={(state) => ({
-            canSubmit: state.canSubmit,
-            isSubmitting: state.isSubmitting,
-          })}
-        >
-          {({ canSubmit, isSubmitting }) => (
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={!canSubmit || isSubmitting}
-            >
-              {isSubmitting ? "Enviando..." : "Entrar"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
+          <form.Subscribe
+            selector={(state) => ({
+              canSubmit: state.canSubmit,
+              isSubmitting: state.isSubmitting,
+            })}
+          >
+            {({ canSubmit, isSubmitting }) => (
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={!canSubmit || isSubmitting}
+              >
+                {isSubmitting ? "Enviando..." : "Entrar"}
+              </Button>
+            )}
+          </form.Subscribe>
+        </form>
+      </CardContent>
+      <CardFooter>
+        <Link
+          href="/sign-up"
           className="text-muted-foreground hover:text-foreground"
         >
           Precisa de uma conta? Cadastre-se
-        </Button>
-      </div>
-    </div>
+        </Link>
+      </CardFooter>
+    </Card>
   );
 }

@@ -24,7 +24,7 @@ export default function UserMenu() {
 
   if (!session) {
     return (
-      <Link href="/login">
+      <Link href="/sign-in">
         <Button variant="outline">Entrar</Button>
       </Link>
     );
@@ -46,7 +46,7 @@ export default function UserMenu() {
               authClient.signOut({
                 fetchOptions: {
                   onSuccess: () => {
-                    router.push("/");
+                    router.push("/sign-in");
                   },
                 },
               });
