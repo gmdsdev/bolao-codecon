@@ -37,7 +37,7 @@ export default function SignInForm() {
         },
         {
           onSuccess: () => {
-            router.push("/admin/rounds/1");
+            router.push("/");
             toast.success("Login realizado com sucesso");
           },
           onError: (error) => {

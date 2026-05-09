@@ -19,7 +19,7 @@ import Image from "next/image";
 export default function Header() {
   const pathname = usePathname();
   const links = [
-    { to: "/admin/rounds/1", label: "Rodadas" },
+    { to: "/", label: "Rodadas" },
     { to: "/admin/ranking", label: "Classificação" },
     { to: "/admin/manager", label: "Manager" },
   ] as const;
@@ -32,7 +32,7 @@ export default function Header() {
             <Image src={logo} alt="Codecon logo" height={12} className="pr-3" />
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <NavigationMenuLink render={<Link href="/admin/rounds/1" />}>
+            <NavigationMenuLink render={<Link href="/" />}>
               Rodadas
             </NavigationMenuLink>
           </NavigationMenuItem>
@@ -47,6 +47,9 @@ export default function Header() {
             </NavigationMenuLink>
           </NavigationMenuItem>
           <NavigationMenuItem className="ml-auto">
+            <ModeToggle />
+          </NavigationMenuItem>
+          <NavigationMenuItem>
             <NavigationMenuLink render={<Link href="/admin/manager" />}>
               Manager
             </NavigationMenuLink>

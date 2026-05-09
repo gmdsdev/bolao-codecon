@@ -1,4 +1,11 @@
 "use client";
+import { Button } from "@codecon/ui/components/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@codecon/ui/components/card";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@codecon/ui/components/dialog";
+import { Input } from "@codecon/ui/components/input";
+import { Label } from "@codecon/ui/components/label";
 import {
   Table,
   TableBody,
@@ -15,19 +24,11 @@ import {
   TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
-import { Button } from "@codecon/ui/components/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@codecon/ui/components/card";
-import { Input } from "@codecon/ui/components/input";
-import { Label } from "@codecon/ui/components/label";
 
+import { TableRanking } from "@/components/tables/table-ranking";
+import { TableSelectRound } from "@/components/tables/table-select-round";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useId, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -101,16 +102,16 @@ const BET_WHEEL_OPTIONS: {
     description: "Sem surpresa. A aposta é salva como foi enviada.",
   },
 ];
-const DUCK_SOUND_URL = new URL("../../../../assets/duck.mp3", import.meta.url)
-  .href;
+const DUCK_SOUND_URL = new URL("../../assets/duck.mp3", import.meta.url).href;
 const WHEEL_SEGMENT_DEGREES = 360 / BET_WHEEL_OPTIONS.length;
 const WHEEL_SPIN_DURATION_MS = 3000;
 const WHEEL_FULL_TURNS = 7;
 
 export default function Page() {
-  const params = useParams<{ id: string }>();
-  const roundId = Number(params.id);
+  const [roundId, setRoundId] = useState<number>(1);
 
+  const rounds = useQuery(trpc.round.getAll.queryOptions());
+  const ranking = useQuery(trpc.ranking.getAll.queryOptions());
   const matches = useQuery(
     trpc.match.getByRound.queryOptions({
       roundId,
@@ -125,7 +126,20 @@ export default function Page() {
     return <div>Nenhum dado</div>;
   }
 
-  return <MatchList matches={matches.data} onBetCreated={matches.refetch} />;
+  return (
+    <div className="flex min-h-[calc(100vh-2.5rem)] flex-col gap-3 p-3 lg:flex-row">
+      <TableSelectRound
+        rounds={rounds as never}
+        onSelectRound={(round) => {
+          setRoundId(round.id);
+        }}
+      />
+      <div className="w-full flex-1">
+        <MatchList matches={matches.data} onBetCreated={matches.refetch} />
+      </div>
+      <TableRanking ranking={ranking as never} />
+    </div>
+  );
 }
 
 function MatchList({

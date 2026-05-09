@@ -40,7 +40,7 @@ export default function SignUpForm() {
         },
         {
           onSuccess: () => {
-            router.push("/admin/rounds/1");
+            router.push("/");
             toast.success("Cadastro realizado com sucesso");
           },
           onError: (error) => {
