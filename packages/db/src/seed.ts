@@ -89,78 +89,76 @@ const seedUsers = [
 
 const seedGroupNames = Array.from(
   { length: 12 },
+  (_, index) => `Grupo ${String.fromCharCode(65 + index)}`,
+);
+
+const legacySeedGroupNames = Array.from(
+  { length: 12 },
   (_, index) => `Group ${index + 1}`,
 );
 
-const seedTeamBase = [
-  { name: "Canada", flag: "🇨🇦" },
-  { name: "Mexico", flag: "🇲🇽" },
-  { name: "United States", flag: "🇺🇸" },
-  { name: "Argentina", flag: "🇦🇷" },
-  { name: "Brazil", flag: "🇧🇷" },
-  { name: "Colombia", flag: "🇨🇴" },
-  { name: "Ecuador", flag: "🇪🇨" },
-  { name: "Paraguay", flag: "🇵🇾" },
-  { name: "Uruguay", flag: "🇺🇾" },
-  { name: "Australia", flag: "🇦🇺" },
-  { name: "Iran", flag: "🇮🇷" },
-  { name: "Japan", flag: "🇯🇵" },
-  { name: "Jordan", flag: "🇯🇴" },
-  { name: "South Korea", flag: "🇰🇷" },
-  { name: "Qatar", flag: "🇶🇦" },
-  { name: "Saudi Arabia", flag: "🇸🇦" },
-  { name: "Uzbekistan", flag: "🇺🇿" },
-  { name: "Iraq", flag: "🇮🇶" },
-  { name: "Algeria", flag: "🇩🇿" },
-  { name: "Cape Verde", flag: "🇨🇻" },
-  { name: "Ivory Coast", flag: "🇨🇮" },
-  { name: "Egypt", flag: "🇪🇬" },
-  { name: "Ghana", flag: "🇬🇭" },
-  { name: "Morocco", flag: "🇲🇦" },
-  { name: "Senegal", flag: "🇸🇳" },
-  { name: "South Africa", flag: "🇿🇦" },
-  { name: "Tunisia", flag: "🇹🇳" },
-  { name: "DR Congo", flag: "🇨🇩" },
-  { name: "Curacao", flag: "🇨🇼" },
-  { name: "Haiti", flag: "🇭🇹" },
-  { name: "Panama", flag: "🇵🇦" },
-  { name: "New Zealand", flag: "🇳🇿" },
-  { name: "Austria", flag: "🇦🇹" },
-  { name: "Belgium", flag: "🇧🇪" },
-  { name: "Croatia", flag: "🇭🇷" },
+const seedTeams = [
+  { name: "Mexico", flag: "🇲🇽", groupName: "Grupo A" },
+  { name: "South Africa", flag: "🇿🇦", groupName: "Grupo A" },
+  { name: "South Korea", flag: "🇰🇷", groupName: "Grupo A" },
+  { name: "Czech Republic", flag: "🇨🇿", groupName: "Grupo A" },
+  { name: "Canada", flag: "🇨🇦", groupName: "Grupo B" },
   {
-    name: "England",
-    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
+    name: "Bosnia and Herzegovina",
+    flag: "🇧🇦",
+    groupName: "Grupo B",
   },
-  { name: "France", flag: "🇫🇷" },
-  { name: "Germany", flag: "🇩🇪" },
-  { name: "Netherlands", flag: "🇳🇱" },
-  { name: "Norway", flag: "🇳🇴" },
-  { name: "Portugal", flag: "🇵🇹" },
+  { name: "Qatar", flag: "🇶🇦", groupName: "Grupo B" },
+  { name: "Switzerland", flag: "🇨🇭", groupName: "Grupo B" },
+  { name: "Brazil", flag: "🇧🇷", groupName: "Grupo C" },
+  { name: "Morocco", flag: "🇲🇦", groupName: "Grupo C" },
+  { name: "Haiti", flag: "🇭🇹", groupName: "Grupo C" },
   {
     name: "Scotland",
     flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",
+    groupName: "Grupo C",
   },
-  { name: "Spain", flag: "🇪🇸" },
-  { name: "Switzerland", flag: "🇨🇭" },
-  { name: "Sweden", flag: "🇸🇪" },
-  { name: "Turkey", flag: "🇹🇷" },
-  { name: "Bosnia and Herzegovina", flag: "🇧🇦" },
-  { name: "Czech Republic", flag: "🇨🇿" },
+  { name: "United States", flag: "🇺🇸", groupName: "Grupo D" },
+  { name: "Paraguay", flag: "🇵🇾", groupName: "Grupo D" },
+  { name: "Australia", flag: "🇦🇺", groupName: "Grupo D" },
+  { name: "Turkey", flag: "🇹🇷", groupName: "Grupo D" },
+  { name: "Germany", flag: "🇩🇪", groupName: "Grupo E" },
+  { name: "Curacao", flag: "🇨🇼", groupName: "Grupo E" },
+  { name: "Ivory Coast", flag: "🇨🇮", groupName: "Grupo E" },
+  { name: "Ecuador", flag: "🇪🇨", groupName: "Grupo E" },
+  { name: "Netherlands", flag: "🇳🇱", groupName: "Grupo F" },
+  { name: "Japan", flag: "🇯🇵", groupName: "Grupo F" },
+  { name: "Sweden", flag: "🇸🇪", groupName: "Grupo F" },
+  { name: "Tunisia", flag: "🇹🇳", groupName: "Grupo F" },
+  { name: "Belgium", flag: "🇧🇪", groupName: "Grupo G" },
+  { name: "Egypt", flag: "🇪🇬", groupName: "Grupo G" },
+  { name: "Iran", flag: "🇮🇷", groupName: "Grupo G" },
+  { name: "New Zealand", flag: "🇳🇿", groupName: "Grupo G" },
+  { name: "Spain", flag: "🇪🇸", groupName: "Grupo H" },
+  { name: "Cape Verde", flag: "🇨🇻", groupName: "Grupo H" },
+  { name: "Saudi Arabia", flag: "🇸🇦", groupName: "Grupo H" },
+  { name: "Uruguay", flag: "🇺🇾", groupName: "Grupo H" },
+  { name: "France", flag: "🇫🇷", groupName: "Grupo I" },
+  { name: "Senegal", flag: "🇸🇳", groupName: "Grupo I" },
+  { name: "Iraq", flag: "🇮🇶", groupName: "Grupo I" },
+  { name: "Norway", flag: "🇳🇴", groupName: "Grupo I" },
+  { name: "Argentina", flag: "🇦🇷", groupName: "Grupo J" },
+  { name: "Algeria", flag: "🇩🇿", groupName: "Grupo J" },
+  { name: "Austria", flag: "🇦🇹", groupName: "Grupo J" },
+  { name: "Jordan", flag: "🇯🇴", groupName: "Grupo J" },
+  { name: "Portugal", flag: "🇵🇹", groupName: "Grupo K" },
+  { name: "DR Congo", flag: "🇨🇩", groupName: "Grupo K" },
+  { name: "Uzbekistan", flag: "🇺🇿", groupName: "Grupo K" },
+  { name: "Colombia", flag: "🇨🇴", groupName: "Grupo K" },
+  {
+    name: "England",
+    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
+    groupName: "Grupo L",
+  },
+  { name: "Croatia", flag: "🇭🇷", groupName: "Grupo L" },
+  { name: "Ghana", flag: "🇬🇭", groupName: "Grupo L" },
+  { name: "Panama", flag: "🇵🇦", groupName: "Grupo L" },
 ];
-
-const seedTeams = seedTeamBase.map((seedTeam, index) => {
-  const groupName = seedGroupNames[Math.floor(index / 4)];
-
-  if (groupName === undefined) {
-    throw new Error(`Missing seed group for team ${seedTeam.name}`);
-  }
-
-  return {
-    ...seedTeam,
-    groupName,
-  };
-});
 
 const seedTeamNames = seedTeams.map((seedTeam) => seedTeam.name);
 
@@ -175,23 +173,64 @@ const legacySeedTeamNames = [
   "Token City",
 ];
 
+const legacySeedRoundTitles = ["Seed Round 1", "Seed Round 2", "Seed Round 3"];
+
 const seedRounds = [
   {
     number: 1,
-    title: "Seed Round 1",
-    status: "complete",
+    title: "Fase de grupos - Rodada 1",
+    status: "pending",
   },
   {
     number: 2,
-    title: "Seed Round 2",
+    title: "Fase de grupos - Rodada 2",
     status: "pending",
   },
   {
     number: 3,
-    title: "Seed Round 3",
+    title: "Fase de grupos - Rodada 3",
+    status: "pending",
+  },
+  {
+    number: 4,
+    title: "Dezesseis avos de final",
+    status: "pending",
+  },
+  {
+    number: 5,
+    title: "Oitavas de final",
+    status: "pending",
+  },
+  {
+    number: 6,
+    title: "Quartas de final",
+    status: "pending",
+  },
+  {
+    number: 7,
+    title: "Semifinal",
+    status: "pending",
+  },
+  {
+    number: 8,
+    title: "Disputa pelo terceiro lugar",
+    status: "pending",
+  },
+  {
+    number: 9,
+    title: "Final",
     status: "pending",
   },
 ];
+
+const knockoutMatchCountsByRoundNumber = new Map([
+  [4, 16],
+  [5, 8],
+  [6, 4],
+  [7, 2],
+  [8, 1],
+  [9, 1],
+]);
 
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -244,7 +283,10 @@ try {
       .where(
         inArray(
           round.title,
-          seedRounds.map((seedRound) => seedRound.title),
+          [
+            ...seedRounds.map((seedRound) => seedRound.title),
+            ...legacySeedRoundTitles,
+          ],
         ),
       );
 
@@ -259,6 +301,7 @@ try {
         );
     }
 
+    await tx.delete(round).where(inArray(round.title, legacySeedRoundTitles));
     await tx.delete(team).where(inArray(team.name, legacySeedTeamNames));
 
     const usersByEmail = new Map<string, string>();
@@ -427,6 +470,10 @@ try {
       }
     }
 
+    await tx
+      .delete(teamGroup)
+      .where(inArray(teamGroup.name, legacySeedGroupNames));
+
     const existingRoundByTitle = new Map(
       existingSeedRounds.map((existingRound) => [
         existingRound.title,
@@ -540,25 +587,88 @@ try {
     }
 
     function createRoundMatches(roundNumber: number) {
+      if (roundNumber <= 3) {
+        return createGroupStageMatches(roundNumber);
+      }
+
       const teamCount = seedTeamNames.length;
-      const halfTeamCount = teamCount / 2;
+      const matchCount = knockoutMatchCountsByRoundNumber.get(roundNumber);
       const offset = roundNumber - 1;
 
-      return Array.from({ length: halfTeamCount }, (_, index) => {
-        const teamAName = getSeedTeamName((index + offset) % teamCount);
+      if (matchCount === undefined) {
+        throw new Error(`Missing match count for round ${roundNumber}`);
+      }
+
+      return Array.from({ length: matchCount }, (_, index) => {
+        const step = roundNumber * 3;
+        const teamAName = getSeedTeamName((index * 2 + offset) % teamCount);
         const teamBName = getSeedTeamName(
-          (teamCount - 1 - index + offset) % teamCount,
+          (teamCount - 1 - index * 2 - step + teamCount) % teamCount,
         );
-
-        if (roundNumber === 1) {
-          const scoreA = (index % 5) + 1;
-          const scoreB = index % 3;
-
-          return createMatch(teamAName, teamBName, roundNumber, scoreA, scoreB);
-        }
 
         return createMatch(teamAName, teamBName, roundNumber);
       });
+    }
+
+    function createGroupStageMatches(roundNumber: number) {
+      return seedGroupNames.flatMap((groupName) => {
+        const teamsInGroup = seedTeams.filter(
+          (seedTeam) => seedTeam.groupName === groupName,
+        );
+
+        if (teamsInGroup.length !== 4) {
+          throw new Error(`${groupName} must have exactly 4 teams`);
+        }
+
+        const [team1, team2, team3, team4] = teamsInGroup;
+
+        if (!team1 || !team2 || !team3 || !team4) {
+          throw new Error(`${groupName} must have exactly 4 teams`);
+        }
+
+        const fixturesByGroupRound = getGroupStageFixtures(roundNumber, [
+          team1.name,
+          team2.name,
+          team3.name,
+          team4.name,
+        ]);
+
+        if (fixturesByGroupRound === undefined) {
+          throw new Error(`Missing group-stage fixtures for round ${roundNumber}`);
+        }
+
+        return fixturesByGroupRound.map(([teamAName, teamBName]) =>
+          createMatch(teamAName, teamBName, roundNumber),
+        );
+      });
+    }
+
+    function getGroupStageFixtures(
+      roundNumber: number,
+      [team1, team2, team3, team4]: [string, string, string, string],
+    ): [string, string][] | undefined {
+      if (roundNumber === 1) {
+        return [
+          [team1, team2],
+          [team3, team4],
+        ];
+      }
+
+      if (roundNumber === 2) {
+        return [
+          [team4, team2],
+          [team1, team3],
+        ];
+      }
+
+      if (roundNumber === 3) {
+        return [
+          [team4, team1],
+          [team2, team3],
+        ];
+      }
+
+      return undefined;
     }
 
     function getSeedTeamName(index: number) {
