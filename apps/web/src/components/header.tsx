@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
+import logo from "@/assets/codecon.svg";
 
 import {
   NavigationMenu,
@@ -13,6 +14,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@codecon/ui/components/navigation-menu";
+import Image from "next/image";
 
 export default function Header() {
   const pathname = usePathname();
@@ -24,8 +26,11 @@ export default function Header() {
 
   return (
     <>
-      <NavigationMenu className="w-full max-w-full py-1 px-3 sticky border-b border-border bg-secondary">
+      <NavigationMenu className="w-full max-w-full px-3 sticky border-b border-border bg-secondary">
         <NavigationMenuList>
+          <NavigationMenuItem>
+            <Image src={logo} alt="Codecon logo" height={12} className="pr-3" />
+          </NavigationMenuItem>
           <NavigationMenuItem>
             <NavigationMenuLink render={<Link href="/admin/rounds/1" />}>
               Rodadas

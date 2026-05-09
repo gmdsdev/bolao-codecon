@@ -14,11 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from "@codecon/ui/components/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@codecon/ui/components/tabs";
 import { useQuery } from "@tanstack/react-query";
 
 import { trpc } from "@/utils/trpc";
@@ -39,26 +35,34 @@ export default function Layout({ children }: PropsWithChildren) {
 
   return (
     <div className="flex min-h-[calc(100vh-2.5rem)] flex-col gap-3 p-3 lg:flex-row">
-      <Tabs value={roundId} orientation="vertical" className="shrink-0">
-        <TabsList className="min-w-36">
-          {rounds.data.map((round) => (
-            <TabsTrigger
-              key={round.id}
-              value={round.id}
-              onClick={() => redirect(`/admin/rounds/${round.id}`)}
-            >
-              {round.title}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <Card className="h-min">
+        <CardHeader>
+          <CardTitle>Rodadas</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableBody>
+              {rounds.data.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell
+                    className="font-medium hover:bg-accent cursor-pointer"
+                    onClick={() => redirect(`/admin/rounds/${row.id}`)}
+                  >
+                    {row.title}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
       <Card className="w-full flex-1">
         <CardHeader>
           <CardTitle>Partidas</CardTitle>
         </CardHeader>
         <CardContent className="p-0">{children}</CardContent>
       </Card>
-      <Card className="w-full shrink-0 lg:w-72">
+      <Card className="w-full h-min shrink-0 lg:w-72">
         <CardHeader>
           <CardTitle>Classificação</CardTitle>
         </CardHeader>
@@ -88,7 +92,9 @@ export default function Layout({ children }: PropsWithChildren) {
                     <TableCell className="text-muted-foreground">
                       {index + 1}
                     </TableCell>
-                    <TableCell className="font-medium">{row.userName}</TableCell>
+                    <TableCell className="font-medium">
+                      {row.userName}
+                    </TableCell>
                     <TableCell className="text-right font-semibold">
                       {row.points}
                     </TableCell>
