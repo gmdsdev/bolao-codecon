@@ -21,9 +21,10 @@ import {
 } from "@codecon/ui/components/table";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
+import { TableSelectRound } from "@/components/tables/table-select-round";
 import { trpc } from "@/utils/trpc";
 import {
   Card,
@@ -42,7 +43,9 @@ type Round = {
 type Match = {
   id: number;
   teamAName: string;
+  teamAFlag: string;
   teamBName: string;
+  teamBFlag: string;
   scoreA: number | null;
   scoreB: number | null;
   expectedWinnerName: string | null;
@@ -56,8 +59,19 @@ type Team = {
 type ExpectedWinner = "teamA" | "teamB";
 
 export default function Page() {
+  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
+
   const rounds = useQuery(trpc.round.getAll.queryOptions());
   const teams = useQuery(trpc.team.getAll.queryOptions());
+
+  // Auto-seleciona a primeira rodada ao carregar
+  useEffect(() => {
+    if (rounds.data?.length && selectedRoundId === null) {
+      setSelectedRoundId(rounds.data[0].id);
+    }
+  }, [rounds.data, selectedRoundId]);
+
+  const selectedRound = rounds.data?.find((r) => r.id === selectedRoundId);
 
   if (rounds.isLoading || teams.isLoading) {
     return (
@@ -80,15 +94,27 @@ export default function Page() {
   }
 
   return (
-    <div className="grid min-h-[calc(100vh-2.5rem)] gap-3 p-3">
-      {rounds.data.map((round) => (
-        <RoundMatches
-          key={round.id}
-          round={round}
-          teams={teams.data ?? []}
-          onRoundCompleted={rounds.refetch}
-        />
-      ))}
+    <div className="flex min-h-[calc(100vh-2.5rem)] flex-col gap-3 p-3 lg:flex-row">
+      <TableSelectRound
+        rounds={rounds as never}
+        selectedRoundId={selectedRoundId ?? undefined}
+        onSelectRound={(round) => setSelectedRoundId(round.id)}
+      />
+
+      <div className="w-full flex-1">
+        {selectedRound ? (
+          <RoundMatches
+            key={selectedRound.id}
+            round={selectedRound}
+            teams={teams.data ?? []}
+            onRoundCompleted={rounds.refetch}
+          />
+        ) : (
+          <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
+            Selecione uma rodada para gerenciar as partidas.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -191,7 +217,11 @@ function RoundMatches({
           </div>
         )}
 
-        {matches.data?.length === 0 && <div>Nenhuma partida encontrada</div>}
+        {matches.data?.length === 0 && (
+          <div className="py-6 text-center text-sm text-muted-foreground">
+            Nenhuma partida nesta rodada.
+          </div>
+        )}
 
         {matches.data !== undefined && matches.data.length > 0 && (
           <Table>
@@ -213,9 +243,25 @@ function RoundMatches({
                 return (
                   <TableRow key={match.id}>
                     <TableCell className="font-medium">
-                      {match.teamAName} x {match.teamBName}
+                      <span>
+                        {match.teamAFlag} {match.teamAName}
+                      </span>
+                      <span className="mx-1.5 text-muted-foreground">x</span>
+                      <span>
+                        {match.teamBName} {match.teamBFlag}
+                      </span>
                     </TableCell>
-                    <TableCell>{match.expectedWinnerName ?? "-"}</TableCell>
+                    <TableCell>
+                      {match.expectedWinnerName ? (
+                        <span>
+                          {match.expectedWinnerName === match.teamAName
+                            ? `${match.teamAFlag} ${match.teamAName}`
+                            : `${match.teamBFlag} ${match.teamBName}`}
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
                     <TableCell>{scoreLabel}</TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -265,7 +311,8 @@ function RoundMatches({
               <DialogHeader>
                 <DialogTitle>Editar partida</DialogTitle>
                 <DialogDescription>
-                  {selectedMatch.teamAName} x {selectedMatch.teamBName}
+                  {selectedMatch.teamAFlag} {selectedMatch.teamAName} x{" "}
+                  {selectedMatch.teamBName} {selectedMatch.teamBFlag}
                 </DialogDescription>
               </DialogHeader>
               <MatchResultForm
@@ -485,7 +532,7 @@ function MatchResultForm({
             onClick={() => setExpectedWinner("teamA")}
             disabled={disabled || updateResult.isPending}
           >
-            {match.teamAName}
+            {match.teamAFlag} {match.teamAName}
           </Button>
           <Button
             type="button"
@@ -493,19 +540,24 @@ function MatchResultForm({
             onClick={() => setExpectedWinner("teamB")}
             disabled={disabled || updateResult.isPending}
           >
-            {match.teamBName}
+            {match.teamBFlag} {match.teamBName}
           </Button>
         </div>
         {match.expectedWinnerName && (
           <p className="text-xs text-muted-foreground">
-            Atual: {match.expectedWinnerName}
+            Atual:{" "}
+            {match.expectedWinnerName === match.teamAName
+              ? `${match.teamAFlag} ${match.teamAName}`
+              : `${match.teamBFlag} ${match.teamBName}`}
           </p>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor={`score-a-${match.id}`}>{match.teamAName}</Label>
+          <Label htmlFor={`score-a-${match.id}`}>
+            {match.teamAFlag} {match.teamAName}
+          </Label>
           <Input
             id={`score-a-${match.id}`}
             type="number"
@@ -519,7 +571,9 @@ function MatchResultForm({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`score-b-${match.id}`}>{match.teamBName}</Label>
+          <Label htmlFor={`score-b-${match.id}`}>
+            {match.teamBFlag} {match.teamBName}
+          </Label>
           <Input
             id={`score-b-${match.id}`}
             type="number"

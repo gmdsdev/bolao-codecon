@@ -12,6 +12,7 @@ import {
   TableCell,
   TableRow,
 } from "@codecon/ui/components/table";
+import { cn } from "@codecon/ui/lib/utils";
 import type { UseQueryResult } from "@tanstack/react-query";
 
 type Round = {
@@ -24,6 +25,7 @@ type OnSelectHandler = (round: Round) => void;
 type TableSelectRoundProps = {
   rounds: UseQueryResult<Round[]>;
   onSelectRound: OnSelectHandler;
+  selectedRoundId?: number;
 };
 
 export function TableSelectRound(props: TableSelectRoundProps) {
@@ -42,6 +44,7 @@ export function TableSelectRound(props: TableSelectRoundProps) {
 function TableSelectRoundContent({
   rounds,
   onSelectRound,
+  selectedRoundId,
 }: TableSelectRoundProps) {
   if (rounds.isLoading) {
     return <TableSelectRoundLoadingState />;
@@ -54,7 +57,11 @@ function TableSelectRoundContent({
   if (rounds.isFetched) {
     if (rounds?.data?.length) {
       return (
-        <TableSelectRoundData data={rounds.data} onClick={onSelectRound} />
+        <TableSelectRoundData
+          data={rounds.data}
+          onClick={onSelectRound}
+          selectedRoundId={selectedRoundId}
+        />
       );
     } else {
       <TableSelectRoundEmptyState />;
@@ -67,9 +74,11 @@ function TableSelectRoundContent({
 function TableSelectRoundData({
   data,
   onClick,
+  selectedRoundId,
 }: {
   data: Round[];
   onClick: OnSelectHandler;
+  selectedRoundId?: number;
 }) {
   return (
     <Table>
@@ -77,7 +86,12 @@ function TableSelectRoundData({
         {data?.map((row) => (
           <TableRow key={row.id}>
             <TableCell
-              className="font-medium cursor-pointer"
+              className={cn(
+                "font-medium cursor-pointer transition-colors",
+                row.id === selectedRoundId
+                  ? "bg-muted font-semibold"
+                  : "hover:bg-muted/50",
+              )}
               onClick={() => onClick(row)}
             >
               {row.title}
