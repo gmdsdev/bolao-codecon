@@ -1,0 +1,1 @@
+ALTER TABLE "bet" ALTER COLUMN "match_id" SET DATA TYPE integer;

@@ -7,9 +7,23 @@ import {
   TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemHeader,
+  ItemTitle,
+} from "@codecon/ui/components/item";
 
-import { getBetModifierLabel } from "./match-utils";
+import { getBetModifierLabel, calculateBetPoints } from "./match-utils";
 import type { Match, SavedBet } from "./types";
+import { Separator } from "@codecon/ui/components/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@codecon/ui/components/tooltip";
 
 type MatchTableProps = {
   matches: Match[];
@@ -25,27 +39,17 @@ export function MatchTable({
   onOpenBet,
 }: MatchTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-full">Partida</TableHead>
-          <TableHead>Sua aposta</TableHead>
-          <TableHead>Roleta</TableHead>
-          <TableHead className="text-right" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {matches.map((match) => (
-          <MatchTableRow
-            key={match.id}
-            match={match}
-            savedBet={savedBets.get(match.id)}
-            isBetPending={isBetPending}
-            onOpenBet={onOpenBet}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      {matches.map((match) => (
+        <MatchTableRow
+          key={match.id}
+          match={match}
+          savedBet={savedBets.get(match.id)}
+          isBetPending={isBetPending}
+          onOpenBet={onOpenBet}
+        />
+      ))}
+    </>
   );
 }
 
@@ -75,31 +79,67 @@ function MatchTableRow({
     ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
     : "-";
 
+  const earnedPoints =
+    isScored &&
+    hasBet &&
+    betScoreA !== null &&
+    betScoreB !== null &&
+    match.scoreA !== null &&
+    match.scoreB !== null
+      ? calculateBetPoints(
+          betScoreA,
+          betScoreB,
+          match.scoreA,
+          match.scoreB,
+          betModifier ?? "normal",
+        )
+      : null;
+
   return (
-    <TableRow>
-      <TableCell className="flex flex-col gap-1.5 font-medium">
-        <span className="block">
-          {match.teamAFlag} {match.teamAName} x {match.teamBName}{" "}
-          {match.teamBFlag}
-        </span>
-        {!isScored ? (
-          <span className="text-muted-foreground">Partida não concluída</span>
-        ) : (
-          <span className="text-muted-foreground">
-            Placar final: {finalScoreLabel}
-          </span>
+    <Item className="last:border-b-0 border-b border-border w-full group/match-item">
+      <ItemHeader className="flex justify-normal items-center">
+        <ItemTitle className="text-lg grayscale-100 group-hover/match-item:grayscale-0 transition-all duration-300 mr-auto">
+          {match.teamAFlag} {match.teamAName}
+          <span className="text-muted-foreground text-sm">vs</span>
+          {match.teamBName} {match.teamBFlag}
+        </ItemTitle>
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="flex items-center ml-auto">
+              <div className="text-md border border-border px-2 py-1">
+                {match.scoreA ?? "-"}
+              </div>
+              <div className="text-md text-muted-foreground px-2 py-1">:</div>
+              <div className="text-md border border-border px-2 py-1">
+                {match.scoreB ?? "-"}
+              </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>Placar final</TooltipContent>
+        </Tooltip>
+        <ItemActions>
+          <Button
+            onClick={() => onOpenBet(match)}
+            disabled={isScored || hasBet || isBetPending}
+          >
+            {isScored ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
+          </Button>
+        </ItemActions>
+      </ItemHeader>
+      <Separator />
+      <ItemContent className="text-muted-foreground">
+        {!match.hasBet && <span>Aposta não efetuada</span>}
+        {match.hasBet && (
+          <div className="flex justify-between">
+            <span>Sua aposta: {betLabel}</span>
+            <span>Modificador: {modifierLabel}</span>
+            <span>
+              Pontos ganhos:{" "}
+              {earnedPoints !== null ? `${earnedPoints} pts` : "-"}
+            </span>
+          </div>
         )}
-      </TableCell>
-      <TableCell className="text-center">{betLabel}</TableCell>
-      <TableCell>{modifierLabel}</TableCell>
-      <TableCell className="text-right">
-        <Button
-          onClick={() => onOpenBet(match)}
-          disabled={isScored || hasBet || isBetPending}
-        >
-          {isScored ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
-        </Button>
-      </TableCell>
-    </TableRow>
+      </ItemContent>
+    </Item>
   );
 }

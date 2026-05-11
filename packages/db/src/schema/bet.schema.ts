@@ -10,7 +10,7 @@ export const bet = pgTable("bet", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  matchId: serial("match_id")
+  matchId: integer("match_id")
     .notNull()
     .references(() => match.id, { onDelete: "cascade" }),
 });

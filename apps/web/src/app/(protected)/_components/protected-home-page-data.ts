@@ -22,7 +22,7 @@ export async function getProtectedHomePageData(roundId = DEFAULT_ROUND_ID) {
 
   const [rounds, ranking, matches] = await Promise.all([
     client.round.getAll.query(),
-    client.ranking.getAll.query(),
+    client.ranking.getAll.query({ limit: 10 }),
     client.match.getByRound.query({ roundId }),
   ]);
 

@@ -10,6 +10,7 @@ import { Pool } from "pg";
 
 import {
   account,
+  bet,
   match,
   ranking,
   round,
@@ -239,6 +240,7 @@ const pool = new Pool({
 const db = drizzle(pool, {
   schema: {
     account,
+    bet,
     match,
     ranking,
     round,
@@ -516,7 +518,74 @@ try {
       createRoundMatches(seedRound.number),
     );
 
-    await tx.insert(match).values(matchRows);
+    const insertedMatches = await tx
+      .insert(match)
+      .values(matchRows)
+      .returning({ id: match.id, roundId: match.roundId });
+
+    // Cria apostas para a rodada 1 — permite testar o fluxo completo de
+    // conclusão de partida sem precisar de usuários reais apostando.
+    const round1Id = roundIdByNumber.get(1);
+    const round1Matches = insertedMatches.filter((m) => m.roundId === round1Id);
+
+    // Cada usuário aposta em cada partida da rodada 1 com placar e
+    // modificador variados para simular resultados distintos.
+    const betModifiers = [
+      "normal",
+      "double_points",
+      "half_points",
+      "lucky_duck",
+      "invert_bet",
+      "invalid_bet",
+      "normal",
+      "double_points",
+      "lucky_duck",
+      "normal",
+    ] as const;
+
+    // Distribuição de placares: simula apostadores com acerto exato,
+    // acerto do vencedor, e erros completos.
+    const betScores = [
+      { scoreA: 1, scoreB: 0 }, // time A vence
+      { scoreA: 2, scoreB: 1 }, // time A vence
+      { scoreA: 0, scoreB: 1 }, // time B vence
+      { scoreA: 1, scoreB: 2 }, // time B vence
+      { scoreA: 1, scoreB: 1 }, // empate
+      { scoreA: 0, scoreB: 0 }, // empate
+      { scoreA: 3, scoreB: 0 }, // time A vence (placar diferente)
+      { scoreA: 0, scoreB: 3 }, // time B vence (placar diferente)
+      { scoreA: 2, scoreB: 0 }, // time A vence
+      { scoreA: 0, scoreB: 2 }, // time B vence
+    ] as const;
+
+    const seedBetRows = round1Matches.flatMap((insertedMatch) =>
+      seedUsers.flatMap((seedUser, userIndex) => {
+        const userId = usersByEmail.get(seedUser.email);
+        if (!userId) return [];
+        const scores = betScores[userIndex % betScores.length]!;
+        const modifier = betModifiers[userIndex % betModifiers.length]!;
+
+        // invert_bet troca os lados antes de salvar (igual ao bet.create)
+        const scoreA =
+          modifier === "invert_bet" ? scores.scoreB : scores.scoreA;
+        const scoreB =
+          modifier === "invert_bet" ? scores.scoreA : scores.scoreB;
+
+        return [
+          {
+            matchId: insertedMatch.id,
+            userId,
+            scoreA,
+            scoreB,
+            modifier,
+          },
+        ];
+      }),
+    );
+
+    if (seedBetRows.length > 0) {
+      await tx.insert(bet).values(seedBetRows);
+    }
 
     const rankingRows = [
       {
@@ -573,6 +642,7 @@ try {
       groups: groupIdByName.size,
       rounds: roundIdByNumber.size,
       matches: matchRows.length,
+      bets: seedBetRows.length,
       rankingRows: rankingRows.length,
     };
 

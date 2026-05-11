@@ -17,6 +17,21 @@ const betModifierSchema = z.enum([
 ]);
 
 export const betRouter = router({
+  // Debug: returns all bets in the DB so admin can verify match_ids are correct
+  getAll: protectedProcedure.query(async () => {
+    return await db
+      .select({
+        id: bet.id,
+        matchId: bet.matchId,
+        userId: bet.userId,
+        scoreA: bet.scoreA,
+        scoreB: bet.scoreB,
+        modifier: bet.modifier,
+      })
+      .from(bet)
+      .orderBy(bet.matchId);
+  }),
+
   create: protectedProcedure
     .input(
       z.object({
@@ -75,13 +90,20 @@ export const betRouter = router({
       const scoreB =
         input.modifier === "invert_bet" ? input.scoreA : input.scoreB;
 
-      await db.insert(bet).values({
-        matchId: input.matchId,
-        scoreA,
-        scoreB,
-        modifier: input.modifier,
-        userId: ctx.session.user.id,
-      });
+      const [inserted] = await db
+        .insert(bet)
+        .values({
+          matchId: input.matchId,
+          scoreA,
+          scoreB,
+          modifier: input.modifier,
+          userId: ctx.session.user.id,
+        })
+        .returning({ id: bet.id, matchId: bet.matchId });
+
+      console.log(
+        `[bet.create] inserted bet id=${inserted?.id} matchId=${inserted?.matchId} (input matchId=${input.matchId})`,
+      );
 
       return {
         matchId: input.matchId,

@@ -1,4 +1,4 @@
-import { integer, pgTable, serial } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
 import { round } from "./round.schema";
 import { team } from "./team.schema";
 
@@ -18,4 +18,5 @@ export const match = pgTable("match", {
   expectedWinnerId: integer("expected_winner_id").references(() => team.id, {
     onDelete: "cascade",
   }),
+  status: text("status").notNull().default("pending"),
 });

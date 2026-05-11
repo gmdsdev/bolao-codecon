@@ -4,6 +4,36 @@ import {
 } from "./bet-wheel-options";
 import type { Match, MatchGroup } from "./types";
 
+function getWinner(scoreA: number, scoreB: number) {
+  if (scoreA > scoreB) return "teamA";
+  if (scoreB > scoreA) return "teamB";
+  return null;
+}
+
+function applyBetModifier(points: number, modifier: string): number {
+  if (points === 0) return 0;
+  if (modifier === "double_points") return points * 2;
+  if (modifier === "half_points") return Math.floor(points / 2);
+  if (modifier === "invalid_bet") return 0;
+  if (modifier === "lucky_duck") return points + 1;
+  return points;
+}
+
+export function calculateBetPoints(
+  betScoreA: number,
+  betScoreB: number,
+  matchScoreA: number,
+  matchScoreB: number,
+  modifier: string,
+): number {
+  const gotCorrectScore = betScoreA === matchScoreA && betScoreB === matchScoreB;
+  const betWinner = getWinner(betScoreA, betScoreB);
+  const finalWinner = getWinner(matchScoreA, matchScoreB);
+  const gotWinner = finalWinner !== null && finalWinner === betWinner;
+  const basePoints = gotCorrectScore ? 3 : gotWinner ? 1 : 0;
+  return applyBetModifier(basePoints, modifier);
+}
+
 export function getGroupStageMatchGroups(matches: Match[]) {
   const isGroupStageRound = matches.every(
     (match) =>

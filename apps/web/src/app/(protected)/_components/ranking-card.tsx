@@ -26,7 +26,11 @@ export function RankingCard({ ranking }: RankingCardProps) {
         <CardTitle>Classificação</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        {ranking.length ? <RankingTable ranking={ranking} /> : <div>No data</div>}
+        {ranking.length ? (
+          <RankingTable ranking={ranking} />
+        ) : (
+          <div>No data</div>
+        )}
       </CardContent>
     </Card>
   );

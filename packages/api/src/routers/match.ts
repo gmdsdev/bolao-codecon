@@ -1,6 +1,8 @@
 import { db } from "@codecon/db";
 import { bet } from "@codecon/db/schema/bet.schema";
 import { match } from "@codecon/db/schema/match.schema";
+import { ranking } from "@codecon/db/schema/ranking.schema";
+import { rankingLog } from "@codecon/db/schema/ranking_log.schema";
 import { round } from "@codecon/db/schema/round.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
@@ -33,6 +35,7 @@ export const matchRouter = router({
           id: match.id,
           roundId: match.roundId,
           roundNumber: round.number,
+          status: match.status,
           teamAGroupId: teamAGroup.id,
           teamAGroupName: teamAGroup.name,
           teamAName: teamA.name,
@@ -47,6 +50,7 @@ export const matchRouter = router({
           betScoreA: bet.scoreA,
           betScoreB: bet.scoreB,
           betModifier: bet.modifier,
+          totalBets: sql<number>`(select count(*) from "bet" where "bet"."match_id" = ${match.id})`,
         })
         .from(match)
         .innerJoin(round, eq(match.roundId, round.id))
@@ -140,6 +144,7 @@ export const matchRouter = router({
         .select({
           teamAId: match.teamAId,
           teamBId: match.teamBId,
+          status: match.status,
         })
         .from(match)
         .where(eq(match.id, input.matchId))
@@ -151,6 +156,13 @@ export const matchRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Partida não encontrada",
+        });
+      }
+
+      if (matchRow.status === "complete") {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Não é possível editar uma partida já concluída",
         });
       }
 
@@ -166,4 +178,176 @@ export const matchRouter = router({
         })
         .where(eq(match.id, input.matchId));
     }),
+
+  complete: protectedProcedure
+    .input(
+      z.object({
+        matchId: z.number(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      return await db.transaction(async (tx) => {
+        const matchRows = await tx
+          .select({
+            id: match.id,
+            status: match.status,
+            scoreA: match.scoreA,
+            scoreB: match.scoreB,
+            expectedWinnerId: match.expectedWinnerId,
+          })
+          .from(match)
+          .where(eq(match.id, input.matchId))
+          .limit(1);
+
+        const matchRow = matchRows[0];
+
+        if (!matchRow) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Partida não encontrada",
+          });
+        }
+
+        if (matchRow.status === "complete") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "A partida já foi concluída",
+          });
+        }
+
+        if (
+          matchRow.scoreA === null ||
+          matchRow.scoreB === null ||
+          matchRow.expectedWinnerId === null
+        ) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message:
+              "A partida precisa ter placar e vencedor esperado antes de ser concluída",
+          });
+        }
+
+        const bets = await tx
+          .select({
+            userId: bet.userId,
+            scoreA: bet.scoreA,
+            scoreB: bet.scoreB,
+            modifier: bet.modifier,
+          })
+          .from(bet)
+          .where(eq(bet.matchId, input.matchId));
+
+        console.log(
+          `[match.complete] matchId=${input.matchId} → found ${bets.length} bet(s)`,
+        );
+
+        const pointsByUserId = new Map<string, number>();
+        const logEntries: Array<{
+          userId: string;
+          matchId: number;
+          basePoints: number;
+          modifierPoints: number;
+          totalPoints: number;
+          modifier: string;
+        }> = [];
+
+        const finalWinner = getWinner(matchRow.scoreA, matchRow.scoreB);
+
+        for (const betRow of bets) {
+          const gotCorrectScore =
+            betRow.scoreA === matchRow.scoreA &&
+            betRow.scoreB === matchRow.scoreB;
+          const betWinner = getWinner(betRow.scoreA, betRow.scoreB);
+          const gotWinner = finalWinner !== null && finalWinner === betWinner;
+          const basePoints = gotCorrectScore ? 3 : gotWinner ? 1 : 0;
+          const totalPoints = applyBetModifier(basePoints, betRow.modifier);
+          const modifierPoints = totalPoints - basePoints;
+
+          logEntries.push({
+            userId: betRow.userId,
+            matchId: input.matchId,
+            basePoints,
+            modifierPoints,
+            totalPoints,
+            modifier: betRow.modifier,
+          });
+
+          if (totalPoints > 0) {
+            pointsByUserId.set(
+              betRow.userId,
+              (pointsByUserId.get(betRow.userId) ?? 0) + totalPoints,
+            );
+          }
+        }
+
+        for (const [userId, points] of pointsByUserId) {
+          const rankingRows = await tx
+            .select({
+              id: ranking.id,
+              points: ranking.points,
+            })
+            .from(ranking)
+            .where(eq(ranking.userId, userId))
+            .limit(1);
+
+          const rankingRow = rankingRows[0];
+
+          if (rankingRow) {
+            await tx
+              .update(ranking)
+              .set({ points: rankingRow.points + points })
+              .where(eq(ranking.id, rankingRow.id));
+          } else {
+            await tx.insert(ranking).values({ userId, points });
+          }
+        }
+
+        if (logEntries.length > 0) {
+          await tx.insert(rankingLog).values(logEntries);
+        }
+
+        await tx
+          .update(match)
+          .set({ status: "complete" })
+          .where(eq(match.id, input.matchId));
+
+        return { awardedUsers: pointsByUserId.size, betsFound: bets.length };
+      });
+    }),
 });
+
+function getWinner(scoreA: number, scoreB: number) {
+  if (scoreA > scoreB) {
+    return "teamA";
+  }
+
+  if (scoreB > scoreA) {
+    return "teamB";
+  }
+
+  return null;
+}
+
+function applyBetModifier(points: number, modifier: string) {
+  if (points === 0) {
+    return 0;
+  }
+
+  if (modifier === "double_points") {
+    return points * 2;
+  }
+
+  if (modifier === "half_points") {
+    return Math.floor(points / 2);
+  }
+
+  if (modifier === "invalid_bet") {
+    return 0;
+  }
+
+  if (modifier === "lucky_duck") {
+    return points + 1;
+  }
+
+  return points;
+}

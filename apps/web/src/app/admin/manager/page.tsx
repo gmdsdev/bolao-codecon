@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@codecon/ui/components/table";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -42,6 +42,7 @@ type Round = {
 
 type Match = {
   id: number;
+  status: string;
   teamAName: string;
   teamAFlag: string;
   teamBName: string;
@@ -49,6 +50,7 @@ type Match = {
   scoreA: number | null;
   scoreB: number | null;
   expectedWinnerName: string | null;
+  totalBets: number;
 };
 
 type Team = {
@@ -64,7 +66,6 @@ export default function Page() {
   const rounds = useQuery(trpc.round.getAll.queryOptions());
   const teams = useQuery(trpc.team.getAll.queryOptions());
 
-  // Auto-seleciona a primeira rodada ao carregar
   useEffect(() => {
     if (rounds.data?.length && selectedRoundId === null) {
       setSelectedRoundId(rounds.data[0].id);
@@ -107,7 +108,6 @@ export default function Page() {
             key={selectedRound.id}
             round={selectedRound}
             teams={teams.data ?? []}
-            onRoundCompleted={rounds.refetch}
           />
         ) : (
           <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
@@ -122,51 +122,18 @@ export default function Page() {
 function RoundMatches({
   round,
   teams,
-  onRoundCompleted,
 }: {
   round: Round;
   teams: Team[];
-  onRoundCompleted: () => void;
 }) {
   const [isAddMatchOpen, setIsAddMatchOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+
   const matches = useQuery(
-    trpc.match.getByRound.queryOptions({
-      roundId: round.id,
-    }),
-  );
-  const completeRound = useMutation(
-    trpc.round.complete.mutationOptions({
-      onSuccess: () => {
-        toast.success("Rodada concluída");
-        onRoundCompleted();
-        matches.refetch();
-      },
-    }),
+    trpc.match.getByRound.queryOptions({ roundId: round.id }),
   );
 
-  const isComplete = round.status === "complete";
-  const canComplete =
-    !isComplete &&
-    matches.data !== undefined &&
-    matches.data.length > 0 &&
-    matches.data.every((match) => {
-      return (
-        match.scoreA !== null &&
-        match.scoreB !== null &&
-        match.expectedWinnerName !== null
-      );
-    });
-
-  const handleCompleteRound = () => {
-    if (!canComplete) {
-      return;
-    }
-
-    completeRound.mutate({
-      roundId: round.id,
-    });
-  };
+  const isRoundComplete = round.status === "complete";
 
   return (
     <Card>
@@ -174,33 +141,18 @@ function RoundMatches({
         <div>
           <CardTitle>{round.title}</CardTitle>
           <CardDescription>
-            Status: {isComplete ? "concluída" : round.status}
+            Status: {isRoundComplete ? "concluída" : round.status}
           </CardDescription>
         </div>
-        <div className="flex items-center gap-2">
-          {!isComplete && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsAddMatchOpen(true)}
-            >
-              Adicionar partida
-            </Button>
-          )}
+        {!isRoundComplete && (
           <Button
             type="button"
-            onClick={handleCompleteRound}
-            disabled={!canComplete || completeRound.isPending}
+            variant="outline"
+            onClick={() => setIsAddMatchOpen(true)}
           >
-            {completeRound.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : isComplete ? (
-              "Concluída"
-            ) : (
-              "Concluir rodada"
-            )}
+            Adicionar partida
           </Button>
-        </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -211,11 +163,6 @@ function RoundMatches({
         )}
 
         {matches.isError && <div>Erro: {matches.error.message}</div>}
-        {completeRound.isError && (
-          <div className="text-xs text-destructive">
-            {completeRound.error.message}
-          </div>
-        )}
 
         {matches.data?.length === 0 && (
           <div className="py-6 text-center text-sm text-muted-foreground">
@@ -230,52 +177,21 @@ function RoundMatches({
                 <TableHead>Partida</TableHead>
                 <TableHead>Vencedor esperado</TableHead>
                 <TableHead>Placar</TableHead>
-                <TableHead className="text-right">Ação</TableHead>
+                <TableHead>Apostas</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {matches.data.map((match) => {
-                const scoreLabel =
-                  match.scoreA !== null && match.scoreB !== null
-                    ? `${match.scoreA} - ${match.scoreB}`
-                    : "-";
-
-                return (
-                  <TableRow key={match.id}>
-                    <TableCell className="font-medium">
-                      <span>
-                        {match.teamAFlag} {match.teamAName}
-                      </span>
-                      <span className="mx-1.5 text-muted-foreground">x</span>
-                      <span>
-                        {match.teamBName} {match.teamBFlag}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {match.expectedWinnerName ? (
-                        <span>
-                          {match.expectedWinnerName === match.teamAName
-                            ? `${match.teamAFlag} ${match.teamAName}`
-                            : `${match.teamBFlag} ${match.teamBName}`}
-                        </span>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell>{scoreLabel}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setSelectedMatch(match)}
-                        disabled={isComplete}
-                      >
-                        Editar
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {matches.data.map((match) => (
+                <MatchRow
+                  key={match.id}
+                  match={match}
+                  roundComplete={isRoundComplete}
+                  onEdit={() => setSelectedMatch(match)}
+                  onCompleted={matches.refetch}
+                />
+              ))}
             </TableBody>
           </Table>
         )}
@@ -301,9 +217,7 @@ function RoundMatches({
         <Dialog
           open={selectedMatch !== null}
           onOpenChange={(open) => {
-            if (!open) {
-              setSelectedMatch(null);
-            }
+            if (!open) setSelectedMatch(null);
           }}
         >
           {selectedMatch && (
@@ -322,13 +236,119 @@ function RoundMatches({
                   matches.refetch();
                   setSelectedMatch(null);
                 }}
-                disabled={isComplete}
               />
             </DialogContent>
           )}
         </Dialog>
       </CardContent>
     </Card>
+  );
+}
+
+function MatchRow({
+  match,
+  roundComplete,
+  onEdit,
+  onCompleted,
+}: {
+  match: Match;
+  roundComplete: boolean;
+  onEdit: () => void;
+  onCompleted: () => void;
+}) {
+  const completeMatch = useMutation(
+    trpc.match.complete.mutationOptions({
+      onSuccess: ({ awardedUsers, betsFound }) => {
+        toast.success(
+          `Partida concluída — ${betsFound} aposta(s) encontrada(s), ${awardedUsers} usuário(s) pontuado(s)`,
+        );
+        onCompleted();
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+    }),
+  );
+
+  const isComplete = match.status === "complete";
+  const hasResult =
+    match.scoreA !== null &&
+    match.scoreB !== null &&
+    match.expectedWinnerName !== null;
+
+  const scoreLabel =
+    match.scoreA !== null && match.scoreB !== null
+      ? `${match.scoreA} - ${match.scoreB}`
+      : "-";
+
+  const expectedWinnerLabel = match.expectedWinnerName
+    ? match.expectedWinnerName === match.teamAName
+      ? `${match.teamAFlag} ${match.teamAName}`
+      : `${match.teamBFlag} ${match.teamBName}`
+    : "-";
+
+  return (
+    <TableRow className={isComplete ? "opacity-60" : undefined}>
+      <TableCell className="font-medium">
+        <span>
+          {match.teamAFlag} {match.teamAName}
+        </span>
+        <span className="mx-1.5 text-muted-foreground">x</span>
+        <span>
+          {match.teamBName} {match.teamBFlag}
+        </span>
+      </TableCell>
+      <TableCell>{expectedWinnerLabel}</TableCell>
+      <TableCell>{scoreLabel}</TableCell>
+      <TableCell>
+        <span className="text-xs text-muted-foreground">{match.totalBets ?? 0}</span>
+      </TableCell>
+      <TableCell>
+        {isComplete ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+            <CheckCircle2 className="size-3.5" />
+            Concluída
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Pendente</span>
+        )}
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onEdit}
+            disabled={isComplete || roundComplete}
+          >
+            Editar
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => completeMatch.mutate({ matchId: match.id })}
+            disabled={
+              isComplete ||
+              roundComplete ||
+              !hasResult ||
+              completeMatch.isPending
+            }
+            title={
+              !hasResult
+                ? "Preencha placar e vencedor esperado antes de concluir"
+                : undefined
+            }
+          >
+            {completeMatch.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Concluir"
+            )}
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -367,16 +387,8 @@ function AddMatchForm({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!canSubmit) {
-      return;
-    }
-
-    createMatch.mutate({
-      roundId,
-      teamAId: parsedTeamAId,
-      teamBId: parsedTeamBId,
-    });
+    if (!canSubmit) return;
+    createMatch.mutate({ roundId, teamAId: parsedTeamAId, teamBId: parsedTeamBId });
   };
 
   return (
@@ -387,15 +399,15 @@ function AddMatchForm({
           <select
             id={`team-a-${roundId}`}
             value={teamAId}
-            onChange={(event) => setTeamAId(event.target.value)}
+            onChange={(e) => setTeamAId(e.target.value)}
             disabled={createMatch.isPending || teams.length === 0}
             className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
             required
           >
             <option value="">Selecione um time</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
             ))}
           </select>
@@ -405,15 +417,15 @@ function AddMatchForm({
           <select
             id={`team-b-${roundId}`}
             value={teamBId}
-            onChange={(event) => setTeamBId(event.target.value)}
+            onChange={(e) => setTeamBId(e.target.value)}
             disabled={createMatch.isPending || teams.length === 0}
             className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
             required
           >
             <option value="">Selecione um time</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
+            {teams.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
             ))}
           </select>
@@ -427,9 +439,7 @@ function AddMatchForm({
       )}
 
       {teamAId !== "" && teamAId === teamBId && (
-        <p className="text-xs text-destructive">
-          Escolha dois times diferentes.
-        </p>
+        <p className="text-xs text-destructive">Escolha dois times diferentes.</p>
       )}
 
       {createMatch.isError && (
@@ -461,12 +471,10 @@ function MatchResultForm({
   match,
   onSaved,
   onCancel,
-  disabled = false,
 }: {
   match: Match;
   onSaved: () => void;
   onCancel: () => void;
-  disabled?: boolean;
 }) {
   const [scoreA, setScoreA] = useState(
     match.scoreA === null ? "0" : String(match.scoreA),
@@ -476,14 +484,8 @@ function MatchResultForm({
   );
   const [expectedWinner, setExpectedWinner] = useState<ExpectedWinner | null>(
     () => {
-      if (match.expectedWinnerName === match.teamAName) {
-        return "teamA";
-      }
-
-      if (match.expectedWinnerName === match.teamBName) {
-        return "teamB";
-      }
-
+      if (match.expectedWinnerName === match.teamAName) return "teamA";
+      if (match.expectedWinnerName === match.teamBName) return "teamB";
       return null;
     },
   );
@@ -508,11 +510,7 @@ function MatchResultForm({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!canSubmit || expectedWinner === null) {
-      return;
-    }
-
+    if (!canSubmit || expectedWinner === null) return;
     updateResult.mutate({
       matchId: match.id,
       scoreA: Number(scoreA),
@@ -530,7 +528,7 @@ function MatchResultForm({
             type="button"
             variant={expectedWinner === "teamA" ? "default" : "outline"}
             onClick={() => setExpectedWinner("teamA")}
-            disabled={disabled || updateResult.isPending}
+            disabled={updateResult.isPending}
           >
             {match.teamAFlag} {match.teamAName}
           </Button>
@@ -538,7 +536,7 @@ function MatchResultForm({
             type="button"
             variant={expectedWinner === "teamB" ? "default" : "outline"}
             onClick={() => setExpectedWinner("teamB")}
-            disabled={disabled || updateResult.isPending}
+            disabled={updateResult.isPending}
           >
             {match.teamBFlag} {match.teamBName}
           </Button>
@@ -565,8 +563,8 @@ function MatchResultForm({
             step={1}
             inputMode="numeric"
             value={scoreA}
-            onChange={(event) => setScoreA(event.target.value)}
-            disabled={disabled || updateResult.isPending}
+            onChange={(e) => setScoreA(e.target.value)}
+            disabled={updateResult.isPending}
             required
           />
         </div>
@@ -581,8 +579,8 @@ function MatchResultForm({
             step={1}
             inputMode="numeric"
             value={scoreB}
-            onChange={(event) => setScoreB(event.target.value)}
-            disabled={disabled || updateResult.isPending}
+            onChange={(e) => setScoreB(e.target.value)}
+            disabled={updateResult.isPending}
             required
           />
         </div>
@@ -601,10 +599,7 @@ function MatchResultForm({
         >
           Cancelar
         </Button>
-        <Button
-          type="submit"
-          disabled={disabled || !canSubmit || updateResult.isPending}
-        >
+        <Button type="submit" disabled={!canSubmit || updateResult.isPending}>
           {updateResult.isPending ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
