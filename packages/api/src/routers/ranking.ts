@@ -1,11 +1,12 @@
 import { db } from "@codecon/db";
 import { user } from "@codecon/db/schema/auth";
+import { bet } from "@codecon/db/schema/bet.schema";
 import { match } from "@codecon/db/schema/match.schema";
 import { ranking } from "@codecon/db/schema/ranking.schema";
 import { rankingLog } from "@codecon/db/schema/ranking_log.schema";
 import { round } from "@codecon/db/schema/round.schema";
 import { team } from "@codecon/db/schema/team.schema";
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
@@ -57,6 +58,60 @@ export const rankingRouter = router({
         .where(eq(rankingLog.userId, input.userId))
         .orderBy(desc(rankingLog.createdAt), asc(rankingLog.id));
     }),
+
+  getMySummary: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const [allRanking, betsPlacedResult, pendingMatchesResult, lastLogEntry] =
+      await Promise.all([
+        // All ranking entries ordered by points to calculate position
+        db
+          .select({ userId: ranking.userId, points: ranking.points })
+          .from(ranking)
+          .orderBy(desc(ranking.points)),
+
+        // Total bets placed by the user
+        db
+          .select({ count: count() })
+          .from(bet)
+          .where(eq(bet.userId, userId)),
+
+        // Matches without a result that the user hasn't bet on yet
+        db
+          .select({ count: count() })
+          .from(match)
+          .leftJoin(
+            bet,
+            and(eq(bet.matchId, match.id), eq(bet.userId, userId)),
+          )
+          .where(and(isNull(match.scoreA), isNull(bet.id))),
+
+        // Last points earned
+        db
+          .select({
+            totalPoints: rankingLog.totalPoints,
+            basePoints: rankingLog.basePoints,
+            modifierPoints: rankingLog.modifierPoints,
+            modifier: rankingLog.modifier,
+          })
+          .from(rankingLog)
+          .where(eq(rankingLog.userId, userId))
+          .orderBy(desc(rankingLog.createdAt))
+          .limit(1),
+      ]);
+
+    const position =
+      allRanking.findIndex((r) => r.userId === userId) + 1 || null;
+    const myRanking = allRanking.find((r) => r.userId === userId);
+
+    return {
+      position,
+      totalPoints: myRanking?.points ?? 0,
+      betsPlaced: betsPlacedResult[0]?.count ?? 0,
+      pendingMatches: pendingMatchesResult[0]?.count ?? 0,
+      lastPoints: lastLogEntry[0] ?? null,
+    };
+  }),
 
   getMyLog: protectedProcedure.query(async ({ ctx }) => {
     return await db

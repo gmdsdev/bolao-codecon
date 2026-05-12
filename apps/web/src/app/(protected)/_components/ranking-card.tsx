@@ -29,7 +29,7 @@ type RankingCardProps = {
 
 export function RankingCard({ ranking }: RankingCardProps) {
   return (
-    <Card className="h-min w-full shrink-0 lg:w-72">
+    <Card className="h-min w-full">
       <CardHeader>
         <CardTitle>Classificação</CardTitle>
       </CardHeader>

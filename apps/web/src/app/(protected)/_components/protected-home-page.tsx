@@ -1,3 +1,4 @@
+import { MySummaryCard } from "./my-summary-card";
 import { ProtectedHomePageClient } from "./protected-home-page-client";
 import { getProtectedHomePageData } from "./protected-home-page-data";
 import { RankingCard } from "./ranking-card";
@@ -14,7 +15,10 @@ export async function ProtectedHomePage() {
           matches: initialData.matches,
         }}
       />
-      <RankingCard ranking={initialData.ranking} />
+      <div className="flex flex-col gap-3 lg:w-72 shrink-0">
+        <RankingCard ranking={initialData.ranking} />
+        <MySummaryCard />
+      </div>
     </div>
   );
 }
