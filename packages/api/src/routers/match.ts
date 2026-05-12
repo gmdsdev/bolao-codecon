@@ -4,6 +4,7 @@ import { match } from "@codecon/db/schema/match.schema";
 import { ranking } from "@codecon/db/schema/ranking.schema";
 import { rankingLog } from "@codecon/db/schema/ranking_log.schema";
 import { round } from "@codecon/db/schema/round.schema";
+import { stadium } from "@codecon/db/schema/stadium.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
@@ -43,8 +44,12 @@ export const matchRouter = router({
           teamBGroupId: teamBGroup.id,
           teamBName: teamB.name,
           teamBFlag: teamB.flag,
+          date: match.date,
           scoreA: match.scoreA,
           scoreB: match.scoreB,
+          stadiumId: stadium.id,
+          stadiumName: stadium.name,
+          stadiumCity: stadium.city,
           expectedWinnerName: expectedWinner.name,
           hasBet: sql<boolean>`${bet.id} is not null`,
           betScoreA: bet.scoreA,
@@ -58,6 +63,7 @@ export const matchRouter = router({
         .innerJoin(teamB, eq(match.teamBId, teamB.id))
         .innerJoin(teamAGroup, eq(teamA.teamGroupId, teamAGroup.id))
         .innerJoin(teamBGroup, eq(teamB.teamGroupId, teamBGroup.id))
+        .innerJoin(stadium, eq(match.stadiumId, stadium.id))
         .leftJoin(expectedWinner, eq(match.expectedWinnerId, expectedWinner.id))
         .leftJoin(
           bet,
@@ -73,6 +79,8 @@ export const matchRouter = router({
         teamAId: z.number(),
         teamBId: z.number(),
         roundId: z.number(),
+        stadiumId: z.number(),
+        date: z.string().datetime(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -123,10 +131,25 @@ export const matchRouter = router({
         });
       }
 
+      const stadiumRows = await db
+        .select({ id: stadium.id })
+        .from(stadium)
+        .where(eq(stadium.id, input.stadiumId))
+        .limit(1);
+
+      if (!stadiumRows[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Estádio não encontrado",
+        });
+      }
+
       return await db.insert(match).values({
         teamAId: input.teamAId,
         teamBId: input.teamBId,
         roundId: input.roundId,
+        stadiumId: input.stadiumId,
+        date: new Date(input.date),
       });
     }),
 
@@ -136,6 +159,8 @@ export const matchRouter = router({
         matchId: z.number(),
         scoreA: z.number().int().min(0),
         scoreB: z.number().int().min(0),
+        stadiumId: z.number(),
+        date: z.string().datetime(),
         expectedWinner: z.enum(["teamA", "teamB"]).nullable().optional(),
       }),
     )
@@ -166,6 +191,19 @@ export const matchRouter = router({
         });
       }
 
+      const stadiumRows = await db
+        .select({ id: stadium.id })
+        .from(stadium)
+        .where(eq(stadium.id, input.stadiumId))
+        .limit(1);
+
+      if (!stadiumRows[0]) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Estádio não encontrado",
+        });
+      }
+
       const expectedWinnerId =
         input.expectedWinner === "teamA"
           ? matchRow.teamAId
@@ -178,6 +216,8 @@ export const matchRouter = router({
         .set({
           scoreA: input.scoreA,
           scoreB: input.scoreB,
+          stadiumId: input.stadiumId,
+          date: new Date(input.date),
           expectedWinnerId,
         })
         .where(eq(match.id, input.matchId));

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@codecon/ui/components/button";
+import { Calendar } from "@codecon/ui/components/calendar";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,18 @@ import {
 import { Input } from "@codecon/ui/components/input";
 import { Label } from "@codecon/ui/components/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@codecon/ui/components/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@codecon/ui/components/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -20,7 +33,7 @@ import {
   TableRow,
 } from "@codecon/ui/components/table";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CalendarIcon, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
@@ -47,8 +60,12 @@ type Match = {
   teamAFlag: string;
   teamBName: string;
   teamBFlag: string;
+  date: string;
   scoreA: number | null;
   scoreB: number | null;
+  stadiumId: number;
+  stadiumName: string;
+  stadiumCity: string;
   expectedWinnerName: string | null;
   totalBets: number;
 };
@@ -58,13 +75,21 @@ type Team = {
   name: string;
 };
 
+type Stadium = {
+  id: number;
+  name: string;
+  city: string;
+};
+
 type ExpectedWinner = "teamA" | "teamB";
+const NO_EXPECTED_WINNER_VALUE = "none";
 
 export default function Page() {
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
 
   const rounds = useQuery(trpc.round.getAll.queryOptions());
   const teams = useQuery(trpc.team.getAll.queryOptions());
+  const stadiums = useQuery(trpc.stadium.getAll.queryOptions());
 
   useEffect(() => {
     if (rounds.data?.length && selectedRoundId === null) {
@@ -74,7 +99,7 @@ export default function Page() {
 
   const selectedRound = rounds.data?.find((r) => r.id === selectedRoundId);
 
-  if (rounds.isLoading || teams.isLoading) {
+  if (rounds.isLoading || teams.isLoading || stadiums.isLoading) {
     return (
       <div className="flex justify-center py-10">
         <Loader2 className="size-5 animate-spin" />
@@ -88,6 +113,10 @@ export default function Page() {
 
   if (teams.isError) {
     return <div>Erro: {teams.error.message}</div>;
+  }
+
+  if (stadiums.isError) {
+    return <div>Erro: {stadiums.error.message}</div>;
   }
 
   if (!rounds.data?.length) {
@@ -108,6 +137,7 @@ export default function Page() {
             key={selectedRound.id}
             round={selectedRound}
             teams={teams.data ?? []}
+            stadiums={stadiums.data ?? []}
           />
         ) : (
           <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
@@ -122,9 +152,11 @@ export default function Page() {
 function RoundMatches({
   round,
   teams,
+  stadiums,
 }: {
   round: Round;
   teams: Team[];
+  stadiums: Stadium[];
 }) {
   const [isAddMatchOpen, setIsAddMatchOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -196,7 +228,7 @@ function RoundMatches({
         )}
 
         <Dialog open={isAddMatchOpen} onOpenChange={setIsAddMatchOpen}>
-          <DialogContent>
+          <DialogContent className="overflow-hidden sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Adicionar partida</DialogTitle>
               <DialogDescription>{round.title}</DialogDescription>
@@ -204,6 +236,7 @@ function RoundMatches({
             <AddMatchForm
               roundId={round.id}
               teams={teams}
+              stadiums={stadiums}
               onCancel={() => setIsAddMatchOpen(false)}
               onCreated={() => {
                 matches.refetch();
@@ -220,7 +253,7 @@ function RoundMatches({
           }}
         >
           {selectedMatch && (
-            <DialogContent>
+            <DialogContent className="overflow-hidden sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Editar partida</DialogTitle>
                 <DialogDescription>
@@ -230,6 +263,7 @@ function RoundMatches({
               </DialogHeader>
               <MatchResultForm
                 match={selectedMatch}
+                stadiums={stadiums}
                 onCancel={() => setSelectedMatch(null)}
                 onSaved={() => {
                   matches.refetch();
@@ -312,22 +346,28 @@ function MatchRow({
 function AddMatchForm({
   roundId,
   teams,
+  stadiums,
   onCreated,
   onCancel,
 }: {
   roundId: number;
   teams: Team[];
+  stadiums: Stadium[];
   onCreated: () => void;
   onCancel: () => void;
 }) {
   const [teamAId, setTeamAId] = useState("");
   const [teamBId, setTeamBId] = useState("");
+  const [stadiumId, setStadiumId] = useState("");
+  const [matchDate, setMatchDate] = useState("");
   const createMatch = useMutation(
     trpc.match.create.mutationOptions({
       onSuccess: () => {
         toast.success("Partida adicionada");
         setTeamAId("");
         setTeamBId("");
+        setStadiumId("");
+        setMatchDate("");
         onCreated();
       },
     }),
@@ -335,23 +375,34 @@ function AddMatchForm({
 
   const parsedTeamAId = Number(teamAId);
   const parsedTeamBId = Number(teamBId);
+  const parsedStadiumId = Number(stadiumId);
+  const stadiumOptions = getStadiumOptions(stadiums);
   const canSubmit =
     Number.isInteger(parsedTeamAId) &&
     Number.isInteger(parsedTeamBId) &&
+    Number.isInteger(parsedStadiumId) &&
     parsedTeamAId > 0 &&
     parsedTeamBId > 0 &&
+    parsedStadiumId > 0 &&
+    isValidDatetimeLocal(matchDate) &&
     parsedTeamAId !== parsedTeamBId;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
-    createMatch.mutate({ roundId, teamAId: parsedTeamAId, teamBId: parsedTeamBId });
+    createMatch.mutate({
+      roundId,
+      teamAId: parsedTeamAId,
+      teamBId: parsedTeamBId,
+      stadiumId: parsedStadiumId,
+      date: datetimeLocalToIso(matchDate),
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-2">
+    <form onSubmit={handleSubmit} className="grid min-w-0 gap-4">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`team-a-${roundId}`}>Time A</Label>
           <select
             id={`team-a-${roundId}`}
@@ -369,7 +420,7 @@ function AddMatchForm({
             ))}
           </select>
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`team-b-${roundId}`}>Time B</Label>
           <select
             id={`team-b-${roundId}`}
@@ -389,9 +440,57 @@ function AddMatchForm({
         </div>
       </div>
 
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={`stadium-${roundId}`}>Estádio</Label>
+        <Select
+          id={`stadium-${roundId}`}
+          items={stadiumOptions}
+          value={stadiumId}
+          onValueChange={(value) => setStadiumId(value ?? "")}
+          disabled={createMatch.isPending || stadiums.length === 0}
+          required
+        >
+          <SelectTrigger className="w-full min-w-0" size="default">
+            <SelectValue
+              className="min-w-0 truncate"
+              placeholder="Selecione um estádio"
+            />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {stadiums.map((stadium) => (
+              <SelectItem
+                key={stadium.id}
+                value={String(stadium.id)}
+                className="min-w-0"
+              >
+                <span className="block min-w-0 truncate">
+                  {stadium.name} - {stadium.city}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={`date-${roundId}`}>Data e hora</Label>
+        <DateTimePicker
+          id={`date-${roundId}`}
+          value={matchDate}
+          onChange={setMatchDate}
+          disabled={createMatch.isPending}
+        />
+      </div>
+
       {teams.length === 0 && (
         <p className="text-xs text-muted-foreground">
           Adicione times antes de criar partidas.
+        </p>
+      )}
+
+      {stadiums.length === 0 && (
+        <p className="text-xs text-muted-foreground">
+          Adicione estádios antes de criar partidas.
         </p>
       )}
 
@@ -403,7 +502,7 @@ function AddMatchForm({
         <p className="text-xs text-destructive">{createMatch.error.message}</p>
       )}
 
-      <DialogFooter>
+      <DialogFooter className="min-w-0 flex-wrap">
         <Button
           type="button"
           variant="outline"
@@ -426,10 +525,12 @@ function AddMatchForm({
 
 function MatchResultForm({
   match,
+  stadiums,
   onSaved,
   onCancel,
 }: {
   match: Match;
+  stadiums: Stadium[];
   onSaved: () => void;
   onCancel: () => void;
 }) {
@@ -439,6 +540,8 @@ function MatchResultForm({
   const [scoreB, setScoreB] = useState(
     match.scoreB === null ? "0" : String(match.scoreB),
   );
+  const [stadiumId, setStadiumId] = useState(String(match.stadiumId));
+  const [matchDate, setMatchDate] = useState(formatDatetimeLocal(match.date));
   const [expectedWinner, setExpectedWinner] = useState<ExpectedWinner | null>(
     () => {
       if (match.expectedWinnerName === match.teamAName) return "teamA";
@@ -449,6 +552,12 @@ function MatchResultForm({
   const [pendingAction, setPendingAction] = useState<"save" | "complete" | null>(
     null,
   );
+  const expectedWinnerValue = expectedWinner ?? NO_EXPECTED_WINNER_VALUE;
+  const expectedWinnerOptions = [
+    { value: NO_EXPECTED_WINNER_VALUE, label: "Nenhum" },
+    { value: "teamA", label: `${match.teamAFlag} ${match.teamAName}` },
+    { value: "teamB", label: `${match.teamBFlag} ${match.teamBName}` },
+  ];
 
   const updateResult = useMutation(trpc.match.updateResult.mutationOptions());
 
@@ -465,24 +574,30 @@ function MatchResultForm({
     }),
   );
 
+  const parsedStadiumId = Number(stadiumId);
+  const stadiumOptions = getStadiumOptions(stadiums);
   const canSubmit =
-    expectedWinner !== null &&
     scoreA.trim() !== "" &&
     scoreB.trim() !== "" &&
+    Number.isInteger(parsedStadiumId) &&
     Number(scoreA) >= 0 &&
     Number(scoreB) >= 0 &&
+    parsedStadiumId > 0 &&
+    isValidDatetimeLocal(matchDate) &&
     Number.isInteger(Number(scoreA)) &&
     Number.isInteger(Number(scoreB));
 
   const isPending = updateResult.isPending || completeMatch.isPending;
 
   const getResultPayload = () => {
-    if (!canSubmit || expectedWinner === null) return null;
+    if (!canSubmit) return null;
 
     return {
       matchId: match.id,
       scoreA: Number(scoreA),
       scoreB: Number(scoreB),
+      stadiumId: parsedStadiumId,
+      date: datetimeLocalToIso(matchDate),
       expectedWinner,
     };
   };
@@ -521,27 +636,34 @@ function MatchResultForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4">
-      <div className="grid gap-2">
-        <Label>Vencedor esperado</Label>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Button
-            type="button"
-            variant={expectedWinner === "teamA" ? "default" : "outline"}
-            onClick={() => setExpectedWinner("teamA")}
-            disabled={isPending}
-          >
-            {match.teamAFlag} {match.teamAName}
-          </Button>
-          <Button
-            type="button"
-            variant={expectedWinner === "teamB" ? "default" : "outline"}
-            onClick={() => setExpectedWinner("teamB")}
-            disabled={isPending}
-          >
-            {match.teamBFlag} {match.teamBName}
-          </Button>
-        </div>
+    <form onSubmit={handleSubmit} className="grid min-w-0 gap-4">
+      <div className="grid min-w-0 gap-2">
+        <Label htmlFor={`expected-winner-${match.id}`}>Vencedor esperado</Label>
+        <Select
+          id={`expected-winner-${match.id}`}
+          items={expectedWinnerOptions}
+          value={expectedWinnerValue}
+          onValueChange={(value) =>
+            setExpectedWinner(
+              value === "teamA" || value === "teamB" ? value : null,
+            )
+          }
+          disabled={isPending}
+        >
+          <SelectTrigger className="w-full min-w-0" size="default">
+            <SelectValue
+              className="min-w-0 truncate"
+              placeholder="Selecione um vencedor"
+            />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {expectedWinnerOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {match.expectedWinnerName && (
           <p className="text-xs text-muted-foreground">
             Atual:{" "}
@@ -551,9 +673,50 @@ function MatchResultForm({
           </p>
         )}
       </div>
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={`stadium-result-${match.id}`}>Estádio</Label>
+        <Select
+          id={`stadium-result-${match.id}`}
+          items={stadiumOptions}
+          value={stadiumId}
+          onValueChange={(value) => setStadiumId(value ?? "")}
+          disabled={isPending || stadiums.length === 0}
+          required
+        >
+          <SelectTrigger className="w-full min-w-0" size="default">
+            <SelectValue
+              className="min-w-0 truncate"
+              placeholder="Selecione um estádio"
+            />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {stadiums.map((stadium) => (
+              <SelectItem
+                key={stadium.id}
+                value={String(stadium.id)}
+                className="min-w-0"
+              >
+                <span className="block min-w-0 truncate">
+                  {stadium.name} - {stadium.city}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={`date-result-${match.id}`}>Data e hora</Label>
+        <DateTimePicker
+          id={`date-result-${match.id}`}
+          value={matchDate}
+          onChange={setMatchDate}
+          disabled={isPending}
+        />
+      </div>
+
+      <div className="grid min-w-0 grid-cols-2 gap-3">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`score-a-${match.id}`}>
             {match.teamAFlag} {match.teamAName}
           </Label>
@@ -569,7 +732,7 @@ function MatchResultForm({
             required
           />
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`score-b-${match.id}`}>
             {match.teamBFlag} {match.teamBName}
           </Label>
@@ -591,7 +754,7 @@ function MatchResultForm({
         <p className="text-xs text-destructive">{updateResult.error.message}</p>
       )}
 
-      <DialogFooter>
+      <DialogFooter className="min-w-0 flex-wrap">
         <Button
           type="button"
           variant="outline"
@@ -621,4 +784,129 @@ function MatchResultForm({
       </DialogFooter>
     </form>
   );
+}
+
+function DateTimePicker({
+  id,
+  value,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  const selectedDate = isValidDatetimeLocal(value) ? new Date(value) : undefined;
+  const timeValue = selectedDate ? value.slice(11, 16) : "";
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+
+    const [hours = "00", minutes = "00"] = timeValue
+      ? timeValue.split(":")
+      : [];
+    const nextDate = new Date(date);
+    nextDate.setHours(Number(hours), Number(minutes), 0, 0);
+
+    onChange(formatDatetimeLocalFromDate(nextDate));
+  };
+
+  const handleTimeChange = (time: string) => {
+    if (!selectedDate || time === "") return;
+
+    const [hours = "00", minutes = "00"] = time.split(":");
+    const nextDate = new Date(selectedDate);
+    nextDate.setHours(Number(hours), Number(minutes), 0, 0);
+
+    onChange(formatDatetimeLocalFromDate(nextDate));
+  };
+
+  return (
+    <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_8rem]">
+      <Popover>
+        <PopoverTrigger
+          id={id}
+          render={
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full min-w-0 justify-start text-left font-normal"
+              disabled={disabled}
+            />
+          }
+        >
+          <CalendarIcon className="size-4" />
+          <span
+            className={
+              selectedDate
+                ? "min-w-0 truncate"
+                : "min-w-0 truncate text-muted-foreground"
+            }
+          >
+            {selectedDate
+              ? formatDateTimeDisplay(selectedDate)
+              : "Selecione uma data"}
+          </span>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={handleDateSelect}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <Input
+        className="min-w-0"
+        type="time"
+        value={timeValue}
+        onChange={(event) => handleTimeChange(event.target.value)}
+        disabled={disabled || !selectedDate}
+        required
+      />
+    </div>
+  );
+}
+
+function formatDatetimeLocal(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function getStadiumOptions(stadiums: Stadium[]) {
+  return stadiums.map((stadium) => ({
+    value: String(stadium.id),
+    label: `${stadium.name} - ${stadium.city}`,
+  }));
+}
+
+function formatDatetimeLocalFromDate(date: Date) {
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+function formatDateTimeDisplay(date: Date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function isValidDatetimeLocal(value: string) {
+  return value.trim() !== "" && !Number.isNaN(new Date(value).getTime());
+}
+
+function datetimeLocalToIso(value: string) {
+  return new Date(value).toISOString();
 }
