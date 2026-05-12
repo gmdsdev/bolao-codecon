@@ -44,6 +44,10 @@ export const rankingRouter = router({
           teamBName: teamB.name,
           teamBFlag: teamB.flag,
           roundTitle: round.title,
+          betScoreA: bet.scoreA,
+          betScoreB: bet.scoreB,
+          matchScoreA: match.scoreA,
+          matchScoreB: match.scoreB,
           basePoints: rankingLog.basePoints,
           modifierPoints: rankingLog.modifierPoints,
           totalPoints: rankingLog.totalPoints,
@@ -55,6 +59,13 @@ export const rankingRouter = router({
         .innerJoin(round, eq(match.roundId, round.id))
         .innerJoin(teamA, eq(match.teamAId, teamA.id))
         .innerJoin(teamB, eq(match.teamBId, teamB.id))
+        .innerJoin(
+          bet,
+          and(
+            eq(bet.matchId, rankingLog.matchId),
+            eq(bet.userId, input.userId),
+          ),
+        )
         .where(eq(rankingLog.userId, input.userId))
         .orderBy(desc(rankingLog.createdAt), asc(rankingLog.id));
     }),
@@ -123,6 +134,10 @@ export const rankingRouter = router({
         teamBName: teamB.name,
         teamBFlag: teamB.flag,
         roundTitle: round.title,
+        betScoreA: bet.scoreA,
+        betScoreB: bet.scoreB,
+        matchScoreA: match.scoreA,
+        matchScoreB: match.scoreB,
         basePoints: rankingLog.basePoints,
         modifierPoints: rankingLog.modifierPoints,
         totalPoints: rankingLog.totalPoints,
@@ -134,6 +149,13 @@ export const rankingRouter = router({
       .innerJoin(round, eq(match.roundId, round.id))
       .innerJoin(teamA, eq(match.teamAId, teamA.id))
       .innerJoin(teamB, eq(match.teamBId, teamB.id))
+      .innerJoin(
+        bet,
+        and(
+          eq(bet.matchId, rankingLog.matchId),
+          eq(bet.userId, ctx.session.user.id),
+        ),
+      )
       .where(eq(rankingLog.userId, ctx.session.user.id))
       .orderBy(desc(rankingLog.createdAt), asc(rankingLog.id));
   }),

@@ -136,7 +136,7 @@ export const matchRouter = router({
         matchId: z.number(),
         scoreA: z.number().int().min(0),
         scoreB: z.number().int().min(0),
-        expectedWinner: z.enum(["teamA", "teamB"]),
+        expectedWinner: z.enum(["teamA", "teamB"]).nullable().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -167,7 +167,11 @@ export const matchRouter = router({
       }
 
       const expectedWinnerId =
-        input.expectedWinner === "teamA" ? matchRow.teamAId : matchRow.teamBId;
+        input.expectedWinner === "teamA"
+          ? matchRow.teamAId
+          : input.expectedWinner === "teamB"
+            ? matchRow.teamBId
+            : null;
 
       return await db
         .update(match)
@@ -217,13 +221,11 @@ export const matchRouter = router({
 
         if (
           matchRow.scoreA === null ||
-          matchRow.scoreB === null ||
-          matchRow.expectedWinnerId === null
+          matchRow.scoreB === null
         ) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message:
-              "A partida precisa ter placar e vencedor esperado antes de ser concluída",
+            message: "A partida precisa ter placar antes de ser concluída",
           });
         }
 

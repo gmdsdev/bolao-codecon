@@ -3,6 +3,7 @@ import { betRouter } from "./bet";
 import { matchRouter } from "./match";
 import { rankingRouter } from "./ranking";
 import { roundRouter } from "./round";
+import { stadiumRouter } from "./stadium";
 import { teamRouter } from "./team";
 
 export const appRouter = router({
@@ -19,6 +20,7 @@ export const appRouter = router({
   match: matchRouter,
   ranking: rankingRouter,
   round: roundRouter,
+  stadium: stadiumRouter,
   team: teamRouter,
 });
 export type AppRouter = typeof appRouter;

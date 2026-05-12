@@ -189,7 +189,6 @@ function RoundMatches({
                   match={match}
                   roundComplete={isRoundComplete}
                   onEdit={() => setSelectedMatch(match)}
-                  onCompleted={matches.refetch}
                 />
               ))}
             </TableBody>
@@ -249,32 +248,12 @@ function MatchRow({
   match,
   roundComplete,
   onEdit,
-  onCompleted,
 }: {
   match: Match;
   roundComplete: boolean;
   onEdit: () => void;
-  onCompleted: () => void;
 }) {
-  const completeMatch = useMutation(
-    trpc.match.complete.mutationOptions({
-      onSuccess: ({ awardedUsers, betsFound }) => {
-        toast.success(
-          `Partida concluída — ${betsFound} aposta(s) encontrada(s), ${awardedUsers} usuário(s) pontuado(s)`,
-        );
-        onCompleted();
-      },
-      onError: (err) => {
-        toast.error(err.message);
-      },
-    }),
-  );
-
   const isComplete = match.status === "complete";
-  const hasResult =
-    match.scoreA !== null &&
-    match.scoreB !== null &&
-    match.expectedWinnerName !== null;
 
   const scoreLabel =
     match.scoreA !== null && match.scoreB !== null
@@ -323,28 +302,6 @@ function MatchRow({
             disabled={isComplete || roundComplete}
           >
             Editar
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => completeMatch.mutate({ matchId: match.id })}
-            disabled={
-              isComplete ||
-              roundComplete ||
-              !hasResult ||
-              completeMatch.isPending
-            }
-            title={
-              !hasResult
-                ? "Preencha placar e vencedor esperado antes de concluir"
-                : undefined
-            }
-          >
-            {completeMatch.isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              "Concluir"
-            )}
           </Button>
         </div>
       </TableCell>
@@ -489,12 +446,21 @@ function MatchResultForm({
       return null;
     },
   );
+  const [pendingAction, setPendingAction] = useState<"save" | "complete" | null>(
+    null,
+  );
 
-  const updateResult = useMutation(
-    trpc.match.updateResult.mutationOptions({
-      onSuccess: () => {
-        toast.success("Partida atualizada");
-        onSaved();
+  const updateResult = useMutation(trpc.match.updateResult.mutationOptions());
+
+  const completeMatch = useMutation(
+    trpc.match.complete.mutationOptions({
+      onSuccess: ({ awardedUsers, betsFound }) => {
+        toast.success(
+          `Partida concluída — ${betsFound} aposta(s) encontrada(s), ${awardedUsers} usuário(s) pontuado(s)`,
+        );
+      },
+      onError: (err) => {
+        toast.error(err.message);
       },
     }),
   );
@@ -508,15 +474,50 @@ function MatchResultForm({
     Number.isInteger(Number(scoreA)) &&
     Number.isInteger(Number(scoreB));
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!canSubmit || expectedWinner === null) return;
-    updateResult.mutate({
+  const isPending = updateResult.isPending || completeMatch.isPending;
+
+  const getResultPayload = () => {
+    if (!canSubmit || expectedWinner === null) return null;
+
+    return {
       matchId: match.id,
       scoreA: Number(scoreA),
       scoreB: Number(scoreB),
       expectedWinner,
-    });
+    };
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const payload = getResultPayload();
+    if (!payload) return;
+
+    setPendingAction("save");
+    try {
+      await updateResult.mutateAsync(payload);
+      toast.success("Partida atualizada");
+      onSaved();
+    } catch {
+      // The mutation state renders the inline error message.
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleSaveAndComplete = async () => {
+    const payload = getResultPayload();
+    if (!payload) return;
+
+    setPendingAction("complete");
+    try {
+      await updateResult.mutateAsync(payload);
+      await completeMatch.mutateAsync({ matchId: match.id });
+      onSaved();
+    } catch {
+      // Mutation callbacks and state surface the error to the user.
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   return (
@@ -528,7 +529,7 @@ function MatchResultForm({
             type="button"
             variant={expectedWinner === "teamA" ? "default" : "outline"}
             onClick={() => setExpectedWinner("teamA")}
-            disabled={updateResult.isPending}
+            disabled={isPending}
           >
             {match.teamAFlag} {match.teamAName}
           </Button>
@@ -536,7 +537,7 @@ function MatchResultForm({
             type="button"
             variant={expectedWinner === "teamB" ? "default" : "outline"}
             onClick={() => setExpectedWinner("teamB")}
-            disabled={updateResult.isPending}
+            disabled={isPending}
           >
             {match.teamBFlag} {match.teamBName}
           </Button>
@@ -564,7 +565,7 @@ function MatchResultForm({
             inputMode="numeric"
             value={scoreA}
             onChange={(e) => setScoreA(e.target.value)}
-            disabled={updateResult.isPending}
+            disabled={isPending}
             required
           />
         </div>
@@ -580,7 +581,7 @@ function MatchResultForm({
             inputMode="numeric"
             value={scoreB}
             onChange={(e) => setScoreB(e.target.value)}
-            disabled={updateResult.isPending}
+            disabled={isPending}
             required
           />
         </div>
@@ -595,15 +596,26 @@ function MatchResultForm({
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={updateResult.isPending}
+          disabled={isPending}
         >
           Cancelar
         </Button>
-        <Button type="submit" disabled={!canSubmit || updateResult.isPending}>
-          {updateResult.isPending ? (
+        <Button type="submit" disabled={!canSubmit || isPending}>
+          {pendingAction === "save" ? (
             <Loader2 className="size-4 animate-spin" />
           ) : (
-            "Salvar partida"
+            "Salvar"
+          )}
+        </Button>
+        <Button
+          type="button"
+          onClick={handleSaveAndComplete}
+          disabled={!canSubmit || isPending}
+        >
+          {pendingAction === "complete" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            "Salvar e Concluir"
           )}
         </Button>
       </DialogFooter>
