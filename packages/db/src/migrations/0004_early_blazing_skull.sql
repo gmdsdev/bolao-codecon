@@ -1,1 +1,0 @@
-ALTER TABLE "match" ALTER COLUMN "score_b" DROP NOT NULL;

@@ -5,6 +5,13 @@ import {
   CardTitle,
 } from "@codecon/ui/components/card";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@codecon/ui/components/empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -12,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
+import { TrophyIcon } from "lucide-react";
 
 import type { ProtectedHomePageData } from "./protected-home-page-data";
 
@@ -29,7 +37,17 @@ export function RankingCard({ ranking }: RankingCardProps) {
         {ranking.length ? (
           <RankingTable ranking={ranking} />
         ) : (
-          <div>No data</div>
+          <Empty className="py-8">
+            <EmptyHeader>
+              <EmptyMedia>
+                <TrophyIcon className="size-8 text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
+              <EmptyDescription>
+                As pontuações aparecerão aqui conforme as apostas forem resolvidas.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </CardContent>
     </Card>

@@ -1,5 +1,5 @@
 {
-  "id": "fc4ef05e-6059-45e5-bb86-03d55aa9c995",
+  "id": "f731f195-6c99-42b5-bcd7-738c363f3af9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -403,7 +403,7 @@
         },
         "match_id": {
           "name": "match_id",
-          "type": "serial",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
@@ -471,6 +471,19 @@
           "primaryKey": false,
           "notNull": true
         },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "stadium_id": {
+          "name": "stadium_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "score_a": {
           "name": "score_a",
           "type": "integer",
@@ -488,6 +501,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
         }
       },
       "indexes": {},
@@ -524,6 +544,19 @@
           "tableTo": "round",
           "columnsFrom": [
             "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "match_stadium_id_stadium_id_fk": {
+          "name": "match_stadium_id_stadium_id_fk",
+          "tableFrom": "match",
+          "tableTo": "stadium",
+          "columnsFrom": [
+            "stadium_id"
           ],
           "columnsTo": [
             "id"
@@ -596,6 +629,95 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.ranking_log": {
+      "name": "ranking_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "base_points": {
+          "name": "base_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modifier_points": {
+          "name": "modifier_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_points": {
+          "name": "total_points",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modifier": {
+          "name": "modifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ranking_log_user_id_user_id_fk": {
+          "name": "ranking_log_user_id_user_id_fk",
+          "tableFrom": "ranking_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "ranking_log_match_id_match_id_fk": {
+          "name": "ranking_log_match_id_match_id_fk",
+          "tableFrom": "ranking_log",
+          "tableTo": "match",
+          "columnsFrom": [
+            "match_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.round": {
       "name": "round",
       "schema": "",
@@ -624,6 +746,62 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'pending'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.stadium": {
+      "name": "stadium",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.team_group": {
+      "name": "team_group",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -679,31 +857,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.team_group": {
-      "name": "team_group",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

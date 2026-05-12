@@ -1,6 +1,7 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { round } from "./round.schema";
 import { team } from "./team.schema";
+import { stadium } from "./stadium.schema";
 
 export const match = pgTable("match", {
   id: serial("id").primaryKey(),
@@ -13,6 +14,10 @@ export const match = pgTable("match", {
   roundId: integer("round_id")
     .notNull()
     .references(() => round.id, { onDelete: "cascade" }),
+  date: timestamp("date").notNull().defaultNow(),
+  stadiumId: integer("stadium_id")
+    .notNull()
+    .references(() => stadium.id, { onDelete: "cascade" }),
   scoreA: integer("score_a"),
   scoreB: integer("score_b"),
   expectedWinnerId: integer("expected_winner_id").references(() => team.id, {

@@ -5,6 +5,13 @@ import {
   CardTitle,
 } from "@codecon/ui/components/card";
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@codecon/ui/components/empty";
+import {
   Table,
   TableBody,
   TableCell,
@@ -13,6 +20,7 @@ import {
   TableRow,
 } from "@codecon/ui/components/table";
 import type { UseQueryResult } from "@tanstack/react-query";
+import { AlertCircleIcon, Loader2Icon, TrophyIcon } from "lucide-react";
 
 type User = {
   id: number;
@@ -50,7 +58,7 @@ function TableRankingContent({ ranking }: TableRankingProps) {
     if (ranking?.data?.length) {
       return <TableRankingData data={ranking.data} />;
     } else {
-      <TableRankingEmptyState />;
+      return <TableRankingEmptyState />;
     }
   }
 
@@ -86,13 +94,46 @@ function TableRankingData({ data }: { data: User[] }) {
 }
 
 function TableRankingEmptyState() {
-  return <div>No data</div>;
+  return (
+    <Empty className="py-8">
+      <EmptyHeader>
+        <EmptyMedia>
+          <TrophyIcon className="size-8 text-muted-foreground" />
+        </EmptyMedia>
+        <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
+        <EmptyDescription>
+          As pontuações aparecerão aqui conforme as apostas forem resolvidas.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
 }
 
 function TableRankingLoadingState() {
-  return <div>Loading...</div>;
+  return (
+    <Empty className="py-8">
+      <EmptyHeader>
+        <EmptyMedia>
+          <Loader2Icon className="size-8 text-muted-foreground animate-spin" />
+        </EmptyMedia>
+        <EmptyTitle>Carregando classificação...</EmptyTitle>
+      </EmptyHeader>
+    </Empty>
+  );
 }
 
 function TableRankingErrorState() {
-  return <div>Error</div>;
+  return (
+    <Empty className="py-8">
+      <EmptyHeader>
+        <EmptyMedia>
+          <AlertCircleIcon className="size-8 text-destructive" />
+        </EmptyMedia>
+        <EmptyTitle>Erro ao carregar</EmptyTitle>
+        <EmptyDescription>
+          Não foi possível carregar a classificação. Tente novamente.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
 }

@@ -1,10 +1,9 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
-import { hashPassword } from "better-auth/crypto";
 import { config } from "dotenv";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
@@ -14,6 +13,7 @@ import {
   match,
   ranking,
   round,
+  stadium,
   team,
   teamGroup,
   user,
@@ -39,199 +39,260 @@ const seedLogin = {
   password: `CodeCon-${randomBytes(8).toString("hex")}`,
 };
 
-const seedUsers = [
-  seedLogin,
-  {
-    name: "Ada Seed",
-    email: "ada.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Bruno Seed",
-    email: "bruno.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Carla Seed",
-    email: "carla.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Davi Seed",
-    email: "davi.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Elisa Seed",
-    email: "elisa.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Felipe Seed",
-    email: "felipe.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Giovana Seed",
-    email: "giovana.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Hugo Seed",
-    email: "hugo.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
-  {
-    name: "Isabela Seed",
-    email: "isabela.seed@codecon.local",
-    password: `CodeCon-${randomBytes(8).toString("hex")}`,
-  },
+const seedUsers = [seedLogin];
+
+// ===================================================================
+// COPA DO MUNDO FIFA 2026 — DADOS BASE
+// ===================================================================
+
+// 16 Estádios oficiais da Copa do Mundo FIFA 2026
+const seedStadiums = [
+  // México (3)
+  { name: "Estadio Azteca",          city: "Cidade do México, México" },
+  { name: "Estadio Akron",           city: "Guadalajara, México" },
+  { name: "Estadio BBVA",            city: "Monterrey, México" },
+  // Canadá (2)
+  { name: "BMO Field",               city: "Toronto, Canadá" },
+  { name: "BC Place",                city: "Vancouver, Canadá" },
+  // Estados Unidos (11)
+  { name: "MetLife Stadium",         city: "East Rutherford, Nova Jersey, EUA" },
+  { name: "Gillette Stadium",        city: "Foxborough, Massachusetts, EUA" },
+  { name: "SoFi Stadium",            city: "Inglewood, Califórnia, EUA" },
+  { name: "AT&T Stadium",            city: "Arlington, Texas, EUA" },
+  { name: "Mercedes-Benz Stadium",   city: "Atlanta, Geórgia, EUA" },
+  { name: "Levi's Stadium",          city: "Santa Clara, Califórnia, EUA" },
+  { name: "NRG Stadium",             city: "Houston, Texas, EUA" },
+  { name: "Arrowhead Stadium",       city: "Kansas City, Missouri, EUA" },
+  { name: "Hard Rock Stadium",       city: "Miami Gardens, Flórida, EUA" },
+  { name: "Lincoln Financial Field", city: "Filadélfia, Pensilvânia, EUA" },
+  { name: "Lumen Field",             city: "Seattle, Washington, EUA" },
 ];
 
+const seedStadiumNames = seedStadiums.map((s) => s.name);
+
+// 12 Grupos (A–L)
 const seedGroupNames = Array.from(
   { length: 12 },
   (_, index) => `Grupo ${String.fromCharCode(65 + index)}`,
 );
 
-const legacySeedGroupNames = Array.from(
-  { length: 12 },
-  (_, index) => `Group ${index + 1}`,
-);
-
+// 48 Seleções classificadas com seus grupos
 const seedTeams = [
-  { name: "Mexico", flag: "🇲🇽", groupName: "Grupo A" },
-  { name: "South Africa", flag: "🇿🇦", groupName: "Grupo A" },
-  { name: "South Korea", flag: "🇰🇷", groupName: "Grupo A" },
-  { name: "Czech Republic", flag: "🇨🇿", groupName: "Grupo A" },
-  { name: "Canada", flag: "🇨🇦", groupName: "Grupo B" },
-  {
-    name: "Bosnia and Herzegovina",
-    flag: "🇧🇦",
-    groupName: "Grupo B",
-  },
-  { name: "Qatar", flag: "🇶🇦", groupName: "Grupo B" },
-  { name: "Switzerland", flag: "🇨🇭", groupName: "Grupo B" },
-  { name: "Brazil", flag: "🇧🇷", groupName: "Grupo C" },
-  { name: "Morocco", flag: "🇲🇦", groupName: "Grupo C" },
-  { name: "Haiti", flag: "🇭🇹", groupName: "Grupo C" },
-  {
-    name: "Scotland",
-    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",
-    groupName: "Grupo C",
-  },
+  // GRUPO A
+  { name: "Mexico",          flag: "🇲🇽", groupName: "Grupo A" },
+  { name: "South Africa",    flag: "🇿🇦", groupName: "Grupo A" },
+  { name: "Korea Republic",  flag: "🇰🇷", groupName: "Grupo A" },
+  { name: "Czechia",         flag: "🇨🇿", groupName: "Grupo A" },
+  // GRUPO B
+  { name: "Canada",                   flag: "🇨🇦", groupName: "Grupo B" },
+  { name: "Bosnia and Herzegovina",   flag: "🇧🇦", groupName: "Grupo B" },
+  { name: "Qatar",                    flag: "🇶🇦", groupName: "Grupo B" },
+  { name: "Switzerland",              flag: "🇨🇭", groupName: "Grupo B" },
+  // GRUPO C
+  { name: "Brazil",   flag: "🇧🇷",                                                    groupName: "Grupo C" },
+  { name: "Morocco",  flag: "🇲🇦",                                                    groupName: "Grupo C" },
+  { name: "Haiti",    flag: "🇭🇹",                                                    groupName: "Grupo C" },
+  { name: "Scotland", flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}", groupName: "Grupo C" },
+  // GRUPO D
   { name: "United States", flag: "🇺🇸", groupName: "Grupo D" },
-  { name: "Paraguay", flag: "🇵🇾", groupName: "Grupo D" },
-  { name: "Australia", flag: "🇦🇺", groupName: "Grupo D" },
-  { name: "Turkey", flag: "🇹🇷", groupName: "Grupo D" },
-  { name: "Germany", flag: "🇩🇪", groupName: "Grupo E" },
-  { name: "Curacao", flag: "🇨🇼", groupName: "Grupo E" },
+  { name: "Paraguay",      flag: "🇵🇾", groupName: "Grupo D" },
+  { name: "Australia",     flag: "🇦🇺", groupName: "Grupo D" },
+  { name: "Türkiye",       flag: "🇹🇷", groupName: "Grupo D" },
+  // GRUPO E
+  { name: "Germany",     flag: "🇩🇪", groupName: "Grupo E" },
+  { name: "Curaçao",     flag: "🇨🇼", groupName: "Grupo E" },
   { name: "Ivory Coast", flag: "🇨🇮", groupName: "Grupo E" },
-  { name: "Ecuador", flag: "🇪🇨", groupName: "Grupo E" },
+  { name: "Ecuador",     flag: "🇪🇨", groupName: "Grupo E" },
+  // GRUPO F
   { name: "Netherlands", flag: "🇳🇱", groupName: "Grupo F" },
-  { name: "Japan", flag: "🇯🇵", groupName: "Grupo F" },
-  { name: "Sweden", flag: "🇸🇪", groupName: "Grupo F" },
-  { name: "Tunisia", flag: "🇹🇳", groupName: "Grupo F" },
-  { name: "Belgium", flag: "🇧🇪", groupName: "Grupo G" },
-  { name: "Egypt", flag: "🇪🇬", groupName: "Grupo G" },
-  { name: "Iran", flag: "🇮🇷", groupName: "Grupo G" },
+  { name: "Japan",       flag: "🇯🇵", groupName: "Grupo F" },
+  { name: "Sweden",      flag: "🇸🇪", groupName: "Grupo F" },
+  { name: "Tunisia",     flag: "🇹🇳", groupName: "Grupo F" },
+  // GRUPO G
+  { name: "Belgium",     flag: "🇧🇪", groupName: "Grupo G" },
+  { name: "Egypt",       flag: "🇪🇬", groupName: "Grupo G" },
+  { name: "Iran",        flag: "🇮🇷", groupName: "Grupo G" },
   { name: "New Zealand", flag: "🇳🇿", groupName: "Grupo G" },
-  { name: "Spain", flag: "🇪🇸", groupName: "Grupo H" },
-  { name: "Cape Verde", flag: "🇨🇻", groupName: "Grupo H" },
+  // GRUPO H
+  { name: "Spain",        flag: "🇪🇸", groupName: "Grupo H" },
+  { name: "Cape Verde",   flag: "🇨🇻", groupName: "Grupo H" },
   { name: "Saudi Arabia", flag: "🇸🇦", groupName: "Grupo H" },
-  { name: "Uruguay", flag: "🇺🇾", groupName: "Grupo H" },
-  { name: "France", flag: "🇫🇷", groupName: "Grupo I" },
+  { name: "Uruguay",      flag: "🇺🇾", groupName: "Grupo H" },
+  // GRUPO I
+  { name: "France",  flag: "🇫🇷", groupName: "Grupo I" },
   { name: "Senegal", flag: "🇸🇳", groupName: "Grupo I" },
-  { name: "Iraq", flag: "🇮🇶", groupName: "Grupo I" },
-  { name: "Norway", flag: "🇳🇴", groupName: "Grupo I" },
+  { name: "Iraq",    flag: "🇮🇶", groupName: "Grupo I" },
+  { name: "Norway",  flag: "🇳🇴", groupName: "Grupo I" },
+  // GRUPO J
   { name: "Argentina", flag: "🇦🇷", groupName: "Grupo J" },
-  { name: "Algeria", flag: "🇩🇿", groupName: "Grupo J" },
-  { name: "Austria", flag: "🇦🇹", groupName: "Grupo J" },
-  { name: "Jordan", flag: "🇯🇴", groupName: "Grupo J" },
-  { name: "Portugal", flag: "🇵🇹", groupName: "Grupo K" },
-  { name: "DR Congo", flag: "🇨🇩", groupName: "Grupo K" },
+  { name: "Algeria",   flag: "🇩🇿", groupName: "Grupo J" },
+  { name: "Austria",   flag: "🇦🇹", groupName: "Grupo J" },
+  { name: "Jordan",    flag: "🇯🇴", groupName: "Grupo J" },
+  // GRUPO K
+  { name: "Portugal",   flag: "🇵🇹", groupName: "Grupo K" },
+  { name: "DR Congo",   flag: "🇨🇩", groupName: "Grupo K" },
   { name: "Uzbekistan", flag: "🇺🇿", groupName: "Grupo K" },
-  { name: "Colombia", flag: "🇨🇴", groupName: "Grupo K" },
-  {
-    name: "England",
-    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
-    groupName: "Grupo L",
-  },
+  { name: "Colombia",   flag: "🇨🇴", groupName: "Grupo K" },
+  // GRUPO L
+  { name: "England", flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}", groupName: "Grupo L" },
   { name: "Croatia", flag: "🇭🇷", groupName: "Grupo L" },
-  { name: "Ghana", flag: "🇬🇭", groupName: "Grupo L" },
-  { name: "Panama", flag: "🇵🇦", groupName: "Grupo L" },
+  { name: "Ghana",   flag: "🇬🇭", groupName: "Grupo L" },
+  { name: "Panama",  flag: "🇵🇦", groupName: "Grupo L" },
 ];
 
-const seedTeamNames = seedTeams.map((seedTeam) => seedTeam.name);
-
-const legacySeedTeamNames = [
-  "Aurora FC",
-  "Byte United",
-  "Syntax City",
-  "Runtime FC",
-  "Neon Forge",
-  "Pixel Town",
-  "Vector Club",
-  "Token City",
-];
-
-const legacySeedRoundTitles = ["Seed Round 1", "Seed Round 2", "Seed Round 3"];
+const seedTeamNames = seedTeams.map((t) => t.name);
 
 const seedRounds = [
-  {
-    number: 1,
-    title: "Fase de grupos - Rodada 1",
-    status: "pending",
-  },
-  {
-    number: 2,
-    title: "Fase de grupos - Rodada 2",
-    status: "pending",
-  },
-  {
-    number: 3,
-    title: "Fase de grupos - Rodada 3",
-    status: "pending",
-  },
-  {
-    number: 4,
-    title: "Dezesseis avos de final",
-    status: "pending",
-  },
-  {
-    number: 5,
-    title: "Oitavas de final",
-    status: "pending",
-  },
-  {
-    number: 6,
-    title: "Quartas de final",
-    status: "pending",
-  },
-  {
-    number: 7,
-    title: "Semifinal",
-    status: "pending",
-  },
-  {
-    number: 8,
-    title: "Disputa pelo terceiro lugar",
-    status: "pending",
-  },
-  {
-    number: 9,
-    title: "Final",
-    status: "pending",
-  },
+  { number: 1, title: "Fase de grupos - Rodada 1",   status: "pending" },
+  { number: 2, title: "Fase de grupos - Rodada 2",   status: "pending" },
+  { number: 3, title: "Fase de grupos - Rodada 3",   status: "pending" },
+  { number: 4, title: "Dezesseis avos de final",      status: "pending" },
+  { number: 5, title: "Oitavas de final",             status: "pending" },
+  { number: 6, title: "Quartas de final",             status: "pending" },
+  { number: 7, title: "Semifinal",                   status: "pending" },
+  { number: 8, title: "Disputa pelo terceiro lugar", status: "pending" },
+  { number: 9, title: "Final",                       status: "pending" },
 ];
 
-const knockoutMatchCountsByRoundNumber = new Map([
-  [4, 16],
-  [5, 8],
-  [6, 4],
-  [7, 2],
-  [8, 1],
-  [9, 1],
-]);
+// ===================================================================
+// PARTIDAS DA FASE DE GRUPOS — 72 JOGOS
+// Horários em UTC (EDT = UTC-4 em junho de 2026)
+// Fonte: calendário oficial FIFA 2026
+// ===================================================================
+const seedGroupStageMatches: {
+  teamA: string;
+  teamB: string;
+  round: number;
+  date: Date;
+  stadiumName: string;
+}[] = [
+  // ──────────────────────────────────────────────────────────────────
+  // RODADA 1
+  // ──────────────────────────────────────────────────────────────────
+
+  // GRUPO A
+  { teamA: "Mexico",         teamB: "South Africa",           round: 1, date: new Date("2026-06-11T19:00:00Z"), stadiumName: "Estadio Azteca" },
+  { teamA: "Korea Republic", teamB: "Czechia",                round: 1, date: new Date("2026-06-12T02:00:00Z"), stadiumName: "Estadio Akron" },
+  // GRUPO B
+  { teamA: "Canada",         teamB: "Bosnia and Herzegovina", round: 1, date: new Date("2026-06-12T19:00:00Z"), stadiumName: "BMO Field" },
+  { teamA: "Qatar",          teamB: "Switzerland",            round: 1, date: new Date("2026-06-13T19:00:00Z"), stadiumName: "Levi's Stadium" },
+  // GRUPO C
+  { teamA: "Brazil",         teamB: "Morocco",                round: 1, date: new Date("2026-06-13T22:00:00Z"), stadiumName: "MetLife Stadium" },
+  { teamA: "Haiti",          teamB: "Scotland",               round: 1, date: new Date("2026-06-14T01:00:00Z"), stadiumName: "Gillette Stadium" },
+  // GRUPO D
+  { teamA: "United States",  teamB: "Paraguay",               round: 1, date: new Date("2026-06-13T01:00:00Z"), stadiumName: "SoFi Stadium" },
+  { teamA: "Australia",      teamB: "Türkiye",                round: 1, date: new Date("2026-06-13T04:00:00Z"), stadiumName: "BC Place" },
+  // GRUPO E
+  { teamA: "Germany",        teamB: "Curaçao",                round: 1, date: new Date("2026-06-14T17:00:00Z"), stadiumName: "NRG Stadium" },
+  { teamA: "Ivory Coast",    teamB: "Ecuador",                round: 1, date: new Date("2026-06-14T23:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  // GRUPO F
+  { teamA: "Netherlands",    teamB: "Japan",                  round: 1, date: new Date("2026-06-14T20:00:00Z"), stadiumName: "AT&T Stadium" },
+  { teamA: "Sweden",         teamB: "Tunisia",                round: 1, date: new Date("2026-06-15T02:00:00Z"), stadiumName: "Estadio BBVA" },
+  // GRUPO G
+  { teamA: "Belgium",        teamB: "Egypt",                  round: 1, date: new Date("2026-06-15T19:00:00Z"), stadiumName: "Lumen Field" },
+  { teamA: "Iran",           teamB: "New Zealand",            round: 1, date: new Date("2026-06-16T01:00:00Z"), stadiumName: "SoFi Stadium" },
+  // GRUPO H
+  { teamA: "Spain",          teamB: "Cape Verde",             round: 1, date: new Date("2026-06-15T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  { teamA: "Saudi Arabia",   teamB: "Uruguay",                round: 1, date: new Date("2026-06-15T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
+  // GRUPO I
+  { teamA: "France",         teamB: "Senegal",                round: 1, date: new Date("2026-06-16T19:00:00Z"), stadiumName: "MetLife Stadium" },
+  { teamA: "Iraq",           teamB: "Norway",                 round: 1, date: new Date("2026-06-16T22:00:00Z"), stadiumName: "Gillette Stadium" },
+  // GRUPO J
+  { teamA: "Argentina",      teamB: "Algeria",                round: 1, date: new Date("2026-06-17T01:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  { teamA: "Austria",        teamB: "Jordan",                 round: 1, date: new Date("2026-06-17T04:00:00Z"), stadiumName: "Levi's Stadium" },
+  // GRUPO K
+  { teamA: "Portugal",       teamB: "DR Congo",               round: 1, date: new Date("2026-06-17T17:00:00Z"), stadiumName: "NRG Stadium" },
+  { teamA: "Uzbekistan",     teamB: "Colombia",               round: 1, date: new Date("2026-06-18T02:00:00Z"), stadiumName: "Estadio Azteca" },
+  // GRUPO L
+  { teamA: "England",        teamB: "Croatia",                round: 1, date: new Date("2026-06-17T20:00:00Z"), stadiumName: "AT&T Stadium" },
+  { teamA: "Ghana",          teamB: "Panama",                 round: 1, date: new Date("2026-06-17T23:00:00Z"), stadiumName: "BMO Field" },
+
+  // ──────────────────────────────────────────────────────────────────
+  // RODADA 2
+  // ──────────────────────────────────────────────────────────────────
+
+  // GRUPO A
+  { teamA: "Czechia",                  teamB: "South Africa",           round: 2, date: new Date("2026-06-18T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  { teamA: "Mexico",                   teamB: "Korea Republic",         round: 2, date: new Date("2026-06-19T01:00:00Z"), stadiumName: "Estadio Akron" },
+  // GRUPO B
+  { teamA: "Switzerland",              teamB: "Bosnia and Herzegovina", round: 2, date: new Date("2026-06-18T19:00:00Z"), stadiumName: "SoFi Stadium" },
+  { teamA: "Canada",                   teamB: "Qatar",                  round: 2, date: new Date("2026-06-18T22:00:00Z"), stadiumName: "BC Place" },
+  // GRUPO C
+  { teamA: "Scotland",                 teamB: "Morocco",                round: 2, date: new Date("2026-06-19T22:00:00Z"), stadiumName: "Gillette Stadium" },
+  { teamA: "Brazil",                   teamB: "Haiti",                  round: 2, date: new Date("2026-06-20T00:30:00Z"), stadiumName: "Lincoln Financial Field" },
+  // GRUPO D
+  { teamA: "United States",            teamB: "Australia",              round: 2, date: new Date("2026-06-19T19:00:00Z"), stadiumName: "Lumen Field" },
+  { teamA: "Türkiye",                  teamB: "Paraguay",               round: 2, date: new Date("2026-06-20T03:00:00Z"), stadiumName: "Levi's Stadium" },
+  // GRUPO E
+  { teamA: "Germany",                  teamB: "Ivory Coast",            round: 2, date: new Date("2026-06-20T20:00:00Z"), stadiumName: "BMO Field" },
+  { teamA: "Ecuador",                  teamB: "Curaçao",                round: 2, date: new Date("2026-06-21T00:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  // GRUPO F
+  { teamA: "Netherlands",              teamB: "Sweden",                 round: 2, date: new Date("2026-06-20T17:00:00Z"), stadiumName: "NRG Stadium" },
+  { teamA: "Tunisia",                  teamB: "Japan",                  round: 2, date: new Date("2026-06-21T04:00:00Z"), stadiumName: "Estadio BBVA" },
+  // GRUPO G
+  { teamA: "Belgium",                  teamB: "Iran",                   round: 2, date: new Date("2026-06-21T19:00:00Z"), stadiumName: "SoFi Stadium" },
+  { teamA: "New Zealand",              teamB: "Egypt",                  round: 2, date: new Date("2026-06-22T01:00:00Z"), stadiumName: "BC Place" },
+  // GRUPO H
+  { teamA: "Spain",                    teamB: "Saudi Arabia",           round: 2, date: new Date("2026-06-21T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  { teamA: "Uruguay",                  teamB: "Cape Verde",             round: 2, date: new Date("2026-06-21T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
+  // GRUPO I
+  { teamA: "France",                   teamB: "Iraq",                   round: 2, date: new Date("2026-06-22T21:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  { teamA: "Norway",                   teamB: "Senegal",                round: 2, date: new Date("2026-06-23T00:00:00Z"), stadiumName: "MetLife Stadium" },
+  // GRUPO J
+  { teamA: "Argentina",                teamB: "Austria",                round: 2, date: new Date("2026-06-22T17:00:00Z"), stadiumName: "AT&T Stadium" },
+  { teamA: "Jordan",                   teamB: "Algeria",                round: 2, date: new Date("2026-06-23T03:00:00Z"), stadiumName: "Levi's Stadium" },
+  // GRUPO K
+  { teamA: "Portugal",                 teamB: "Uzbekistan",             round: 2, date: new Date("2026-06-23T17:00:00Z"), stadiumName: "NRG Stadium" },
+  { teamA: "Colombia",                 teamB: "DR Congo",               round: 2, date: new Date("2026-06-24T02:00:00Z"), stadiumName: "Estadio Akron" },
+  // GRUPO L
+  { teamA: "England",                  teamB: "Ghana",                  round: 2, date: new Date("2026-06-23T20:00:00Z"), stadiumName: "Gillette Stadium" },
+  { teamA: "Panama",                   teamB: "Croatia",                round: 2, date: new Date("2026-06-23T23:00:00Z"), stadiumName: "BMO Field" },
+
+  // ──────────────────────────────────────────────────────────────────
+  // RODADA 3 (partidas simultâneas por grupo)
+  // ──────────────────────────────────────────────────────────────────
+
+  // GRUPO A — 24 jun (21h ET = 25 jun 01h UTC)
+  { teamA: "Czechia",                  teamB: "Mexico",                 round: 3, date: new Date("2026-06-25T01:00:00Z"), stadiumName: "Estadio Azteca" },
+  { teamA: "South Africa",             teamB: "Korea Republic",         round: 3, date: new Date("2026-06-25T01:00:00Z"), stadiumName: "Estadio BBVA" },
+  // GRUPO B — 24 jun (15h ET = 19h UTC)
+  { teamA: "Switzerland",              teamB: "Canada",                 round: 3, date: new Date("2026-06-24T19:00:00Z"), stadiumName: "BC Place" },
+  { teamA: "Bosnia and Herzegovina",   teamB: "Qatar",                  round: 3, date: new Date("2026-06-24T19:00:00Z"), stadiumName: "Lumen Field" },
+  // GRUPO C — 24 jun (18h ET = 22h UTC)
+  { teamA: "Scotland",                 teamB: "Brazil",                 round: 3, date: new Date("2026-06-24T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
+  { teamA: "Morocco",                  teamB: "Haiti",                  round: 3, date: new Date("2026-06-24T22:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  // GRUPO D — 25 jun (22h ET = 26 jun 02h UTC)
+  { teamA: "Türkiye",                  teamB: "United States",          round: 3, date: new Date("2026-06-26T02:00:00Z"), stadiumName: "SoFi Stadium" },
+  { teamA: "Paraguay",                 teamB: "Australia",              round: 3, date: new Date("2026-06-26T02:00:00Z"), stadiumName: "Levi's Stadium" },
+  // GRUPO E — 25 jun (16h ET = 20h UTC)
+  { teamA: "Ecuador",                  teamB: "Germany",                round: 3, date: new Date("2026-06-25T20:00:00Z"), stadiumName: "MetLife Stadium" },
+  { teamA: "Curaçao",                  teamB: "Ivory Coast",            round: 3, date: new Date("2026-06-25T20:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  // GRUPO F — 25 jun (19h ET = 23h UTC)
+  { teamA: "Japan",                    teamB: "Sweden",                 round: 3, date: new Date("2026-06-25T23:00:00Z"), stadiumName: "AT&T Stadium" },
+  { teamA: "Tunisia",                  teamB: "Netherlands",            round: 3, date: new Date("2026-06-25T23:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  // GRUPO G — 26 jun (23h ET = 27 jun 03h UTC)
+  { teamA: "Egypt",                    teamB: "Iran",                   round: 3, date: new Date("2026-06-27T03:00:00Z"), stadiumName: "Lumen Field" },
+  { teamA: "New Zealand",              teamB: "Belgium",                round: 3, date: new Date("2026-06-27T03:00:00Z"), stadiumName: "BC Place" },
+  // GRUPO H — 26 jun (20h ET = 27 jun 00h UTC)
+  { teamA: "Cape Verde",               teamB: "Saudi Arabia",           round: 3, date: new Date("2026-06-27T00:00:00Z"), stadiumName: "NRG Stadium" },
+  { teamA: "Uruguay",                  teamB: "Spain",                  round: 3, date: new Date("2026-06-27T00:00:00Z"), stadiumName: "Estadio Akron" },
+  // GRUPO I — 26 jun (15h ET = 19h UTC)
+  { teamA: "Norway",                   teamB: "France",                 round: 3, date: new Date("2026-06-26T19:00:00Z"), stadiumName: "Gillette Stadium" },
+  { teamA: "Senegal",                  teamB: "Iraq",                   round: 3, date: new Date("2026-06-26T19:00:00Z"), stadiumName: "BMO Field" },
+  // GRUPO J — 27 jun (22h ET = 28 jun 02h UTC)
+  { teamA: "Jordan",                   teamB: "Argentina",              round: 3, date: new Date("2026-06-28T02:00:00Z"), stadiumName: "AT&T Stadium" },
+  { teamA: "Algeria",                  teamB: "Austria",                round: 3, date: new Date("2026-06-28T02:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  // GRUPO K — 27 jun (19h30 ET = 23h30 UTC)
+  { teamA: "Colombia",                 teamB: "Portugal",               round: 3, date: new Date("2026-06-27T23:30:00Z"), stadiumName: "Hard Rock Stadium" },
+  { teamA: "DR Congo",                 teamB: "Uzbekistan",             round: 3, date: new Date("2026-06-27T23:30:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  // GRUPO L — 27 jun (17h ET = 21h UTC)
+  { teamA: "Panama",                   teamB: "England",                round: 3, date: new Date("2026-06-27T21:00:00Z"), stadiumName: "MetLife Stadium" },
+  { teamA: "Croatia",                  teamB: "Ghana",                  round: 3, date: new Date("2026-06-27T21:00:00Z"), stadiumName: "Lincoln Financial Field" },
+];
+
+// ===================================================================
+// CONFIGURAÇÃO DO BANCO
+// ===================================================================
 
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -244,6 +305,7 @@ const db = drizzle(pool, {
     match,
     ranking,
     round,
+    stadium,
     team,
     teamGroup,
     user,
@@ -252,549 +314,223 @@ const db = drizzle(pool, {
 
 try {
   const result = await db.transaction(async (tx) => {
+    // ------------------------------------------------------------------
+    // 1. Limpeza de dados de seed anteriores
+    // ------------------------------------------------------------------
     const existingSeedUsers = await tx
-      .select({
-        id: user.id,
-        email: user.email,
-      })
+      .select({ id: user.id, email: user.email })
       .from(user)
-      .where(
-        inArray(
-          user.email,
-          seedUsers.map((seedUser) => seedUser.email),
-        ),
-      );
+      .where(inArray(user.email, seedUsers.map((u) => u.email)));
 
     if (existingSeedUsers.length > 0) {
-      await tx
-        .delete(ranking)
-        .where(
-          inArray(
-            ranking.userId,
-            existingSeedUsers.map((seedUser) => seedUser.id),
-          ),
-        );
+      await tx.delete(ranking).where(
+        inArray(ranking.userId, existingSeedUsers.map((u) => u.id)),
+      );
     }
 
     const existingSeedRounds = await tx
-      .select({
-        id: round.id,
-        title: round.title,
-      })
+      .select({ id: round.id, title: round.title })
       .from(round)
-      .where(
-        inArray(
-          round.title,
-          [
-            ...seedRounds.map((seedRound) => seedRound.title),
-            ...legacySeedRoundTitles,
-          ],
-        ),
-      );
+      .where(inArray(round.title, seedRounds.map((r) => r.title)));
 
     if (existingSeedRounds.length > 0) {
-      await tx
-        .delete(match)
-        .where(
-          inArray(
-            match.roundId,
-            existingSeedRounds.map((seedRound) => seedRound.id),
-          ),
-        );
-    }
-
-    await tx.delete(round).where(inArray(round.title, legacySeedRoundTitles));
-    await tx.delete(team).where(inArray(team.name, legacySeedTeamNames));
-
-    const usersByEmail = new Map<string, string>();
-
-    for (const seedUser of seedUsers) {
-      const now = new Date();
-      const passwordHash = await hashPassword(seedUser.password);
-      const existingUser = existingSeedUsers.find(
-        (row) => row.email === seedUser.email,
+      await tx.delete(match).where(
+        inArray(match.roundId, existingSeedRounds.map((r) => r.id)),
       );
-      const userId = existingUser?.id ?? randomUUID();
-
-      if (existingUser) {
-        await tx
-          .update(user)
-          .set({
-            name: seedUser.name,
-            emailVerified: true,
-            isAdmin: true,
-            updatedAt: now,
-          })
-          .where(eq(user.id, userId));
-      } else {
-        await tx.insert(user).values({
-          id: userId,
-          name: seedUser.name,
-          email: seedUser.email,
-          emailVerified: true,
-          isAdmin: true,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-
-      const existingAccounts = await tx
-        .select({
-          id: account.id,
-        })
-        .from(account)
-        .where(
-          and(eq(account.userId, userId), eq(account.providerId, "credential")),
-        )
-        .limit(1);
-
-      const existingAccount = existingAccounts[0];
-
-      if (existingAccount) {
-        await tx
-          .update(account)
-          .set({
-            accountId: userId,
-            password: passwordHash,
-            updatedAt: now,
-          })
-          .where(eq(account.id, existingAccount.id));
-      } else {
-        await tx.insert(account).values({
-          id: randomUUID(),
-          accountId: userId,
-          providerId: "credential",
-          userId,
-          password: passwordHash,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
-
-      usersByEmail.set(seedUser.email, userId);
     }
 
+    // ------------------------------------------------------------------
+    // 2. Estádios
+    // ------------------------------------------------------------------
+    const existingSeedStadiums = await tx
+      .select({ id: stadium.id, name: stadium.name })
+      .from(stadium)
+      .where(inArray(stadium.name, seedStadiumNames));
+
+    const stadiumIdByName = new Map<string, number>(
+      existingSeedStadiums.map((s) => [s.name, s.id]),
+    );
+
+    const missingStadiumNames = seedStadiumNames.filter(
+      (name) => !stadiumIdByName.has(name),
+    );
+
+    if (missingStadiumNames.length > 0) {
+      const insertedStadiums = await tx
+        .insert(stadium)
+        .values(
+          missingStadiumNames.map((name) => {
+            const s = seedStadiums.find((st) => st.name === name)!;
+            return { name: s.name, city: s.city };
+          }),
+        )
+        .returning({ id: stadium.id, name: stadium.name });
+
+      for (const s of insertedStadiums) {
+        stadiumIdByName.set(s.name, s.id);
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // 3. Grupos
+    // ------------------------------------------------------------------
     const existingSeedGroups = await tx
-      .select({
-        id: teamGroup.id,
-        name: teamGroup.name,
-      })
+      .select({ id: teamGroup.id, name: teamGroup.name })
       .from(teamGroup)
       .where(inArray(teamGroup.name, seedGroupNames));
 
-    const groupIdByName = new Map(
-      existingSeedGroups.map((existingGroup) => [
-        existingGroup.name,
-        existingGroup.id,
-      ]),
+    const groupIdByName = new Map<string, number>(
+      existingSeedGroups.map((g) => [g.name, g.id]),
     );
+
     const missingGroupNames = seedGroupNames.filter(
-      (groupName) => !groupIdByName.has(groupName),
+      (name) => !groupIdByName.has(name),
     );
 
     if (missingGroupNames.length > 0) {
       const insertedGroups = await tx
         .insert(teamGroup)
         .values(missingGroupNames.map((name) => ({ name })))
-        .returning({
-          id: teamGroup.id,
-          name: teamGroup.name,
-        });
+        .returning({ id: teamGroup.id, name: teamGroup.name });
 
-      for (const insertedGroup of insertedGroups) {
-        groupIdByName.set(insertedGroup.name, insertedGroup.id);
+      for (const g of insertedGroups) {
+        groupIdByName.set(g.name, g.id);
       }
     }
 
+    // ------------------------------------------------------------------
+    // 4. Times
+    // ------------------------------------------------------------------
     const existingSeedTeams = await tx
-      .select({
-        id: team.id,
-        name: team.name,
-      })
+      .select({ id: team.id, name: team.name })
       .from(team)
       .where(inArray(team.name, seedTeamNames));
 
     const teamIdByName = new Map<string, number>();
 
-    for (const existingTeam of existingSeedTeams) {
-      if (!teamIdByName.has(existingTeam.name)) {
-        teamIdByName.set(existingTeam.name, existingTeam.id);
+    for (const t of existingSeedTeams) {
+      if (!teamIdByName.has(t.name)) {
+        teamIdByName.set(t.name, t.id);
       }
     }
 
-    const missingTeamNames = seedTeamNames.filter(
-      (name) => !teamIdByName.has(name),
-    );
-
+    // Atualiza times existentes (flag e grupo)
     for (const seedTeam of seedTeams) {
       const teamId = teamIdByName.get(seedTeam.name);
       const groupId = groupIdByName.get(seedTeam.groupName);
 
-      if (teamId === undefined || groupId === undefined) {
-        continue;
+      if (teamId !== undefined && groupId !== undefined) {
+        await tx
+          .update(team)
+          .set({ flag: seedTeam.flag, teamGroupId: groupId })
+          .where(eq(team.id, teamId));
       }
-
-      await tx
-        .update(team)
-        .set({
-          flag: seedTeam.flag,
-          teamGroupId: groupId,
-        })
-        .where(eq(team.id, teamId));
     }
+
+    // Insere times ausentes
+    const missingTeamNames = seedTeamNames.filter(
+      (name) => !teamIdByName.has(name),
+    );
 
     if (missingTeamNames.length > 0) {
       const insertedTeams = await tx
         .insert(team)
         .values(
           missingTeamNames.map((name) => {
-            const seedTeam = getSeedTeam(name);
-            const groupId = groupIdByName.get(seedTeam.groupName);
+            const t = seedTeams.find((st) => st.name === name)!;
+            const groupId = groupIdByName.get(t.groupName);
 
             if (groupId === undefined) {
-              throw new Error(`Missing seed group ${seedTeam.groupName}`);
+              throw new Error(`Grupo ausente para o time: ${t.name}`);
             }
 
-            return {
-              name: seedTeam.name,
-              flag: seedTeam.flag,
-              teamGroupId: groupId,
-            };
+            return { name: t.name, flag: t.flag, teamGroupId: groupId };
           }),
         )
-        .returning({
-          id: team.id,
-          name: team.name,
-        });
+        .returning({ id: team.id, name: team.name });
 
-      for (const insertedTeam of insertedTeams) {
-        teamIdByName.set(insertedTeam.name, insertedTeam.id);
+      for (const t of insertedTeams) {
+        teamIdByName.set(t.name, t.id);
       }
     }
 
-    await tx
-      .delete(teamGroup)
-      .where(inArray(teamGroup.name, legacySeedGroupNames));
-
-    const existingRoundByTitle = new Map(
-      existingSeedRounds.map((existingRound) => [
-        existingRound.title,
-        existingRound.id,
-      ]),
+    // ------------------------------------------------------------------
+    // 5. Rodadas
+    // ------------------------------------------------------------------
+    const existingRoundByTitle = new Map<string, number>(
+      existingSeedRounds.map((r) => [r.title, r.id]),
     );
     const roundIdByNumber = new Map<number, number>();
 
     for (const seedRound of seedRounds) {
-      const existingRoundId = existingRoundByTitle.get(seedRound.title);
+      const existingId = existingRoundByTitle.get(seedRound.title);
 
-      if (existingRoundId !== undefined) {
+      if (existingId !== undefined) {
         await tx
           .update(round)
-          .set({
-            number: seedRound.number,
-            status: seedRound.status,
-          })
-          .where(eq(round.id, existingRoundId));
-        roundIdByNumber.set(seedRound.number, existingRoundId);
+          .set({ number: seedRound.number, status: seedRound.status })
+          .where(eq(round.id, existingId));
+        roundIdByNumber.set(seedRound.number, existingId);
       } else {
-        const insertedRounds = await tx
+        const [insertedRound] = await tx
           .insert(round)
           .values(seedRound)
-          .returning({
-            id: round.id,
-            number: round.number,
-          });
-        const insertedRound = insertedRounds[0];
+          .returning({ id: round.id, number: round.number });
 
         if (!insertedRound) {
-          throw new Error("Failed to create seed round");
+          throw new Error("Falha ao criar rodada de seed.");
         }
 
         roundIdByNumber.set(insertedRound.number, insertedRound.id);
       }
     }
 
-    const matchRows = seedRounds.flatMap((seedRound) =>
-      createRoundMatches(seedRound.number),
-    );
+    // ------------------------------------------------------------------
+    // 6. Partidas da fase de grupos (72 jogos com dados reais)
+    // ------------------------------------------------------------------
+    const groupStageMatchRows = seedGroupStageMatches.map((m) => {
+      const teamAId = teamIdByName.get(m.teamA);
+      const teamBId = teamIdByName.get(m.teamB);
+      const roundId = roundIdByNumber.get(m.round);
+      const stadiumId = stadiumIdByName.get(m.stadiumName);
 
-    const insertedMatches = await tx
-      .insert(match)
-      .values(matchRows)
-      .returning({ id: match.id, roundId: match.roundId });
-
-    // Cria apostas para a rodada 1 — permite testar o fluxo completo de
-    // conclusão de partida sem precisar de usuários reais apostando.
-    const round1Id = roundIdByNumber.get(1);
-    const round1Matches = insertedMatches.filter((m) => m.roundId === round1Id);
-
-    // Cada usuário aposta em cada partida da rodada 1 com placar e
-    // modificador variados para simular resultados distintos.
-    const betModifiers = [
-      "normal",
-      "double_points",
-      "half_points",
-      "lucky_duck",
-      "invert_bet",
-      "invalid_bet",
-      "normal",
-      "double_points",
-      "lucky_duck",
-      "normal",
-    ] as const;
-
-    // Distribuição de placares: simula apostadores com acerto exato,
-    // acerto do vencedor, e erros completos.
-    const betScores = [
-      { scoreA: 1, scoreB: 0 }, // time A vence
-      { scoreA: 2, scoreB: 1 }, // time A vence
-      { scoreA: 0, scoreB: 1 }, // time B vence
-      { scoreA: 1, scoreB: 2 }, // time B vence
-      { scoreA: 1, scoreB: 1 }, // empate
-      { scoreA: 0, scoreB: 0 }, // empate
-      { scoreA: 3, scoreB: 0 }, // time A vence (placar diferente)
-      { scoreA: 0, scoreB: 3 }, // time B vence (placar diferente)
-      { scoreA: 2, scoreB: 0 }, // time A vence
-      { scoreA: 0, scoreB: 2 }, // time B vence
-    ] as const;
-
-    const seedBetRows = round1Matches.flatMap((insertedMatch) =>
-      seedUsers.flatMap((seedUser, userIndex) => {
-        const userId = usersByEmail.get(seedUser.email);
-        if (!userId) return [];
-        const scores = betScores[userIndex % betScores.length]!;
-        const modifier = betModifiers[userIndex % betModifiers.length]!;
-
-        // invert_bet troca os lados antes de salvar (igual ao bet.create)
-        const scoreA =
-          modifier === "invert_bet" ? scores.scoreB : scores.scoreA;
-        const scoreB =
-          modifier === "invert_bet" ? scores.scoreA : scores.scoreB;
-
-        return [
-          {
-            matchId: insertedMatch.id,
-            userId,
-            scoreA,
-            scoreB,
-            modifier,
-          },
-        ];
-      }),
-    );
-
-    if (seedBetRows.length > 0) {
-      await tx.insert(bet).values(seedBetRows);
-    }
-
-    const rankingRows = [
-      {
-        userId: usersByEmail.get(seedLogin.email),
-        points: 12,
-      },
-      {
-        userId: usersByEmail.get("ada.seed@codecon.local"),
-        points: 18,
-      },
-      {
-        userId: usersByEmail.get("bruno.seed@codecon.local"),
-        points: 15,
-      },
-      {
-        userId: usersByEmail.get("carla.seed@codecon.local"),
-        points: 9,
-      },
-      {
-        userId: usersByEmail.get("davi.seed@codecon.local"),
-        points: 6,
-      },
-      {
-        userId: usersByEmail.get("elisa.seed@codecon.local"),
-        points: 21,
-      },
-      {
-        userId: usersByEmail.get("felipe.seed@codecon.local"),
-        points: 4,
-      },
-      {
-        userId: usersByEmail.get("giovana.seed@codecon.local"),
-        points: 16,
-      },
-      {
-        userId: usersByEmail.get("hugo.seed@codecon.local"),
-        points: 11,
-      },
-      {
-        userId: usersByEmail.get("isabela.seed@codecon.local"),
-        points: 13,
-      },
-    ].flatMap((row) =>
-      row.userId === undefined
-        ? []
-        : [{ userId: row.userId, points: row.points }],
-    );
-
-    await tx.insert(ranking).values(rankingRows);
-
-    return {
-      users: seedUsers.length,
-      teams: teamIdByName.size,
-      groups: groupIdByName.size,
-      rounds: roundIdByNumber.size,
-      matches: matchRows.length,
-      bets: seedBetRows.length,
-      rankingRows: rankingRows.length,
-    };
-
-    function getSeedTeam(name: string) {
-      const seedTeam = seedTeams.find((teamSeed) => teamSeed.name === name);
-
-      if (seedTeam === undefined) {
-        throw new Error(`Missing seed team ${name}`);
-      }
-
-      return seedTeam;
-    }
-
-    function createRoundMatches(roundNumber: number) {
-      if (roundNumber <= 3) {
-        return createGroupStageMatches(roundNumber);
-      }
-
-      const teamCount = seedTeamNames.length;
-      const matchCount = knockoutMatchCountsByRoundNumber.get(roundNumber);
-      const offset = roundNumber - 1;
-
-      if (matchCount === undefined) {
-        throw new Error(`Missing match count for round ${roundNumber}`);
-      }
-
-      return Array.from({ length: matchCount }, (_, index) => {
-        const step = roundNumber * 3;
-        const teamAName = getSeedTeamName((index * 2 + offset) % teamCount);
-        const teamBName = getSeedTeamName(
-          (teamCount - 1 - index * 2 - step + teamCount) % teamCount,
-        );
-
-        return createMatch(teamAName, teamBName, roundNumber);
-      });
-    }
-
-    function createGroupStageMatches(roundNumber: number) {
-      return seedGroupNames.flatMap((groupName) => {
-        const teamsInGroup = seedTeams.filter(
-          (seedTeam) => seedTeam.groupName === groupName,
-        );
-
-        if (teamsInGroup.length !== 4) {
-          throw new Error(`${groupName} must have exactly 4 teams`);
-        }
-
-        const [team1, team2, team3, team4] = teamsInGroup;
-
-        if (!team1 || !team2 || !team3 || !team4) {
-          throw new Error(`${groupName} must have exactly 4 teams`);
-        }
-
-        const fixturesByGroupRound = getGroupStageFixtures(roundNumber, [
-          team1.name,
-          team2.name,
-          team3.name,
-          team4.name,
-        ]);
-
-        if (fixturesByGroupRound === undefined) {
-          throw new Error(`Missing group-stage fixtures for round ${roundNumber}`);
-        }
-
-        return fixturesByGroupRound.map(([teamAName, teamBName]) =>
-          createMatch(teamAName, teamBName, roundNumber),
-        );
-      });
-    }
-
-    function getGroupStageFixtures(
-      roundNumber: number,
-      [team1, team2, team3, team4]: [string, string, string, string],
-    ): [string, string][] | undefined {
-      if (roundNumber === 1) {
-        return [
-          [team1, team2],
-          [team3, team4],
-        ];
-      }
-
-      if (roundNumber === 2) {
-        return [
-          [team4, team2],
-          [team1, team3],
-        ];
-      }
-
-      if (roundNumber === 3) {
-        return [
-          [team4, team1],
-          [team2, team3],
-        ];
-      }
-
-      return undefined;
-    }
-
-    function getSeedTeamName(index: number) {
-      const teamName = seedTeamNames[index];
-
-      if (teamName === undefined) {
-        throw new Error(`Missing seed team at index ${index}`);
-      }
-
-      return teamName;
-    }
-
-    function createMatch(
-      teamAName: string,
-      teamBName: string,
-      roundNumber: number,
-      scoreA?: number,
-      scoreB?: number,
-    ) {
-      const teamAId = teamIdByName.get(teamAName);
-      const teamBId = teamIdByName.get(teamBName);
-      const roundId = roundIdByNumber.get(roundNumber);
-
-      if (
-        teamAId === undefined ||
-        teamBId === undefined ||
-        roundId === undefined
-      ) {
-        throw new Error("Seed match references missing team or round");
-      }
-
-      const expectedWinnerId =
-        scoreA === undefined || scoreB === undefined
-          ? null
-          : scoreA > scoreB
-            ? teamAId
-            : scoreB > scoreA
-              ? teamBId
-              : null;
+      if (teamAId === undefined) throw new Error(`Time não encontrado: ${m.teamA}`);
+      if (teamBId === undefined) throw new Error(`Time não encontrado: ${m.teamB}`);
+      if (roundId === undefined) throw new Error(`Rodada não encontrada: ${m.round}`);
+      if (stadiumId === undefined) throw new Error(`Estádio não encontrado: ${m.stadiumName}`);
 
       return {
         teamAId,
         teamBId,
         roundId,
-        scoreA: scoreA ?? null,
-        scoreB: scoreB ?? null,
-        expectedWinnerId,
+        date: m.date,
+        stadiumId,
+        scoreA: null,
+        scoreB: null,
+        expectedWinnerId: null,
+        status: "pending" as const,
       };
-    }
+    });
+
+    await tx.insert(match).values(groupStageMatchRows);
+
+    return {
+      stadiums: stadiumIdByName.size,
+      groups: groupIdByName.size,
+      teams: teamIdByName.size,
+      rounds: roundIdByNumber.size,
+      groupStageMatches: groupStageMatchRows.length,
+    };
   });
 
-  console.log("Seed completed");
+  console.log("\n✅ Seed da Copa do Mundo FIFA 2026 concluído!\n");
   console.table(result);
-  console.log("Login credentials");
-  console.log(`Email: ${seedLogin.email}`);
-  console.log(`Password: ${seedLogin.password}`);
+  console.log("\nCredenciais de login do seed:");
+  console.log(`  Email:  ${seedLogin.email}`);
+  console.log(`  Senha:  ${seedLogin.password}\n`);
+} catch (error) {
+  console.error("❌ Erro durante o seed:", error);
+  process.exit(1);
 } finally {
   await pool.end();
 }

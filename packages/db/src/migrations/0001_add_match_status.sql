@@ -1,1 +1,0 @@
-ALTER TABLE "match" ADD COLUMN "status" text DEFAULT 'pending' NOT NULL;

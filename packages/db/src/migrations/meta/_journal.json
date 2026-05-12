@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778309844493,
-      "tag": "0000_rainy_rumiko_fujikawa",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1778377423471,
-      "tag": "0001_blue_rage",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778378800887,
-      "tag": "0002_cynical_terrax",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1746788400000,
-      "tag": "0003_drop_bet_match_id_default",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1778379950239,
-      "tag": "0004_early_blazing_skull",
+      "when": 1778547479966,
+      "tag": "0000_ambitious_miss_america",
       "breakpoints": true
     }
   ]

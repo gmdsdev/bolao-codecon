@@ -4,6 +4,7 @@ export * from "./match.schema";
 export * from "./ranking.schema";
 export * from "./ranking_log.schema";
 export * from "./round.schema";
+export * from "./stadium.schema";
 export * from "./teamGroup.schema";
 export * from "./team.schema";
 export {};

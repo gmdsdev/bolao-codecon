@@ -1,8 +1,16 @@
 "use client";
 
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@codecon/ui/components/empty";
 import { TableSelectRound } from "@/components/tables/table-select-round";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
+import { AlertCircleIcon, CalendarXIcon } from "lucide-react";
 import { useState } from "react";
 
 import { MatchList } from "./matches/match-list";
@@ -39,11 +47,31 @@ export function ProtectedHomePageClient({
       />
       <main className="w-full flex-1">
         {matches.isError ? (
-          <div>Erro</div>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <AlertCircleIcon className="size-10 text-destructive" />
+              </EmptyMedia>
+              <EmptyTitle>Erro ao carregar partidas</EmptyTitle>
+              <EmptyDescription>
+                Não foi possível buscar as partidas desta rodada. Tente novamente.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : matches.data?.length ? (
           <MatchList matches={matches.data} onBetCreated={matches.refetch} />
         ) : (
-          <div>Nenhum dado</div>
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <CalendarXIcon className="size-10 text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>Nenhuma partida nesta rodada</EmptyTitle>
+              <EmptyDescription>
+                As partidas serão exibidas aqui assim que forem cadastradas.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
       </main>
     </>
