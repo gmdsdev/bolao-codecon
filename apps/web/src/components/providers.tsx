@@ -7,14 +7,19 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { queryClient } from "@/utils/trpc";
 
-import { ThemeProvider } from "./theme-provider";
+import { ThemeProvider, useTheme } from "./theme-provider";
+
+function ThemeAwareToaster() {
+  const { resolvedTheme } = useTheme();
+
+  return <Toaster richColors theme={resolvedTheme} />;
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="dark"
-      enableSystem={false}
       storageKey="codecon-theme"
       disableTransitionOnChange
     >
@@ -22,7 +27,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider>{children}</TooltipProvider>
         <ReactQueryDevtools />
       </QueryClientProvider>
-      <Toaster richColors />
+      <ThemeAwareToaster />
     </ThemeProvider>
   );
 }
