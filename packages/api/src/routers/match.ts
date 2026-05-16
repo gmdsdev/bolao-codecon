@@ -10,7 +10,7 @@ import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
-import { protectedProcedure, router } from "../index";
+import { adminProcedure, protectedProcedure, router } from "../index";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -19,15 +19,17 @@ const teamB = alias(team, "teamB");
 const teamAGroup = alias(teamGroup, "teamAGroup");
 const teamBGroup = alias(teamGroup, "teamBGroup");
 const expectedWinner = alias(team, "expectedWinner");
+const idSchema = z.number().int().positive();
+const scoreSchema = z.number().int().min(0).max(99);
 
 export const matchRouter = router({
-  getAll: protectedProcedure.query(async () => {
+  getAll: adminProcedure.query(async () => {
     return await db.select().from(match);
   }),
   getByRound: protectedProcedure
     .input(
       z.object({
-        roundId: z.number(),
+        roundId: idSchema,
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -73,13 +75,13 @@ export const matchRouter = router({
         .orderBy(asc(match.id));
     }),
 
-  create: protectedProcedure
+  create: adminProcedure
     .input(
       z.object({
-        teamAId: z.number(),
-        teamBId: z.number(),
-        roundId: z.number(),
-        stadiumId: z.number(),
+        teamAId: idSchema,
+        teamBId: idSchema,
+        roundId: idSchema,
+        stadiumId: idSchema,
         date: z.string().datetime(),
       }),
     )
@@ -153,13 +155,13 @@ export const matchRouter = router({
       });
     }),
 
-  updateResult: protectedProcedure
+  updateResult: adminProcedure
     .input(
       z.object({
-        matchId: z.number(),
-        scoreA: z.number().int().min(0),
-        scoreB: z.number().int().min(0),
-        stadiumId: z.number(),
+        matchId: idSchema,
+        scoreA: scoreSchema,
+        scoreB: scoreSchema,
+        stadiumId: idSchema,
         date: z.string().datetime(),
         expectedWinner: z.enum(["teamA", "teamB"]).nullable().optional(),
       }),
@@ -223,36 +225,40 @@ export const matchRouter = router({
         .where(eq(match.id, input.matchId));
     }),
 
-  complete: protectedProcedure
+  complete: adminProcedure
     .input(
       z.object({
-        matchId: z.number(),
+        matchId: idSchema,
       }),
     )
     .mutation(async ({ input }) => {
       return await db.transaction(async (tx) => {
-        const matchRows = await tx
-          .select({
+        const [matchRow] = await tx
+          .update(match)
+          .set({ status: "complete" })
+          .where(and(eq(match.id, input.matchId), eq(match.status, "pending")))
+          .returning({
             id: match.id,
             status: match.status,
             scoreA: match.scoreA,
             scoreB: match.scoreB,
             expectedWinnerId: match.expectedWinnerId,
-          })
-          .from(match)
-          .where(eq(match.id, input.matchId))
-          .limit(1);
-
-        const matchRow = matchRows[0];
+          });
 
         if (!matchRow) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Partida não encontrada",
-          });
-        }
+          const existingMatch = await tx
+            .select({ id: match.id })
+            .from(match)
+            .where(eq(match.id, input.matchId))
+            .limit(1);
 
-        if (matchRow.status === "complete") {
+          if (!existingMatch[0]) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Partida não encontrada",
+            });
+          }
+
           throw new TRPCError({
             code: "CONFLICT",
             message: "A partida já foi concluída",
@@ -278,10 +284,6 @@ export const matchRouter = router({
           })
           .from(bet)
           .where(eq(bet.matchId, input.matchId));
-
-        console.log(
-          `[match.complete] matchId=${input.matchId} → found ${bets.length} bet(s)`,
-        );
 
         const pointsByUserId = new Map<string, number>();
         const logEntries: Array<{
@@ -323,35 +325,20 @@ export const matchRouter = router({
         }
 
         for (const [userId, points] of pointsByUserId) {
-          const rankingRows = await tx
-            .select({
-              id: ranking.id,
-              points: ranking.points,
-            })
-            .from(ranking)
-            .where(eq(ranking.userId, userId))
-            .limit(1);
-
-          const rankingRow = rankingRows[0];
-
-          if (rankingRow) {
-            await tx
-              .update(ranking)
-              .set({ points: rankingRow.points + points })
-              .where(eq(ranking.id, rankingRow.id));
-          } else {
-            await tx.insert(ranking).values({ userId, points });
-          }
+          await tx
+            .insert(ranking)
+            .values({ userId, points })
+            .onConflictDoUpdate({
+              target: ranking.userId,
+              set: {
+                points: sql`${ranking.points} + ${points}`,
+              },
+            });
         }
 
         if (logEntries.length > 0) {
           await tx.insert(rankingLog).values(logEntries);
         }
-
-        await tx
-          .update(match)
-          .set({ status: "complete" })
-          .where(eq(match.id, input.matchId));
 
         return { awardedUsers: pointsByUserId.size, betsFound: bets.length };
       });

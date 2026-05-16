@@ -8,6 +8,7 @@ export type Match = {
   teamBGroupId: number;
   teamBName: string;
   teamBFlag: string;
+  date: string | Date;
   scoreA: number | null;
   scoreB: number | null;
   hasBet: boolean;

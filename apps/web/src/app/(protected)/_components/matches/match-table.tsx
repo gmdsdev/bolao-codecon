@@ -68,6 +68,7 @@ function MatchTableRow({
   const betScoreB = savedBet?.scoreB ?? match.betScoreB;
   const betModifier = savedBet?.modifier ?? match.betModifier;
   const isScored = match.scoreA !== null || match.scoreB !== null;
+  const isClosed = isScored || new Date(match.date) <= new Date();
   const hasBet = match.hasBet || savedBet !== undefined;
   const betLabel =
     hasBet && betScoreA !== null && betScoreB !== null
@@ -120,9 +121,9 @@ function MatchTableRow({
         <ItemActions>
           <Button
             onClick={() => onOpenBet(match)}
-            disabled={isScored || hasBet || isBetPending}
+            disabled={isClosed || hasBet || isBetPending}
           >
-            {isScored ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
+            {isClosed ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
           </Button>
         </ItemActions>
       </ItemHeader>

@@ -525,9 +525,14 @@ try {
 
   console.log("\n✅ Seed da Copa do Mundo FIFA 2026 concluído!\n");
   console.table(result);
-  console.log("\nCredenciais de login do seed:");
-  console.log(`  Email:  ${seedLogin.email}`);
-  console.log(`  Senha:  ${seedLogin.password}\n`);
+
+  if (env.NODE_ENV === "production") {
+    console.log("\nCredenciais de login do seed omitidas em produção.\n");
+  } else {
+    console.log("\nCredenciais de login do seed:");
+    console.log(`  Email:  ${seedLogin.email}`);
+    console.log(`  Senha:  ${seedLogin.password}\n`);
+  }
 } catch (error) {
   console.error("❌ Erro durante o seed:", error);
   process.exit(1);

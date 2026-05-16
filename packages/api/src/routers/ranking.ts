@@ -6,7 +6,7 @@ import { ranking } from "@codecon/db/schema/ranking.schema";
 import { rankingLog } from "@codecon/db/schema/ranking_log.schema";
 import { round } from "@codecon/db/schema/round.schema";
 import { team } from "@codecon/db/schema/team.schema";
-import { and, asc, count, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
@@ -17,7 +17,9 @@ const teamB = alias(team, "teamB");
 
 export const rankingRouter = router({
   getAll: protectedProcedure
-    .input(z.object({ limit: z.number().optional() }).optional())
+    .input(
+      z.object({ limit: z.number().int().min(1).max(100).optional() }).optional(),
+    )
     .query(async ({ input }) => {
       return await db
         .select({
@@ -33,7 +35,7 @@ export const rankingRouter = router({
     }),
 
   getLog: protectedProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string().min(1) }))
     .query(async ({ input }) => {
       return await db
         .select({
@@ -73,13 +75,23 @@ export const rankingRouter = router({
   getMySummary: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
-    const [allRanking, betsPlacedResult, pendingMatchesResult, lastLogEntry] =
+    const [myRanking] = await db
+      .select({ points: ranking.points })
+      .from(ranking)
+      .where(eq(ranking.userId, userId))
+      .limit(1);
+
+    const [positionResult, betsPlacedResult, pendingMatchesResult, lastLogEntry] =
       await Promise.all([
-        // All ranking entries ordered by points to calculate position
+        // Count higher scores instead of loading the full leaderboard.
         db
-          .select({ userId: ranking.userId, points: ranking.points })
+          .select({ count: count() })
           .from(ranking)
-          .orderBy(desc(ranking.points)),
+          .where(
+            myRanking
+              ? gt(ranking.points, myRanking.points)
+              : eq(ranking.userId, userId),
+          ),
 
         // Total bets placed by the user
         db
@@ -111,12 +123,8 @@ export const rankingRouter = router({
           .limit(1),
       ]);
 
-    const position =
-      allRanking.findIndex((r) => r.userId === userId) + 1 || null;
-    const myRanking = allRanking.find((r) => r.userId === userId);
-
     return {
-      position,
+      position: myRanking ? (positionResult[0]?.count ?? 0) + 1 : null,
       totalPoints: myRanking?.points ?? 0,
       betsPlaced: betsPlacedResult[0]?.count ?? 0,
       pendingMatches: pendingMatchesResult[0]?.count ?? 0,

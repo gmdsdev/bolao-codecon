@@ -37,6 +37,27 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
   const createBet = useMutation(
     trpc.bet.create.mutationOptions({
       onSuccess: (bet) => {
+        const foundOptionIndex = BET_WHEEL_OPTIONS.findIndex(
+          (option) => option.value === bet.modifier,
+        );
+        const optionIndex = foundOptionIndex >= 0 ? foundOptionIndex : 0;
+        const option =
+          BET_WHEEL_OPTIONS[optionIndex] ?? BET_WHEEL_OPTIONS[0];
+        const landingRotation =
+          360 * WHEEL_FULL_TURNS -
+          (optionIndex * WHEEL_SEGMENT_DEGREES + WHEEL_SEGMENT_DEGREES / 2);
+
+        setWheelOption(option);
+        setWheelRotation(0);
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            setWheelRotation(landingRotation);
+          });
+        });
+        window.setTimeout(() => {
+          setIsWheelSpinning(false);
+        }, WHEEL_SPIN_DURATION_MS);
+
         toast.success("Aposta salva");
         setSavedBets((bets) =>
           new Map(bets).set(bet.matchId, {
@@ -46,9 +67,9 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
           }),
         );
         onBetCreated();
-        setIsWheelSpinning(false);
       },
       onError: () => {
+        setWheelOption(null);
         setIsWheelSpinning(false);
       },
     }),
@@ -56,6 +77,7 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
 
   const canSubmit =
     selectedMatch !== null &&
+    new Date(selectedMatch.date) > new Date() &&
     selectedMatch.scoreA === null &&
     selectedMatch.scoreB === null &&
     !selectedMatch.hasBet &&
@@ -71,8 +93,9 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
 
   const openBetModal = (match: Match) => {
     const isScored = match.scoreA !== null || match.scoreB !== null;
+    const isClosed = isScored || new Date(match.date) <= new Date();
 
-    if (isScored || match.hasBet || savedBets.has(match.id)) {
+    if (isClosed || match.hasBet || savedBets.has(match.id)) {
       return;
     }
 
@@ -106,30 +129,14 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
       return;
     }
 
-    const optionIndex = Math.floor(Math.random() * BET_WHEEL_OPTIONS.length);
-    const option = BET_WHEEL_OPTIONS[optionIndex];
-    const landingRotation =
-      360 * WHEEL_FULL_TURNS -
-      (optionIndex * WHEEL_SEGMENT_DEGREES + WHEEL_SEGMENT_DEGREES / 2);
-
-    setWheelOption(option);
     setIsWheelSpinning(true);
+    setWheelOption(null);
     setWheelRotation(0);
-
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        setWheelRotation(landingRotation);
-      });
+    createBet.mutate({
+      matchId: selectedMatch.id,
+      scoreA: Number(scoreA),
+      scoreB: Number(scoreB),
     });
-
-    window.setTimeout(() => {
-      createBet.mutate({
-        matchId: selectedMatch.id,
-        scoreA: Number(scoreA),
-        scoreB: Number(scoreB),
-        modifier: option.value,
-      });
-    }, WHEEL_SPIN_DURATION_MS + 500);
   };
 
   return (

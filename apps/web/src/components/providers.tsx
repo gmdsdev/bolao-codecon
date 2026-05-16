@@ -25,7 +25,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>{children}</TooltipProvider>
-        <ReactQueryDevtools />
+        {process.env.NODE_ENV !== "production" && <ReactQueryDevtools />}
       </QueryClientProvider>
       <ThemeAwareToaster />
     </ThemeProvider>

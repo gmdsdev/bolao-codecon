@@ -1,10 +1,14 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text, uniqueIndex } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-export const ranking = pgTable("ranking", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  points: integer("points").notNull(),
-});
+export const ranking = pgTable(
+  "ranking",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    points: integer("points").notNull(),
+  },
+  (table) => [uniqueIndex("ranking_user_id_unique").on(table.userId)],
+);
