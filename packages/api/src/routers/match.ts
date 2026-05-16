@@ -8,7 +8,7 @@ import { stadium } from "@codecon/db/schema/stadium.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
@@ -124,7 +124,12 @@ export const matchRouter = router({
           id: team.id,
         })
         .from(team)
-        .where(inArray(team.id, [input.teamAId, input.teamBId]));
+        .where(
+          and(
+            inArray(team.id, [input.teamAId, input.teamBId]),
+            isNull(team.deletedAt),
+          ),
+        );
       const teamIds = new Set(teams.map((teamRow) => teamRow.id));
 
       if (!teamIds.has(input.teamAId) || !teamIds.has(input.teamBId)) {
@@ -137,7 +142,7 @@ export const matchRouter = router({
       const stadiumRows = await db
         .select({ id: stadium.id })
         .from(stadium)
-        .where(eq(stadium.id, input.stadiumId))
+        .where(and(eq(stadium.id, input.stadiumId), isNull(stadium.deletedAt)))
         .limit(1);
 
       if (!stadiumRows[0]) {
@@ -197,7 +202,7 @@ export const matchRouter = router({
       const stadiumRows = await db
         .select({ id: stadium.id })
         .from(stadium)
-        .where(eq(stadium.id, input.stadiumId))
+        .where(and(eq(stadium.id, input.stadiumId), isNull(stadium.deletedAt)))
         .limit(1);
 
       if (!stadiumRows[0]) {

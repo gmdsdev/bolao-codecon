@@ -1,4 +1,4 @@
-import { integer, pgTable, serial, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { teamGroup } from "./teamGroup.schema";
 
 export const team = pgTable("team", {
@@ -8,4 +8,5 @@ export const team = pgTable("team", {
   teamGroupId: integer("team_group_id")
     .notNull()
     .references(() => teamGroup.id, { onDelete: "cascade" }),
+  deletedAt: timestamp("deleted_at"),
 });

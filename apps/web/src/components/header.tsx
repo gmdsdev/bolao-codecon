@@ -15,7 +15,12 @@ import {
 } from "@codecon/ui/components/navigation-menu";
 
 type HeaderLink = {
-  to: "/" | "/admin/ranking" | "/admin/manager";
+  to:
+    | "/"
+    | "/admin/ranking"
+    | "/admin/manager"
+    | "/admin/stadiums"
+    | "/admin/teams";
   label: string;
   adminOnly?: boolean;
 };
@@ -28,6 +33,8 @@ export default function Header() {
     { to: "/", label: "Rodadas" },
     { to: "/admin/ranking", label: "Ranking", adminOnly: true },
     { to: "/admin/manager", label: "Manager", adminOnly: true },
+    { to: "/admin/stadiums", label: "Estádios", adminOnly: true },
+    { to: "/admin/teams", label: "Times", adminOnly: true },
   ];
 
   return (
