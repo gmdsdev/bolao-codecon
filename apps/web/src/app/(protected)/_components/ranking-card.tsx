@@ -1,9 +1,12 @@
+"use client";
+
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@codecon/ui/components/card";
+import { Dialog } from "@codecon/ui/components/dialog";
 import {
   Empty,
   EmptyDescription,
@@ -19,42 +22,79 @@ import {
   TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
+import { trpc } from "@/utils/trpc";
+import { useQuery } from "@tanstack/react-query";
 import { TrophyIcon } from "lucide-react";
+import { useState } from "react";
 
 import type { ProtectedHomePageData } from "./protected-home-page-data";
+import { ScoreLogDialog } from "./score-log-dialog";
 
 type RankingCardProps = {
   ranking: ProtectedHomePageData["ranking"];
 };
 
+type RankingUser = ProtectedHomePageData["ranking"][number];
+
 export function RankingCard({ ranking }: RankingCardProps) {
+  const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
+  const scoreLog = useQuery(
+    trpc.ranking.getLog.queryOptions(
+      { userId: selectedUser?.userId ?? "" },
+      { enabled: Boolean(selectedUser) },
+    ),
+  );
+
   return (
-    <Card className="h-min w-full">
-      <CardHeader>
-        <CardTitle>Classificação</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        {ranking.length ? (
-          <RankingTable ranking={ranking} />
-        ) : (
-          <Empty className="py-8">
-            <EmptyHeader>
-              <EmptyMedia>
-                <TrophyIcon className="size-8 text-muted-foreground" />
-              </EmptyMedia>
-              <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
-              <EmptyDescription>
-                As pontuações aparecerão aqui conforme as apostas forem resolvidas.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )}
-      </CardContent>
-    </Card>
+    <Dialog
+      open={Boolean(selectedUser)}
+      onOpenChange={(open) => {
+        if (!open) {
+          setSelectedUser(null);
+        }
+      }}
+    >
+      <Card className="h-min w-full">
+        <CardHeader>
+          <CardTitle>Classificação</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {ranking.length ? (
+            <RankingTable ranking={ranking} onSelectUser={setSelectedUser} />
+          ) : (
+            <Empty className="py-8">
+              <EmptyHeader>
+                <EmptyMedia>
+                  <TrophyIcon className="size-8 text-muted-foreground" />
+                </EmptyMedia>
+                <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
+                <EmptyDescription>
+                  As pontuações aparecerão aqui conforme as apostas forem
+                  resolvidas.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </CardContent>
+      </Card>
+      <ScoreLogDialog
+        scoreLog={scoreLog}
+        description={
+          selectedUser
+            ? `Histórico das partidas que formaram a pontuação de ${selectedUser.userName}.`
+            : undefined
+        }
+      />
+    </Dialog>
   );
 }
 
-function RankingTable({ ranking }: RankingCardProps) {
+function RankingTable({
+  ranking,
+  onSelectUser,
+}: RankingCardProps & {
+  onSelectUser: (user: RankingUser) => void;
+}) {
   return (
     <Table>
       <TableHeader>
@@ -68,7 +108,17 @@ function RankingTable({ ranking }: RankingCardProps) {
         {ranking.map((row, index) => (
           <TableRow
             key={row.id}
-            className="nth-[1]:text-amber-300 nth-[2]:text-green-300 nth-[3]:text-blue-300"
+            role="button"
+            tabIndex={0}
+            aria-label={`Ver detalhes da pontuação de ${row.userName}`}
+            onClick={() => onSelectUser(row)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelectUser(row);
+              }
+            }}
+            className="cursor-pointer nth-[1]:text-amber-300 nth-[2]:text-green-300 nth-[3]:text-blue-300 hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
           >
             <TableCell className="text-muted-foreground">{index + 1}</TableCell>
             <TableCell className="font-medium">{row.userName}</TableCell>
