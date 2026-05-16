@@ -33,11 +33,13 @@ export type ScoreLogEntry = {
 
 type ScoreLogDialogProps = {
   scoreLog: UseQueryResult<ScoreLogEntry[], unknown>;
+  betLabel?: string;
   description?: string;
 };
 
 export function ScoreLogDialog({
   scoreLog,
+  betLabel = "Sua aposta",
   description = "Histórico das partidas que formaram sua pontuação atual.",
 }: ScoreLogDialogProps) {
   return (
@@ -47,14 +49,16 @@ export function ScoreLogDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
 
-      <ScoreLogContent scoreLog={scoreLog} />
+      <ScoreLogContent scoreLog={scoreLog} betLabel={betLabel} />
     </DialogContent>
   );
 }
 
 function ScoreLogContent({
+  betLabel,
   scoreLog,
 }: {
+  betLabel: string;
   scoreLog: UseQueryResult<ScoreLogEntry[], unknown>;
 }) {
   if (scoreLog.isLoading) {
@@ -86,14 +90,20 @@ function ScoreLogContent({
     <div className="max-h-[min(28rem,calc(100dvh-10rem))] overflow-y-auto pr-1">
       <div className="flex flex-col gap-3">
         {scoreLog.data.map((entry) => (
-          <ScoreLogItem key={entry.id} entry={entry} />
+          <ScoreLogItem key={entry.id} entry={entry} betLabel={betLabel} />
         ))}
       </div>
     </div>
   );
 }
 
-function ScoreLogItem({ entry }: { entry: ScoreLogEntry }) {
+function ScoreLogItem({
+  betLabel,
+  entry,
+}: {
+  betLabel: string;
+  entry: ScoreLogEntry;
+}) {
   const teamALabel = `${entry.teamAFlag ?? ""} ${entry.teamAName}`.trim();
   const teamBLabel = `${entry.teamBName} ${entry.teamBFlag ?? ""}`.trim();
   const finalScore =
@@ -122,7 +132,7 @@ function ScoreLogItem({ entry }: { entry: ScoreLogEntry }) {
 
       <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
         <span>
-          Sua aposta: {entry.betScoreA} x {entry.betScoreB}
+          {betLabel}: {entry.betScoreA} x {entry.betScoreB}
         </span>
         <span>Resultado: {finalScore}</span>
         <span>Base: {entry.basePoints} pts ({getBasePointsReason(entry)})</span>

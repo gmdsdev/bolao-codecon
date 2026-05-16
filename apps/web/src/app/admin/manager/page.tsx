@@ -73,6 +73,7 @@ type Match = {
 type Team = {
   id: number;
   name: string;
+  flag: string;
 };
 
 type Stadium = {
@@ -394,6 +395,7 @@ function AddMatchForm({
   const parsedTeamAId = Number(teamAId);
   const parsedTeamBId = Number(teamBId);
   const parsedStadiumId = Number(stadiumId);
+  const teamOptions = getTeamOptions(teams);
   const stadiumOptions = getStadiumOptions(stadiums);
   const canSubmit =
     Number.isInteger(parsedTeamAId) &&
@@ -422,39 +424,65 @@ function AddMatchForm({
       <div className="grid min-w-0 gap-3 sm:grid-cols-2">
         <div className="min-w-0 space-y-2">
           <Label htmlFor={`team-a-${roundId}`}>Time A</Label>
-          <select
+          <Select
             id={`team-a-${roundId}`}
+            items={teamOptions}
             value={teamAId}
-            onChange={(e) => setTeamAId(e.target.value)}
+            onValueChange={(value) => setTeamAId(value ?? "")}
             disabled={createMatch.isPending || teams.length === 0}
-            className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
             required
           >
-            <option value="">Selecione um time</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full min-w-0" size="default">
+              <SelectValue
+                className="min-w-0 truncate"
+                placeholder="Selecione um time"
+              />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {teams.map((team) => (
+                <SelectItem
+                  key={team.id}
+                  value={String(team.id)}
+                  className="min-w-0"
+                >
+                  <span className="block min-w-0 truncate">
+                    {team.flag} {team.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="min-w-0 space-y-2">
           <Label htmlFor={`team-b-${roundId}`}>Time B</Label>
-          <select
+          <Select
             id={`team-b-${roundId}`}
+            items={teamOptions}
             value={teamBId}
-            onChange={(e) => setTeamBId(e.target.value)}
+            onValueChange={(value) => setTeamBId(value ?? "")}
             disabled={createMatch.isPending || teams.length === 0}
-            className="h-8 w-full min-w-0 rounded border border-input bg-background px-2.5 py-1 text-xs outline-none transition-colors hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-50"
             required
           >
-            <option value="">Selecione um time</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full min-w-0" size="default">
+              <SelectValue
+                className="min-w-0 truncate"
+                placeholder="Selecione um time"
+              />
+            </SelectTrigger>
+            <SelectContent align="start">
+              {teams.map((team) => (
+                <SelectItem
+                  key={team.id}
+                  value={String(team.id)}
+                  className="min-w-0"
+                >
+                  <span className="block min-w-0 truncate">
+                    {team.flag} {team.name}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -903,6 +931,13 @@ function getStadiumOptions(stadiums: Stadium[]) {
   return stadiums.map((stadium) => ({
     value: String(stadium.id),
     label: `${stadium.name} - ${stadium.city}`,
+  }));
+}
+
+function getTeamOptions(teams: Team[]) {
+  return teams.map((team) => ({
+    value: String(team.id),
+    label: `${team.flag} ${team.name}`,
   }));
 }
 

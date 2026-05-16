@@ -78,6 +78,7 @@ export function RankingCard({ ranking }: RankingCardProps) {
         </CardContent>
       </Card>
       <ScoreLogDialog
+        betLabel="Aposta"
         scoreLog={scoreLog}
         description={
           selectedUser
