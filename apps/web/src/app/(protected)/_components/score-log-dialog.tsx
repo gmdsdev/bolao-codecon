@@ -149,7 +149,7 @@ function getBasePointsReason(entry: ScoreLogEntry) {
   }
 
   if (entry.basePoints === 1) {
-    return "vencedor certo";
+    return "resultado certo";
   }
 
   return "sem acerto";

@@ -7,6 +7,7 @@ import { randomInt } from "node:crypto";
 import z from "zod";
 
 import { adminProcedure, protectedProcedure, router } from "../index";
+import { applyBetScoreModifier } from "../lib/bet-scoring";
 
 const betModifiers = [
   "invert_bet",
@@ -94,8 +95,7 @@ export const betRouter = router({
       }
 
       const modifier = getRandomBetModifier();
-      const scoreA = modifier === "invert_bet" ? input.scoreB : input.scoreA;
-      const scoreB = modifier === "invert_bet" ? input.scoreA : input.scoreB;
+      const { scoreA, scoreB } = applyBetScoreModifier(input, modifier);
 
       try {
         await db.insert(bet).values({

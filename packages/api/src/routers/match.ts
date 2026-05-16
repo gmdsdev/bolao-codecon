@@ -8,11 +8,12 @@ import { stadium } from "@codecon/db/schema/stadium.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
 import { adminProcedure, protectedProcedure, router } from "../index";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { calculateBetPoints } from "../lib/bet-scoring";
 
 const teamA = alias(team, "teamA");
 const teamB = alias(team, "teamB");
@@ -295,17 +296,18 @@ export const matchRouter = router({
           modifier: string;
         }> = [];
 
-        const finalWinner = getWinner(matchRow.scoreA, matchRow.scoreB);
-
         for (const betRow of bets) {
-          const gotCorrectScore =
-            betRow.scoreA === matchRow.scoreA &&
-            betRow.scoreB === matchRow.scoreB;
-          const betWinner = getWinner(betRow.scoreA, betRow.scoreB);
-          const gotWinner = finalWinner !== null && finalWinner === betWinner;
-          const basePoints = gotCorrectScore ? 3 : gotWinner ? 1 : 0;
-          const totalPoints = applyBetModifier(basePoints, betRow.modifier);
-          const modifierPoints = totalPoints - basePoints;
+          const { basePoints, modifierPoints, totalPoints } = calculateBetPoints(
+            {
+              scoreA: betRow.scoreA,
+              scoreB: betRow.scoreB,
+            },
+            {
+              scoreA: matchRow.scoreA,
+              scoreB: matchRow.scoreB,
+            },
+            betRow.modifier,
+          );
 
           logEntries.push({
             userId: betRow.userId,
@@ -344,39 +346,3 @@ export const matchRouter = router({
       });
     }),
 });
-
-function getWinner(scoreA: number, scoreB: number) {
-  if (scoreA > scoreB) {
-    return "teamA";
-  }
-
-  if (scoreB > scoreA) {
-    return "teamB";
-  }
-
-  return null;
-}
-
-function applyBetModifier(points: number, modifier: string) {
-  if (points === 0) {
-    return 0;
-  }
-
-  if (modifier === "double_points") {
-    return points * 2;
-  }
-
-  if (modifier === "half_points") {
-    return Math.floor(points / 2);
-  }
-
-  if (modifier === "invalid_bet") {
-    return 0;
-  }
-
-  if (modifier === "lucky_duck") {
-    return points + 1;
-  }
-
-  return points;
-}
