@@ -1,11 +1,10 @@
 "use client";
 
-import logo from "@/assets/codecon.svg";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+import { CodeconLogo } from "./codecon-logo";
 import UserMenu from "./user-menu";
 
 import {
@@ -35,7 +34,7 @@ export default function Header() {
     <NavigationMenu className="sticky top-0 z-40 w-full max-w-full border-b border-border bg-secondary px-3">
       <NavigationMenuList className="w-full justify-start">
         <NavigationMenuItem>
-          <Image src={logo} alt="Codecon logo" height={12} className="pr-3" />
+          <CodeconLogo height={12} width={69} className="mr-3" />
         </NavigationMenuItem>
 
         {links
