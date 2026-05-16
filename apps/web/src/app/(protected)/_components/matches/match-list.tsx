@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { trpc } from "@/utils/trpc";
@@ -20,10 +20,18 @@ import type { BetModifier, Match, SavedBet } from "./types";
 
 type MatchListProps = {
   matches: Match[];
+  renderedAt: string;
   onBetCreated: () => void;
 };
 
-export function MatchList({ matches, onBetCreated }: MatchListProps) {
+export function MatchList({
+  matches,
+  renderedAt,
+  onBetCreated,
+}: MatchListProps) {
+  const [currentTimeMs, setCurrentTimeMs] = useState(() =>
+    Date.parse(renderedAt),
+  );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [savedBets, setSavedBets] = useState<Map<number, SavedBet>>(new Map());
   const [scoreA, setScoreA] = useState("");
@@ -75,9 +83,13 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
     }),
   );
 
+  useEffect(() => {
+    setCurrentTimeMs(Date.now());
+  }, []);
+
   const canSubmit =
     selectedMatch !== null &&
-    new Date(selectedMatch.date) > new Date() &&
+    getMatchDateMs(selectedMatch) > currentTimeMs &&
     selectedMatch.scoreA === null &&
     selectedMatch.scoreB === null &&
     !selectedMatch.hasBet &&
@@ -93,7 +105,7 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
 
   const openBetModal = (match: Match) => {
     const isScored = match.scoreA !== null || match.scoreB !== null;
-    const isClosed = isScored || new Date(match.date) <= new Date();
+    const isClosed = isScored || getMatchDateMs(match) <= currentTimeMs;
 
     if (isClosed || match.hasBet || savedBets.has(match.id)) {
       return;
@@ -150,6 +162,7 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
               matches={group.matches}
               savedBets={savedBets}
               isBetPending={createBet.isPending}
+              currentTimeMs={currentTimeMs}
               onOpenBet={openBetModal}
             />
           ))}
@@ -160,6 +173,7 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
           matches={matches}
           savedBets={savedBets}
           isBetPending={createBet.isPending}
+          currentTimeMs={currentTimeMs}
           onOpenBet={openBetModal}
         />
       )}
@@ -180,4 +194,8 @@ export function MatchList({ matches, onBetCreated }: MatchListProps) {
       />
     </>
   );
+}
+
+function getMatchDateMs(match: Match) {
+  return new Date(match.date).getTime();
 }

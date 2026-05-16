@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
 
 import {
@@ -52,10 +51,7 @@ export default function Header() {
             </NavigationMenuItem>
           ))}
 
-        <NavigationMenuItem className="ml-auto flex items-center">
-          <ModeToggle />
-        </NavigationMenuItem>
-        <NavigationMenuItem>
+        <NavigationMenuItem className="ml-auto">
           <UserMenu />
         </NavigationMenuItem>
       </NavigationMenuList>

@@ -4,15 +4,25 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@codecon/ui/components/dropdown-menu";
 import { cn } from "@codecon/ui/lib/utils";
 import { Skeleton } from "@codecon/ui/components/skeleton";
+import {
+  LogOutIcon,
+  MailIcon,
+  MonitorIcon,
+  MoonIcon,
+  SunIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import { useTheme } from "./theme-provider";
 
 const userMenuItemClassName =
   "flex h-9 max-w-40 items-center gap-2 rounded-none p-3 text-xs font-medium outline-none transition-all hover:bg-muted focus:bg-muted focus-visible:ring-1 focus-visible:ring-ring/50 focus-visible:outline-1 data-open:bg-muted/50 data-popup-open:bg-muted/50";
@@ -20,6 +30,7 @@ const userMenuItemClassName =
 export default function UserMenu() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
+  const { setTheme, theme } = useTheme();
 
   if (isPending) {
     return <Skeleton className="h-9 w-24 rounded-none" />;
@@ -49,7 +60,42 @@ export default function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>{session.user.email}</DropdownMenuItem>
+          <DropdownMenuItem>
+            <MailIcon />
+            {session.user.email}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Tema</DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={theme}
+            onValueChange={(value) => {
+              if (
+                value === "light" ||
+                value === "dark" ||
+                value === "system"
+              ) {
+                setTheme(value);
+              }
+            }}
+          >
+            <DropdownMenuRadioItem value="light">
+              <SunIcon />
+              Claro
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="dark">
+              <MoonIcon />
+              Escuro
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="system">
+              <MonitorIcon />
+              Sistema
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => {
@@ -62,6 +108,7 @@ export default function UserMenu() {
               });
             }}
           >
+            <LogOutIcon />
             Sair
           </DropdownMenuItem>
         </DropdownMenuGroup>

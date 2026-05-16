@@ -11,6 +11,7 @@ export async function ProtectedHomePage() {
       <ProtectedHomePageClient
         initialData={{
           roundId: initialData.roundId,
+          renderedAt: initialData.renderedAt,
           rounds: initialData.rounds,
           matches: initialData.matches,
         }}

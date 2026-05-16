@@ -29,6 +29,7 @@ type MatchTableProps = {
   matches: Match[];
   savedBets: Map<number, SavedBet>;
   isBetPending: boolean;
+  currentTimeMs: number;
   onOpenBet: (match: Match) => void;
 };
 
@@ -36,6 +37,7 @@ export function MatchTable({
   matches,
   savedBets,
   isBetPending,
+  currentTimeMs,
   onOpenBet,
 }: MatchTableProps) {
   return (
@@ -46,6 +48,7 @@ export function MatchTable({
           match={match}
           savedBet={savedBets.get(match.id)}
           isBetPending={isBetPending}
+          currentTimeMs={currentTimeMs}
           onOpenBet={onOpenBet}
         />
       ))}
@@ -57,18 +60,20 @@ function MatchTableRow({
   match,
   savedBet,
   isBetPending,
+  currentTimeMs,
   onOpenBet,
 }: {
   match: Match;
   savedBet?: SavedBet;
   isBetPending: boolean;
+  currentTimeMs: number;
   onOpenBet: (match: Match) => void;
 }) {
   const betScoreA = savedBet?.scoreA ?? match.betScoreA;
   const betScoreB = savedBet?.scoreB ?? match.betScoreB;
   const betModifier = savedBet?.modifier ?? match.betModifier;
   const isScored = match.scoreA !== null || match.scoreB !== null;
-  const isClosed = isScored || new Date(match.date) <= new Date();
+  const isClosed = isScored || new Date(match.date).getTime() <= currentTimeMs;
   const hasBet = match.hasBet || savedBet !== undefined;
   const betLabel =
     hasBet && betScoreA !== null && betScoreB !== null
@@ -129,8 +134,8 @@ function MatchTableRow({
       </ItemHeader>
       <Separator />
       <ItemContent className="text-muted-foreground">
-        {!match.hasBet && <span>Aposta não efetuada</span>}
-        {match.hasBet && (
+        {!hasBet && <span>Aposta não efetuada</span>}
+        {hasBet && (
           <div className="flex justify-between">
             <span>Sua aposta: {betLabel}</span>
             <span>Modificador: {modifierLabel}</span>

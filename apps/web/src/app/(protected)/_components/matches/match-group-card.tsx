@@ -13,6 +13,7 @@ type MatchGroupCardProps = {
   matches: Match[];
   savedBets: Map<number, SavedBet>;
   isBetPending: boolean;
+  currentTimeMs: number;
   onOpenBet: (match: Match) => void;
 };
 
@@ -21,6 +22,7 @@ export function MatchGroupCard({
   matches,
   savedBets,
   isBetPending,
+  currentTimeMs,
   onOpenBet,
 }: MatchGroupCardProps) {
   return (
@@ -33,6 +35,7 @@ export function MatchGroupCard({
           matches={matches}
           savedBets={savedBets}
           isBetPending={isBetPending}
+          currentTimeMs={currentTimeMs}
           onOpenBet={onOpenBet}
         />
       </CardContent>

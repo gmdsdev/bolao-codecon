@@ -11,19 +11,23 @@ import { TableSelectRound } from "@/components/tables/table-select-round";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircleIcon, CalendarXIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { MatchList } from "./matches/match-list";
 import type { ProtectedHomePageData } from "./protected-home-page-data";
 
 type ProtectedHomePageClientProps = {
-  initialData: Pick<ProtectedHomePageData, "roundId" | "rounds" | "matches">;
+  initialData: Pick<
+    ProtectedHomePageData,
+    "roundId" | "renderedAt" | "rounds" | "matches"
+  >;
 };
 
 export function ProtectedHomePageClient({
   initialData,
 }: ProtectedHomePageClientProps) {
   const [roundId, setRoundId] = useState<number>(initialData.roundId);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   const rounds = useQuery({
     ...trpc.round.getAll.queryOptions(),
@@ -36,6 +40,14 @@ export function ProtectedHomePageClient({
     initialData:
       roundId === initialData.roundId ? initialData.matches : undefined,
   });
+  const visibleMatches =
+    !hasHydrated && roundId === initialData.roundId
+      ? initialData.matches
+      : matches.data;
+
+  useEffect(() => {
+    setHasHydrated(true);
+  }, []);
 
   return (
     <>
@@ -46,7 +58,7 @@ export function ProtectedHomePageClient({
         }}
       />
       <main className="w-full flex-1">
-        {matches.isError ? (
+        {hasHydrated && matches.isError ? (
           <Empty>
             <EmptyHeader>
               <EmptyMedia>
@@ -58,8 +70,12 @@ export function ProtectedHomePageClient({
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
-        ) : matches.data?.length ? (
-          <MatchList matches={matches.data} onBetCreated={matches.refetch} />
+        ) : visibleMatches?.length ? (
+          <MatchList
+            matches={visibleMatches}
+            renderedAt={initialData.renderedAt}
+            onBetCreated={matches.refetch}
+          />
         ) : (
           <Empty>
             <EmptyHeader>

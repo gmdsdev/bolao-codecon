@@ -28,6 +28,7 @@ export async function getProtectedHomePageData(roundId = DEFAULT_ROUND_ID) {
 
   return {
     roundId,
+    renderedAt: new Date().toISOString(),
     rounds,
     ranking,
     matches,
