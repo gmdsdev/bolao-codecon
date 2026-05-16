@@ -7,7 +7,7 @@ export async function ProtectedHomePage() {
   const initialData = await getProtectedHomePageData();
 
   return (
-    <div className="flex min-h-[calc(100vh-2.5rem)] flex-col gap-3 p-3 lg:flex-row">
+    <div className="flex min-h-[calc(100vh-2.5rem)] min-w-0 flex-col gap-3 p-2 sm:p-3 lg:flex-row">
       <ProtectedHomePageClient
         initialData={{
           roundId: initialData.roundId,
@@ -16,7 +16,7 @@ export async function ProtectedHomePage() {
           matches: initialData.matches,
         }}
       />
-      <div className="flex flex-col gap-3 lg:w-72 shrink-0">
+      <div className="flex min-w-0 shrink-0 flex-col gap-3 lg:w-72">
         <RankingCard ranking={initialData.ranking} />
         <MySummaryCard />
       </div>

@@ -1,17 +1,8 @@
 import { Button } from "@codecon/ui/components/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@codecon/ui/components/table";
-import {
   Item,
   ItemActions,
   ItemContent,
-  ItemDescription,
   ItemHeader,
   ItemTitle,
 } from "@codecon/ui/components/item";
@@ -102,41 +93,51 @@ function MatchTableRow({
       : null;
 
   return (
-    <Item className="last:border-b-0 border-b border-border w-full group/match-item">
-      <ItemHeader className="flex justify-normal items-center">
-        <ItemTitle className="text-lg grayscale-100 group-hover/match-item:grayscale-0 transition-all duration-300 mr-auto">
-          {match.teamAFlag} {match.teamAName}
-          <span className="text-muted-foreground text-sm">vs</span>
-          {match.teamBName} {match.teamBFlag}
+    <Item className="group/match-item w-full min-w-0 border-b border-border last:border-b-0">
+      <ItemHeader className="flex-col items-stretch justify-normal gap-3 sm:flex-row sm:items-center">
+        <ItemTitle className="mr-auto flex w-full min-w-0 flex-wrap gap-x-2 gap-y-1 text-base transition-all duration-300 grayscale-100 group-hover/match-item:grayscale-0 sm:text-lg">
+          <span className="min-w-0 truncate">
+            {match.teamAFlag} {match.teamAName}
+          </span>
+          <span className="shrink-0 text-sm text-muted-foreground">vs</span>
+          <span className="min-w-0 truncate">
+            {match.teamBName} {match.teamBFlag}
+          </span>
         </ItemTitle>
-        <Tooltip>
-          <TooltipTrigger>
-            <div className="flex items-center ml-auto">
-              <div className="text-md border border-border px-2 py-1">
-                {match.scoreA ?? "-"}
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
+          <Tooltip>
+            <TooltipTrigger>
+              <div
+                className="flex shrink-0 items-center"
+                aria-label={`Placar final: ${finalScoreLabel}`}
+              >
+                <div className="border border-border px-2 py-1 text-sm">
+                  {match.scoreA ?? "-"}
+                </div>
+                <div className="px-2 py-1 text-sm text-muted-foreground">:</div>
+                <div className="border border-border px-2 py-1 text-sm">
+                  {match.scoreB ?? "-"}
+                </div>
               </div>
-              <div className="text-md text-muted-foreground px-2 py-1">:</div>
-              <div className="text-md border border-border px-2 py-1">
-                {match.scoreB ?? "-"}
-              </div>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>Placar final</TooltipContent>
-        </Tooltip>
-        <ItemActions>
-          <Button
-            onClick={() => onOpenBet(match)}
-            disabled={isClosed || hasBet || isBetPending}
-          >
-            {isClosed ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
-          </Button>
-        </ItemActions>
+            </TooltipTrigger>
+            <TooltipContent>Placar final</TooltipContent>
+          </Tooltip>
+          <ItemActions className="ml-auto sm:ml-0">
+            <Button
+              onClick={() => onOpenBet(match)}
+              disabled={isClosed || hasBet || isBetPending}
+              className="min-w-24"
+            >
+              {isClosed ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
+            </Button>
+          </ItemActions>
+        </div>
       </ItemHeader>
       <Separator />
-      <ItemContent className="text-muted-foreground">
+      <ItemContent className="min-w-0 text-muted-foreground">
         {!hasBet && <span>Aposta não efetuada</span>}
         {hasBet && (
-          <div className="flex justify-between">
+          <div className="grid gap-1 sm:grid-cols-3 sm:gap-3">
             <span>Sua aposta: {betLabel}</span>
             <span>Modificador: {modifierLabel}</span>
             <span>

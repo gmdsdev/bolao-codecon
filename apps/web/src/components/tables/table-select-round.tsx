@@ -30,7 +30,7 @@ type TableSelectRoundProps = {
 
 export function TableSelectRound(props: TableSelectRoundProps) {
   return (
-    <Card className="w-full h-min shrink-0 lg:w-56">
+    <Card className="h-min w-full shrink-0 lg:w-56">
       <CardHeader>
         <CardTitle>Rodadas</CardTitle>
       </CardHeader>
@@ -54,18 +54,18 @@ function TableSelectRoundContent({
     return <TableSelectRoundErrorState />;
   }
 
+  if (rounds.data?.length) {
+    return (
+      <TableSelectRoundData
+        data={rounds.data}
+        onClick={onSelectRound}
+        selectedRoundId={selectedRoundId}
+      />
+    );
+  }
+
   if (rounds.isFetched) {
-    if (rounds?.data?.length) {
-      return (
-        <TableSelectRoundData
-          data={rounds.data}
-          onClick={onSelectRound}
-          selectedRoundId={selectedRoundId}
-        />
-      );
-    } else {
-      <TableSelectRoundEmptyState />;
-    }
+    return <TableSelectRoundEmptyState />;
   }
 
   return null;
@@ -81,25 +81,46 @@ function TableSelectRoundData({
   selectedRoundId?: number;
 }) {
   return (
-    <Table>
-      <TableBody>
+    <>
+      <div className="flex gap-1 overflow-x-auto p-2 lg:hidden">
         {data?.map((row) => (
-          <TableRow key={row.id}>
-            <TableCell
-              className={cn(
-                "font-medium cursor-pointer transition-colors",
-                row.id === selectedRoundId
-                  ? "bg-muted font-semibold"
-                  : "hover:bg-muted/50",
-              )}
-              onClick={() => onClick(row)}
-            >
-              {row.title}
-            </TableCell>
-          </TableRow>
+          <button
+            key={row.id}
+            type="button"
+            className={cn(
+              "h-8 shrink-0 rounded border border-border px-2.5 text-xs font-medium transition-colors",
+              row.id === selectedRoundId
+                ? "bg-background text-foreground"
+                : "bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            )}
+            onClick={() => onClick(row)}
+          >
+            {row.title}
+          </button>
         ))}
-      </TableBody>
-    </Table>
+      </div>
+      <div className="hidden lg:block">
+        <Table>
+          <TableBody>
+            {data?.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell
+                  className={cn(
+                    "cursor-pointer font-medium transition-colors",
+                    row.id === selectedRoundId
+                      ? "bg-muted font-semibold"
+                      : "hover:bg-muted/50",
+                  )}
+                  onClick={() => onClick(row)}
+                >
+                  {row.title}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
 

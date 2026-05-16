@@ -128,7 +128,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background font-sans text-[13px] leading-[1.2308] text-foreground;
+    @apply overflow-x-hidden bg-background font-sans text-[13px] leading-[1.2308] text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
   html {

@@ -25,7 +25,7 @@ import { authClient } from "@/lib/auth-client";
 import { useTheme } from "./theme-provider";
 
 const userMenuItemClassName =
-  "flex h-9 max-w-40 items-center gap-2 rounded-none p-3 text-xs font-medium outline-none transition-all hover:bg-muted focus:bg-muted focus-visible:ring-1 focus-visible:ring-ring/50 focus-visible:outline-1 data-open:bg-muted/50 data-popup-open:bg-muted/50";
+  "flex h-9 max-w-28 items-center gap-2 rounded-none p-2 text-xs font-medium outline-none transition-all hover:bg-muted focus:bg-muted focus-visible:ring-1 focus-visible:ring-ring/50 focus-visible:outline-1 data-open:bg-muted/50 data-popup-open:bg-muted/50 sm:max-w-40 sm:p-3";
 
 export default function UserMenu() {
   const router = useRouter();

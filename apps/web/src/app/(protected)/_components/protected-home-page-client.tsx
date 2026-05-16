@@ -53,11 +53,12 @@ export function ProtectedHomePageClient({
     <>
       <TableSelectRound
         rounds={rounds as never}
+        selectedRoundId={roundId}
         onSelectRound={(round) => {
           setRoundId(round.id);
         }}
       />
-      <main className="w-full flex-1">
+      <main className="min-w-0 w-full flex-1">
         {hasHydrated && matches.isError ? (
           <Empty>
             <EmptyHeader>

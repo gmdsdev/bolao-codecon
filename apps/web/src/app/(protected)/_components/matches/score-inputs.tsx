@@ -26,9 +26,11 @@ export function ScoreInputs({
   onScoreBChange,
 }: ScoreInputsProps) {
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="space-y-2">
-        <Label htmlFor={scoreAId}>{match.teamAName}</Label>
+    <div className="grid min-w-0 grid-cols-2 gap-3">
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={scoreAId} className="block truncate">
+          {match.teamAName}
+        </Label>
         <Input
           id={scoreAId}
           type="number"
@@ -41,8 +43,10 @@ export function ScoreInputs({
           required
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor={scoreBId}>{match.teamBName}</Label>
+      <div className="min-w-0 space-y-2">
+        <Label htmlFor={scoreBId} className="block truncate">
+          {match.teamBName}
+        </Label>
         <Input
           id={scoreBId}
           type="number"

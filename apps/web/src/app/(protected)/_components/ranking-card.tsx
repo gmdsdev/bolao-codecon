@@ -54,7 +54,7 @@ export function RankingCard({ ranking }: RankingCardProps) {
         }
       }}
     >
-      <Card className="h-min w-full">
+      <Card className="h-min w-full min-w-0">
         <CardHeader>
           <CardTitle>Classificação</CardTitle>
         </CardHeader>
@@ -121,7 +121,9 @@ function RankingTable({
             className="cursor-pointer nth-[1]:text-amber-300 nth-[2]:text-green-300 nth-[3]:text-blue-300 hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
           >
             <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-            <TableCell className="font-medium">{row.userName}</TableCell>
+            <TableCell className="max-w-32 truncate font-medium">
+              {row.userName}
+            </TableCell>
             <TableCell className="text-right font-semibold">
               {row.points}
             </TableCell>

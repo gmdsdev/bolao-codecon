@@ -124,14 +124,14 @@ export default function Page() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-2.5rem)] flex-col gap-3 p-3 lg:flex-row">
+    <div className="flex min-h-[calc(100vh-2.5rem)] min-w-0 flex-col gap-3 p-2 sm:p-3 lg:flex-row">
       <TableSelectRound
         rounds={rounds as never}
         selectedRoundId={selectedRoundId ?? undefined}
         onSelectRound={(round) => setSelectedRoundId(round.id)}
       />
 
-      <div className="w-full flex-1">
+      <div className="min-w-0 w-full flex-1">
         {selectedRound ? (
           <RoundMatches
             key={selectedRound.id}
@@ -168,9 +168,9 @@ function RoundMatches({
   const isRoundComplete = round.status === "complete";
 
   return (
-    <Card>
-      <CardHeader className="flex align-top justify-between">
-        <div>
+    <Card className="min-w-0">
+      <CardHeader className="flex flex-col gap-3 align-top sm:flex-row sm:justify-between">
+        <div className="min-w-0">
           <CardTitle>{round.title}</CardTitle>
           <CardDescription>
             Status: {isRoundComplete ? "concluída" : round.status}
@@ -180,6 +180,7 @@ function RoundMatches({
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => setIsAddMatchOpen(true)}
           >
             Adicionar partida
@@ -204,7 +205,7 @@ function RoundMatches({
 
         {matches.data !== undefined && matches.data.length > 0 && (
           <Table>
-            <TableHeader>
+            <TableHeader className="hidden sm:table-header-group">
               <TableRow>
                 <TableHead>Partida</TableHead>
                 <TableHead>Vencedor esperado</TableHead>
@@ -228,7 +229,7 @@ function RoundMatches({
         )}
 
         <Dialog open={isAddMatchOpen} onOpenChange={setIsAddMatchOpen}>
-          <DialogContent className="overflow-hidden sm:max-w-lg">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Adicionar partida</DialogTitle>
               <DialogDescription>{round.title}</DialogDescription>
@@ -253,7 +254,7 @@ function RoundMatches({
           }}
         >
           {selectedMatch && (
-            <DialogContent className="overflow-hidden sm:max-w-lg">
+            <DialogContent className="sm:max-w-lg">
               <DialogHeader>
                 <DialogTitle>Editar partida</DialogTitle>
                 <DialogDescription>
@@ -301,22 +302,38 @@ function MatchRow({
     : "-";
 
   return (
-    <TableRow className={isComplete ? "opacity-60" : undefined}>
-      <TableCell className="font-medium">
-        <span>
+    <TableRow
+      className={
+        isComplete
+          ? "block p-3 opacity-60 sm:table-row sm:p-0"
+          : "block p-3 sm:table-row sm:p-0"
+      }
+    >
+      <TableCell className="block whitespace-normal p-0 font-medium sm:table-cell sm:p-2">
+        <span className="break-words">
           {match.teamAFlag} {match.teamAName}
         </span>
         <span className="mx-1.5 text-muted-foreground">x</span>
-        <span>
+        <span className="break-words">
           {match.teamBName} {match.teamBFlag}
         </span>
       </TableCell>
-      <TableCell>{expectedWinnerLabel}</TableCell>
-      <TableCell>{scoreLabel}</TableCell>
-      <TableCell>
-        <span className="text-xs text-muted-foreground">{match.totalBets ?? 0}</span>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">
+          Vencedor esperado
+        </span>
+        <span className="text-right sm:text-left">{expectedWinnerLabel}</span>
       </TableCell>
-      <TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2 sm:text-sm">
+        <span className="text-muted-foreground sm:hidden">Placar</span>
+        <span>{scoreLabel}</span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">Apostas</span>
+        <span className="text-muted-foreground">{match.totalBets ?? 0}</span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">Status</span>
         {isComplete ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
             <CheckCircle2 className="size-3.5" />
@@ -326,12 +343,13 @@ function MatchRow({
           <span className="text-xs text-muted-foreground">Pendente</span>
         )}
       </TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
+      <TableCell className="block p-0 pt-3 text-right sm:table-cell sm:p-2">
+        <div className="flex justify-stretch gap-2 sm:justify-end">
           <Button
             type="button"
             variant="outline"
             size="sm"
+            className="w-full sm:w-auto"
             onClick={onEdit}
             disabled={isComplete || roundComplete}
           >
@@ -502,7 +520,7 @@ function AddMatchForm({
         <p className="text-xs text-destructive">{createMatch.error.message}</p>
       )}
 
-      <DialogFooter className="min-w-0 flex-wrap">
+      <DialogFooter className="min-w-0 flex-wrap sm:[&_[data-slot=button]]:w-auto [&_[data-slot=button]]:w-full">
         <Button
           type="button"
           variant="outline"
@@ -717,7 +735,7 @@ function MatchResultForm({
 
       <div className="grid min-w-0 grid-cols-2 gap-3">
         <div className="min-w-0 space-y-2">
-          <Label htmlFor={`score-a-${match.id}`}>
+          <Label htmlFor={`score-a-${match.id}`} className="block truncate">
             {match.teamAFlag} {match.teamAName}
           </Label>
           <Input
@@ -733,7 +751,7 @@ function MatchResultForm({
           />
         </div>
         <div className="min-w-0 space-y-2">
-          <Label htmlFor={`score-b-${match.id}`}>
+          <Label htmlFor={`score-b-${match.id}`} className="block truncate">
             {match.teamBFlag} {match.teamBName}
           </Label>
           <Input
@@ -754,7 +772,7 @@ function MatchResultForm({
         <p className="text-xs text-destructive">{updateResult.error.message}</p>
       )}
 
-      <DialogFooter className="min-w-0 flex-wrap">
+      <DialogFooter className="min-w-0 flex-wrap sm:[&_[data-slot=button]]:w-auto [&_[data-slot=button]]:w-full">
         <Button
           type="button"
           variant="outline"

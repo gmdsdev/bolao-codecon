@@ -29,9 +29,9 @@ export function MySummaryCard() {
   return (
     <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
       <Card className="w-full h-min shrink-0 lg:w-72">
-        <CardHeader>
+        <CardHeader className="!flex items-center justify-between">
           <CardTitle>Meu Resumo</CardTitle>
-          <CardAction>
+          <CardAction className="col-auto row-auto row-span-1 self-center justify-self-auto">
             <Button
               type="button"
               variant="outline"
@@ -140,7 +140,9 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="min-w-0 pr-2 text-sm text-muted-foreground">
+        {label}
+      </span>
       <span
         className={
           highlight

@@ -41,7 +41,7 @@ export function ScoreLogDialog({
   description = "Histórico das partidas que formaram sua pontuação atual.",
 }: ScoreLogDialogProps) {
   return (
-    <DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden sm:max-w-2xl">
+    <DialogContent className="max-h-[calc(100dvh-1rem)] overflow-hidden sm:max-h-[calc(100vh-2rem)] sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>Detalhes da pontuação</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
@@ -83,7 +83,7 @@ function ScoreLogContent({
   }
 
   return (
-    <div className="max-h-[min(28rem,calc(100vh-10rem))] overflow-y-auto pr-1">
+    <div className="max-h-[min(28rem,calc(100dvh-10rem))] overflow-y-auto pr-1">
       <div className="flex flex-col gap-3">
         {scoreLog.data.map((entry) => (
           <ScoreLogItem key={entry.id} entry={entry} />
@@ -106,7 +106,7 @@ function ScoreLogItem({ entry }: { entry: ScoreLogEntry }) {
     <div className="rounded border border-border bg-muted/60 p-3">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="font-medium text-foreground">
+          <p className="min-w-0 font-medium text-foreground">
             {teamALabel}
             <span className="mx-1 text-muted-foreground">x</span>
             {teamBLabel}
