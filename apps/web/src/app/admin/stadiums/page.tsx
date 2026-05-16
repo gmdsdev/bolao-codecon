@@ -167,7 +167,7 @@ export default function Page() {
               <DialogTitle>Excluir estádio</DialogTitle>
               <DialogDescription>
                 Esta ação oculta {stadiumToDelete.name} da lista de estádios e
-                das opções do Manager. Partidas existentes manterão este
+                das opções de Partidas. Partidas existentes manterão este
                 estádio no histórico.
               </DialogDescription>
             </DialogHeader>

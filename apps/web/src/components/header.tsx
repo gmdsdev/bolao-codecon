@@ -32,7 +32,7 @@ export default function Header() {
   const links: HeaderLink[] = [
     { to: "/", label: "Rodadas" },
     { to: "/admin/ranking", label: "Ranking", adminOnly: true },
-    { to: "/admin/manager", label: "Manager", adminOnly: true },
+    { to: "/admin/manager", label: "Partidas", adminOnly: true },
     { to: "/admin/stadiums", label: "Estádios", adminOnly: true },
     { to: "/admin/teams", label: "Times", adminOnly: true },
   ];

@@ -223,7 +223,7 @@ export default function Page() {
               <DialogTitle>Excluir time</DialogTitle>
               <DialogDescription>
                 Esta ação oculta {teamToDelete.flag} {teamToDelete.name} da
-                lista de times e das opções do Manager. Partidas existentes
+                lista de times e das opções de Partidas. Partidas existentes
                 manterão este time no histórico.
               </DialogDescription>
             </DialogHeader>
