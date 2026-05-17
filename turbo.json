@@ -3,6 +3,13 @@
   "ui": "tui",
   "tasks": {
     "build": {
+      "env": [
+        "NEXT_PUBLIC_SERVER_URL",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "CORS_ORIGIN",
+        "DATABASE_URL"
+      ],
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**"]
@@ -26,6 +33,9 @@
     "db:migrate": {
       "cache": false,
       "persistent": true
+    },
+    "db:seed": {
+      "cache": false
     },
     "db:studio": {
       "cache": false,

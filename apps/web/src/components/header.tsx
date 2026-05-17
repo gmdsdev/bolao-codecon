@@ -1,51 +1,67 @@
 "use client";
+
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ModeToggle } from "./mode-toggle";
+import { CodeconLogo } from "./codecon-logo";
 import UserMenu from "./user-menu";
+
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@codecon/ui/components/navigation-menu";
+
+type HeaderLink = {
+  to:
+    | "/"
+    | "/admin/ranking"
+    | "/admin/manager"
+    | "/admin/stadiums"
+    | "/admin/teams";
+  label: string;
+  adminOnly?: boolean;
+};
 
 export default function Header() {
   const pathname = usePathname();
-  const links = [
-    { to: "/admin/rounds/1", label: "Rodadas" },
-    { to: "/admin/ranking", label: "Classificação" },
-    { to: "/admin/manager", label: "Manager" },
-  ] as const;
+  const { data: session } = authClient.useSession();
+  const isAdmin = session?.user.isAdmin === true;
+  const links: HeaderLink[] = [
+    { to: "/", label: "Rodadas" },
+    { to: "/admin/ranking", label: "Ranking", adminOnly: true },
+    { to: "/admin/manager", label: "Partidas", adminOnly: true },
+    { to: "/admin/stadiums", label: "Estádios", adminOnly: true },
+    { to: "/admin/teams", label: "Times", adminOnly: true },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-secondary">
-      <div className="flex h-10 flex-row items-center justify-between px-3">
-        <nav className="flex items-center gap-1">
-          <Link
-            href="/"
-            className="mr-3 rounded px-2 py-1 text-xs font-semibold text-foreground hover:bg-accent"
-          >
-            codecon
-          </Link>
-          {links.map(({ to, label }) => {
-            const isActive =
-              pathname === to ||
-              (to.startsWith("/admin/rounds") &&
-                pathname.startsWith("/admin/rounds"));
+    <NavigationMenu className="sticky top-0 z-40 w-full max-w-full overflow-hidden border-b border-border bg-secondary px-2 sm:px-3">
+      <NavigationMenuList className="w-full min-w-0 justify-start overflow-x-auto">
+        <NavigationMenuItem className="shrink-0">
+          <CodeconLogo height={12} width={69} className="mr-1.5 sm:mr-3" />
+        </NavigationMenuItem>
 
-            return (
-              <Link
-                key={to}
-                href={to}
-                data-active={isActive}
-                className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[active=true]:bg-accent data-[active=true]:text-foreground"
+        {links
+          .filter((link) => !link.adminOnly || isAdmin)
+          .map(({ to, label }) => (
+            <NavigationMenuItem key={to} className="shrink-0">
+              <NavigationMenuLink
+                render={<Link href={to} />}
+                data-active={pathname === to}
+                className="px-2 sm:px-3"
               >
                 {label}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-2">
-          <ModeToggle />
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          ))}
+
+        <NavigationMenuItem className="ml-auto shrink-0">
           <UserMenu />
-        </div>
-      </div>
-    </header>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }

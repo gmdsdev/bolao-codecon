@@ -35,7 +35,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={cn("font-mono", jetbrainsMono.variable)}
+      className={cn("dark font-mono", jetbrainsMono.variable)}
     >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

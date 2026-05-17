@@ -3,27 +3,44 @@ import { bet } from "@codecon/db/schema/bet.schema";
 import { match } from "@codecon/db/schema/match.schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
+import { randomInt } from "node:crypto";
 import z from "zod";
 
-import { protectedProcedure, router } from "../index";
+import { adminProcedure, protectedProcedure, router } from "../index";
+import { applyBetScoreModifier } from "../lib/bet-scoring";
 
-const betModifierSchema = z.enum([
+const betModifiers = [
   "invert_bet",
   "double_points",
   "half_points",
   "invalid_bet",
   "lucky_duck",
   "normal",
-]);
+] as const;
+const idSchema = z.number().int().positive();
+const scoreSchema = z.number().int().min(0).max(99);
 
 export const betRouter = router({
+  getAll: adminProcedure.query(async () => {
+    return await db
+      .select({
+        id: bet.id,
+        matchId: bet.matchId,
+        userId: bet.userId,
+        scoreA: bet.scoreA,
+        scoreB: bet.scoreB,
+        modifier: bet.modifier,
+      })
+      .from(bet)
+      .orderBy(bet.matchId);
+  }),
+
   create: protectedProcedure
     .input(
       z.object({
-        matchId: z.number(),
-        scoreA: z.number().int().min(0),
-        scoreB: z.number().int().min(0),
-        modifier: betModifierSchema,
+        matchId: idSchema,
+        scoreA: scoreSchema,
+        scoreB: scoreSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -31,6 +48,8 @@ export const betRouter = router({
         .select({
           scoreA: match.scoreA,
           scoreB: match.scoreB,
+          date: match.date,
+          status: match.status,
         })
         .from(match)
         .where(eq(match.id, input.matchId))
@@ -45,7 +64,12 @@ export const betRouter = router({
         });
       }
 
-      if (matchRow.scoreA !== null || matchRow.scoreB !== null) {
+      if (
+        matchRow.status !== "pending" ||
+        matchRow.scoreA !== null ||
+        matchRow.scoreB !== null ||
+        matchRow.date <= new Date()
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "As apostas estão encerradas para esta partida",
@@ -70,24 +94,46 @@ export const betRouter = router({
         });
       }
 
-      const scoreA =
-        input.modifier === "invert_bet" ? input.scoreB : input.scoreA;
-      const scoreB =
-        input.modifier === "invert_bet" ? input.scoreA : input.scoreB;
+      const modifier = getRandomBetModifier();
+      const { scoreA, scoreB } = applyBetScoreModifier(input, modifier);
 
-      await db.insert(bet).values({
-        matchId: input.matchId,
-        scoreA,
-        scoreB,
-        modifier: input.modifier,
-        userId: ctx.session.user.id,
-      });
+      try {
+        await db.insert(bet).values({
+          matchId: input.matchId,
+          scoreA,
+          scoreB,
+          modifier,
+          userId: ctx.session.user.id,
+        });
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Você já fez uma aposta para esta partida",
+          });
+        }
+
+        throw error;
+      }
 
       return {
         matchId: input.matchId,
         scoreA,
         scoreB,
-        modifier: input.modifier,
+        modifier,
       };
     }),
 });
+
+function getRandomBetModifier() {
+  return betModifiers[randomInt(betModifiers.length)] ?? "normal";
+}
+
+function isUniqueViolation(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  );
+}

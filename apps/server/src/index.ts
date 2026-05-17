@@ -4,12 +4,26 @@ import { auth } from "@codecon/auth";
 import { env } from "@codecon/env/server";
 import { trpcServer } from "@hono/trpc-server";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { secureHeaders } from "hono/secure-headers";
 
 const app = new Hono();
 
 app.use(logger());
+app.use(
+  secureHeaders({
+    referrerPolicy: "strict-origin-when-cross-origin",
+    strictTransportSecurity: "max-age=63072000; includeSubDomains; preload",
+    xFrameOptions: "DENY",
+    permissionsPolicy: {
+      camera: [],
+      microphone: [],
+      geolocation: [],
+    },
+  }),
+);
 app.use(
   "/*",
   cors({
@@ -17,6 +31,12 @@ app.use(
     allowMethods: ["GET", "POST", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+  }),
+);
+app.use(
+  "/*",
+  bodyLimit({
+    maxSize: 32 * 1024,
   }),
 );
 
