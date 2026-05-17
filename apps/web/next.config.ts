@@ -1,13 +1,9 @@
 import type { NextConfig } from "next";
 
 const apiServerUrl = (
-  process.env.API_SERVER_URL ??
+  process.env.NEXT_PUBLIC_SERVER_URL ??
   (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "")
 ).replace(/\/$/, "");
-
-if (!apiServerUrl && process.env.NODE_ENV === "production") {
-  throw new Error("API_SERVER_URL is required to proxy auth and API requests");
-}
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
