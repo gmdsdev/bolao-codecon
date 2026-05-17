@@ -103,6 +103,7 @@
       },
       "devDependencies": {
         "@codecon/config": "workspace:*",
+        "tsdown": "^0.22.0",
         "typescript": "catalog:",
       },
     },
@@ -124,6 +125,7 @@
         "@codecon/config": "workspace:*",
         "@types/pg": "catalog:",
         "drizzle-kit": "^0.31.10",
+        "tsdown": "^0.22.0",
         "typescript": "catalog:",
       },
     },
@@ -139,6 +141,7 @@
       "devDependencies": {
         "@codecon/config": "workspace:*",
         "@types/bun": "catalog:",
+        "tsdown": "^0.22.0",
         "typescript": "catalog:",
       },
     },

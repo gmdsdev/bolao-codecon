@@ -10,6 +10,7 @@
     }
   },
   "scripts": {
+    "build": "tsdown",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@codecon/config": "workspace:*",
+    "tsdown": "^0.22.0",
     "typescript": "catalog:"
   }
 }
