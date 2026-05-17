@@ -1,23 +1,27 @@
 import { headers } from "next/headers";
 
-import { authClient } from "@/lib/auth-client";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 export async function getServerSession() {
   const requestHeaders = await headers();
 
   try {
-    const session = await authClient.getSession({
-      fetchOptions: {
-        headers: requestHeaders,
+    const response = await fetch(
+      `${getRequestOrigin(requestHeaders)}/api/auth/get-session`,
+      {
+        headers: {
+          cookie: requestHeaders.get("cookie") ?? "",
+        },
+        cache: "no-store",
       },
-    });
+    );
 
-    if (session.error) {
-      console.error("Failed to resolve server session", session.error);
+    if (!response.ok) {
+      console.error("Failed to resolve server session", response.statusText);
       return null;
     }
 
-    return session.data;
+    return response.json();
   } catch (error) {
     console.error("Failed to resolve server session", error);
     return null;

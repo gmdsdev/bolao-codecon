@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { AppRouter } from "@codecon/api/routers/index";
-import { env } from "@codecon/env/web";
+import { getRequestOrigin } from "@/lib/request-origin";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { headers } from "next/headers";
 
@@ -12,7 +12,7 @@ export async function getProtectedHomePageData(roundId = DEFAULT_ROUND_ID) {
   const client = createTRPCClient<AppRouter>({
     links: [
       httpBatchLink({
-        url: `${env.NEXT_PUBLIC_SERVER_URL}/trpc`,
+        url: `${getRequestOrigin(requestHeaders)}/trpc`,
         headers() {
           return getForwardedHeaders(requestHeaders);
         },

@@ -14,8 +14,6 @@ export function createAuth() {
     trustedOrigins: [env.CORS_ORIGIN],
     emailAndPassword: {
       enabled: true,
-      disableSignUp:
-        env.AUTH_DISABLE_SIGN_UP ?? env.NODE_ENV === "production",
       maxPasswordLength: 128,
       minPasswordLength: 8,
     },
@@ -52,11 +50,7 @@ export function createAuth() {
         httpOnly: true,
       },
       ipAddress: {
-        ipAddressHeaders: [
-          "cf-connecting-ip",
-          "x-real-ip",
-          "x-forwarded-for",
-        ],
+        ipAddressHeaders: ["cf-connecting-ip", "x-real-ip", "x-forwarded-for"],
       },
     },
     plugins: [],
