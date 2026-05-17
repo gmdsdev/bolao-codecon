@@ -54,17 +54,19 @@ export default function Page() {
             <CardTitle>Classificação</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            {ranking.isLoading && (
+            {ranking.isLoading ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="size-5 animate-spin" />
               </div>
-            )}
-
-            {ranking.isError && <div>Erro: {ranking.error.message}</div>}
-
-            {ranking.data?.length === 0 && <div>Ainda não há classificação</div>}
-
-            {ranking.data !== undefined && ranking.data.length > 0 && (
+            ) : ranking.isError ? (
+              <div className="py-6 text-center text-sm text-destructive">
+                Erro: {ranking.error.message}
+              </div>
+            ) : ranking.data?.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                Ainda não há classificação.
+              </div>
+            ) : ranking.data !== undefined && ranking.data.length > 0 ? (
               <Table>
                 <TableHeader className="hidden sm:table-header-group">
                   <TableRow>
@@ -102,6 +104,10 @@ export default function Page() {
                   ))}
                 </TableBody>
               </Table>
+            ) : (
+              <div className="flex justify-center py-4">
+                <Loader2 className="size-5 animate-spin" />
+              </div>
             )}
           </CardContent>
         </Card>

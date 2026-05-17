@@ -14,6 +14,7 @@ import {
 } from "@codecon/ui/components/table";
 import { cn } from "@codecon/ui/lib/utils";
 import type { UseQueryResult } from "@tanstack/react-query";
+import { Loader2Icon } from "lucide-react";
 
 type Round = {
   id: number;
@@ -125,13 +126,25 @@ function TableSelectRoundData({
 }
 
 function TableSelectRoundEmptyState() {
-  return <div>No data</div>;
+  return (
+    <div className="py-6 text-center text-sm text-muted-foreground">
+      Nenhuma rodada cadastrada.
+    </div>
+  );
 }
 
 function TableSelectRoundLoadingState() {
-  return <div>Loading...</div>;
+  return (
+    <div className="flex justify-center py-4">
+      <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+    </div>
+  );
 }
 
 function TableSelectRoundErrorState() {
-  return <div>Error</div>;
+  return (
+    <div className="py-6 text-center text-sm text-destructive">
+      Erro ao carregar rodadas.
+    </div>
+  );
 }

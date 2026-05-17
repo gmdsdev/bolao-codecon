@@ -10,7 +10,7 @@ import {
 import { TableSelectRound } from "@/components/tables/table-select-round";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircleIcon, CalendarXIcon } from "lucide-react";
+import { AlertCircleIcon, CalendarXIcon, Loader2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { MatchList } from "./matches/match-list";
@@ -40,10 +40,12 @@ export function ProtectedHomePageClient({
     initialData:
       roundId === initialData.roundId ? initialData.matches : undefined,
   });
-  const visibleMatches =
-    !hasHydrated && roundId === initialData.roundId
-      ? initialData.matches
-      : matches.data;
+  const isUsingInitialMatches =
+    !hasHydrated && roundId === initialData.roundId;
+  const visibleMatches = isUsingInitialMatches
+    ? initialData.matches
+    : matches.data;
+  const isLoadingMatches = !isUsingInitialMatches && matches.isLoading;
 
   useEffect(() => {
     setHasHydrated(true);
@@ -69,6 +71,15 @@ export function ProtectedHomePageClient({
               <EmptyDescription>
                 Não foi possível buscar as partidas desta rodada. Tente novamente.
               </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : isLoadingMatches ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia>
+                <Loader2Icon className="size-10 text-muted-foreground animate-spin" />
+              </EmptyMedia>
+              <EmptyTitle>Carregando partidas...</EmptyTitle>
             </EmptyHeader>
           </Empty>
         ) : visibleMatches?.length ? (

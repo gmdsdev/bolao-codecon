@@ -121,7 +121,18 @@ export default function Page() {
   }
 
   if (!rounds.data?.length) {
-    return <div>Nenhum dado</div>;
+    return (
+      <div className="min-h-[calc(100vh-2.5rem)] p-2 sm:p-3">
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Partidas</CardTitle>
+            <CardDescription>
+              Cadastre rodadas antes de gerenciar partidas.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -190,21 +201,19 @@ function RoundMatches({
       </CardHeader>
 
       <CardContent className="p-0">
-        {matches.isLoading && (
+        {matches.isLoading ? (
           <div className="flex justify-center border py-4">
             <Loader2 className="size-5 animate-spin" />
           </div>
-        )}
-
-        {matches.isError && <div>Erro: {matches.error.message}</div>}
-
-        {matches.data?.length === 0 && (
+        ) : matches.isError ? (
+          <div className="py-6 text-center text-sm text-destructive">
+            Erro: {matches.error.message}
+          </div>
+        ) : matches.data?.length === 0 ? (
           <div className="py-6 text-center text-sm text-muted-foreground">
             Nenhuma partida nesta rodada.
           </div>
-        )}
-
-        {matches.data !== undefined && matches.data.length > 0 && (
+        ) : matches.data !== undefined && matches.data.length > 0 ? (
           <Table>
             <TableHeader className="hidden sm:table-header-group">
               <TableRow>
@@ -227,6 +236,10 @@ function RoundMatches({
               ))}
             </TableBody>
           </Table>
+        ) : (
+          <div className="flex justify-center border py-4">
+            <Loader2 className="size-5 animate-spin" />
+          </div>
         )}
 
         <Dialog open={isAddMatchOpen} onOpenChange={setIsAddMatchOpen}>

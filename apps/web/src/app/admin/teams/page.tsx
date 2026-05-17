@@ -107,21 +107,19 @@ export default function Page() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {isLoading && (
+          {isLoading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="size-5 animate-spin" />
             </div>
-          )}
-
-          {error && <div>Erro: {error.message}</div>}
-
-          {groups.data?.length === 0 && (
+          ) : error ? (
+            <div className="py-6 text-center text-sm text-destructive">
+              Erro: {error.message}
+            </div>
+          ) : groups.data?.length === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               Nenhum grupo cadastrado para vincular times.
             </div>
-          )}
-
-          {groups.data !== undefined && groups.data.length > 0 && (
+          ) : groups.data !== undefined && groups.data.length > 0 ? (
             <div className="divide-y divide-border">
               {groups.data.map((group) => {
                 const groupTeams =
@@ -178,6 +176,10 @@ export default function Page() {
                   </section>
                 );
               })}
+            </div>
+          ) : (
+            <div className="flex justify-center py-4">
+              <Loader2 className="size-5 animate-spin" />
             </div>
           )}
         </CardContent>

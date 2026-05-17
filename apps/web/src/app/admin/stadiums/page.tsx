@@ -91,21 +91,19 @@ export default function Page() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {stadiums.isLoading && (
+          {stadiums.isLoading ? (
             <div className="flex justify-center py-4">
               <Loader2 className="size-5 animate-spin" />
             </div>
-          )}
-
-          {stadiums.isError && <div>Erro: {stadiums.error.message}</div>}
-
-          {stadiums.data?.length === 0 && (
+          ) : stadiums.isError ? (
+            <div className="py-6 text-center text-sm text-destructive">
+              Erro: {stadiums.error.message}
+            </div>
+          ) : stadiums.data?.length === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               Nenhum estádio cadastrado.
             </div>
-          )}
-
-          {stadiums.data !== undefined && stadiums.data.length > 0 && (
+          ) : stadiums.data !== undefined && stadiums.data.length > 0 ? (
             <Table>
               <TableHeader className="hidden sm:table-header-group">
                 <TableRow>
@@ -125,6 +123,10 @@ export default function Page() {
                 ))}
               </TableBody>
             </Table>
+          ) : (
+            <div className="flex justify-center py-4">
+              <Loader2 className="size-5 animate-spin" />
+            </div>
           )}
         </CardContent>
       </Card>
