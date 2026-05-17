@@ -1,20 +1,15 @@
 {
   "name": "@codecon/api",
   "type": "module",
-  "main": "./dist/index.mjs",
-  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.mjs"
+      "default": "./src/index.ts"
     },
     "./*": {
-      "types": "./src/*.ts",
-      "default": "./dist/*.mjs"
+      "default": "./src/*.ts"
     }
   },
   "scripts": {
-    "build": "tsdown",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -31,7 +26,6 @@
   "devDependencies": {
     "@codecon/config": "workspace:*",
     "hono": "catalog:",
-    "tsdown": "^0.22.0",
     "typescript": "catalog:"
   }
 }

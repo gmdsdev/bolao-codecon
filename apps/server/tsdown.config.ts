@@ -5,5 +5,9 @@ export default defineConfig({
   format: "esm",
   outDir: "./dist",
   clean: true,
-  noExternal: [/@codecon\/.*/],
+  platform: "node",
+  deps: {
+    alwaysBundle: [/^@codecon\//],
+    onlyBundle: false,
+  },
 });
