@@ -1,12 +1,18 @@
 {
   "name": "@codecon/auth",
   "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./*": {
-      "default": "./src/*.ts"
+      "types": "./dist/*.d.mts",
+      "import": "./dist/*.mjs",
+      "default": "./dist/*.mjs"
     }
   },
   "scripts": {

@@ -2,14 +2,16 @@
   "name": "@codecon/api",
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
     "./*": {
-      "types": "./src/*.ts",
+      "types": "./dist/*.d.mts",
+      "import": "./dist/*.mjs",
       "default": "./dist/*.mjs"
     }
   },
@@ -26,11 +28,11 @@
     "@types/pg": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
+    "hono": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@codecon/config": "workspace:*",
-    "hono": "catalog:",
     "tsdown": "^0.22.0",
     "typescript": "catalog:"
   }

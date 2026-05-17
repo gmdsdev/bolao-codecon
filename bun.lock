@@ -83,11 +83,11 @@
         "@types/pg": "catalog:",
         "dotenv": "catalog:",
         "drizzle-orm": "catalog:",
+        "hono": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
         "@codecon/config": "workspace:*",
-        "hono": "catalog:",
         "tsdown": "^0.22.0",
         "typescript": "catalog:",
       },

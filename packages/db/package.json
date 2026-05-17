@@ -2,14 +2,16 @@
   "name": "@codecon/db",
   "type": "module",
   "main": "./dist/index.mjs",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
     "./*": {
-      "types": "./src/*.ts",
+      "types": "./dist/*.d.mts",
+      "import": "./dist/*.mjs",
       "default": "./dist/*.mjs"
     }
   },

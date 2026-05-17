@@ -11,4 +11,9 @@ export default defineConfig({
   dts: true,
   clean: true,
   unbundle: true,
+  platform: "node",
+  deps: {
+    neverBundle: ["hono"],
+    onlyBundle: false,
+  },
 });
