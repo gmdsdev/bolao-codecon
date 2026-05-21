@@ -3,15 +3,17 @@ import { resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 
 import { config } from "dotenv";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { hashPassword } from "better-auth/crypto";
 
 import {
   account,
   bet,
   match,
   ranking,
+  rankingLog,
   round,
   stadium,
   team,
@@ -304,6 +306,7 @@ const db = drizzle(pool, {
     bet,
     match,
     ranking,
+    rankingLog,
     round,
     stadium,
     team,
@@ -311,6 +314,187 @@ const db = drizzle(pool, {
     user,
   },
 });
+
+// ===================================================================
+// DADOS DE DEMONSTRAÇÃO (opcional — requer SEED_DEMO_DATA=true)
+// ===================================================================
+
+const demoUsersData = [
+  { name: "Alice Demo",   email: "demo.alice@codecon.local" },
+  { name: "Bob Demo",     email: "demo.bob@codecon.local" },
+  { name: "Charlie Demo", email: "demo.charlie@codecon.local" },
+];
+
+const demoPassword = "CodeCon-Demo-2026!";
+
+// Partidas da Rodada 1 que serão marcadas como finalizadas no demo
+const demoFinishedMatches = [
+  { teamA: "Mexico",        teamB: "South Africa",  scoreA: 2, scoreB: 1 },
+  { teamA: "Korea Republic",teamB: "Czechia",        scoreA: 1, scoreB: 1 },
+  { teamA: "Canada",        teamB: "Bosnia and Herzegovina", scoreA: 1, scoreB: 0 },
+  { teamA: "Brazil",        teamB: "Morocco",        scoreA: 3, scoreB: 1 },
+  { teamA: "Germany",       teamB: "Curaçao",        scoreA: 4, scoreB: 0 },
+  { teamA: "France",        teamB: "Senegal",        scoreA: 2, scoreB: 0 },
+  { teamA: "Argentina",     teamB: "Algeria",        scoreA: 1, scoreB: 0 },
+  { teamA: "England",       teamB: "Croatia",        scoreA: 2, scoreB: 1 },
+];
+
+type BetRow = { scoreA: number; scoreB: number; modifier: string };
+
+// Apostas de cada usuário para as partidas finalizadas (mesma ordem de demoFinishedMatches)
+const demoBetsOnFinished: Record<string, BetRow[]> = {
+  "demo.alice@codecon.local": [
+    { scoreA: 2, scoreB: 1, modifier: "normal" },        // exato → 3pts
+    { scoreA: 1, scoreB: 1, modifier: "normal" },        // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "double_points" }, // exato + dobro → 6pts
+    { scoreA: 2, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 3, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" },        // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" },        // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+  ],
+  "demo.bob@codecon.local": [
+    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" },        // errou → 0pts
+    { scoreA: 0, scoreB: 0, modifier: "normal" },        // errou → 0pts
+    { scoreA: 3, scoreB: 1, modifier: "normal" },        // exato → 3pts
+    { scoreA: 2, scoreB: 0, modifier: "half_points" },   // vencedor certo + metade → 0pts
+    { scoreA: 1, scoreB: 1, modifier: "normal" },        // errou → 0pts
+    { scoreA: 2, scoreB: 1, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 1, modifier: "normal" },        // exato → 3pts
+  ],
+  "demo.charlie@codecon.local": [
+    { scoreA: 0, scoreB: 2, modifier: "normal" },        // errou → 0pts
+    { scoreA: 2, scoreB: 0, modifier: "normal" },        // errou → 0pts
+    { scoreA: 0, scoreB: 2, modifier: "normal" },        // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
+    { scoreA: 1, scoreB: 2, modifier: "normal" },        // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+  ],
+};
+
+// Apostas para as partidas pendentes da Rodada 1 (sem ranking_log)
+const demoBetsOnPending: Record<string, BetRow[]> = {
+  "demo.alice@codecon.local": [
+    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Qatar vs Switzerland
+    { scoreA: 0, scoreB: 1, modifier: "normal" },  // Haiti vs Scotland
+    { scoreA: 2, scoreB: 0, modifier: "normal" },  // USA vs Paraguay
+    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Australia vs Türkiye
+    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Ivory Coast vs Ecuador
+    { scoreA: 2, scoreB: 1, modifier: "normal" },  // Netherlands vs Japan
+    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Sweden vs Tunisia
+    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Belgium vs Egypt
+    { scoreA: 1, scoreB: 0, modifier: "normal" },  // Iran vs New Zealand
+    { scoreA: 3, scoreB: 0, modifier: "normal" },  // Spain vs Cape Verde
+    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Saudi Arabia vs Uruguay
+    { scoreA: 0, scoreB: 1, modifier: "normal" },  // Iraq vs Norway
+    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Austria vs Jordan
+    { scoreA: 3, scoreB: 0, modifier: "normal" },  // Portugal vs DR Congo
+    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Uzbekistan vs Colombia
+    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Ghana vs Panama
+  ],
+  "demo.bob@codecon.local": [
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 2, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+  ],
+  "demo.charlie@codecon.local": [
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 2, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 0, scoreB: 2, modifier: "normal" },
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 2, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+  ],
+};
+
+// Partidas pendentes da Rodada 1 (mesma ordem de demoBetsOnPending)
+const demoPendingMatchPairs = [
+  { teamA: "Qatar",          teamB: "Switzerland" },
+  { teamA: "Haiti",          teamB: "Scotland" },
+  { teamA: "United States",  teamB: "Paraguay" },
+  { teamA: "Australia",      teamB: "Türkiye" },
+  { teamA: "Ivory Coast",    teamB: "Ecuador" },
+  { teamA: "Netherlands",    teamB: "Japan" },
+  { teamA: "Sweden",         teamB: "Tunisia" },
+  { teamA: "Belgium",        teamB: "Egypt" },
+  { teamA: "Iran",           teamB: "New Zealand" },
+  { teamA: "Spain",          teamB: "Cape Verde" },
+  { teamA: "Saudi Arabia",   teamB: "Uruguay" },
+  { teamA: "Iraq",           teamB: "Norway" },
+  { teamA: "Austria",        teamB: "Jordan" },
+  { teamA: "Portugal",       teamB: "DR Congo" },
+  { teamA: "Uzbekistan",     teamB: "Colombia" },
+  { teamA: "Ghana",          teamB: "Panama" },
+];
+
+function calcPoints(
+  betA: number, betB: number,
+  actualA: number, actualB: number,
+  modifier: string,
+): { basePoints: number; modifierPoints: number; totalPoints: number } {
+  let basePoints: number;
+
+  if (betA === actualA && betB === actualB) {
+    basePoints = 3;
+  } else {
+    const betWinner = betA > betB ? "A" : betA < betB ? "B" : "draw";
+    const actualWinner = actualA > actualB ? "A" : actualA < actualB ? "B" : "draw";
+    basePoints = betWinner === actualWinner ? 1 : 0;
+  }
+
+  let modifierPoints: number;
+  let totalPoints: number;
+
+  switch (modifier) {
+    case "double_points":
+      modifierPoints = basePoints;
+      totalPoints = basePoints * 2;
+      break;
+    case "half_points":
+      totalPoints = Math.floor(basePoints / 2);
+      modifierPoints = totalPoints - basePoints;
+      break;
+    case "lucky_duck":
+      modifierPoints = 3;
+      totalPoints = basePoints + 3;
+      break;
+    case "invalid_bet":
+      modifierPoints = -basePoints;
+      totalPoints = 0;
+      break;
+    default: // normal
+      modifierPoints = 0;
+      totalPoints = basePoints;
+  }
+
+  return { basePoints, modifierPoints, totalPoints };
+}
 
 try {
   const result = await db.transaction(async (tx) => {
@@ -536,6 +720,204 @@ try {
 } catch (error) {
   console.error("❌ Erro durante o seed:", error);
   process.exit(1);
-} finally {
-  await pool.end();
 }
+
+if (process.env.SEED_DEMO_DATA === "true") {
+  try {
+    const hashedPassword = await hashPassword(demoPassword);
+
+    const demoResult = await db.transaction(async (tx) => {
+      // Limpa usuários demo anteriores (cascade remove bets, ranking_log e ranking)
+      const existingDemoUsers = await tx
+        .select({ id: user.id })
+        .from(user)
+        .where(inArray(user.email, demoUsersData.map((u) => u.email)));
+
+      if (existingDemoUsers.length > 0) {
+        await tx.delete(user).where(
+          inArray(user.id, existingDemoUsers.map((u) => u.id)),
+        );
+      }
+
+      // Cria usuários demo
+      const createdUsers = await tx
+        .insert(user)
+        .values(
+          demoUsersData.map((u) => ({
+            id: randomBytes(16).toString("hex"),
+            name: u.name,
+            email: u.email,
+            emailVerified: true,
+            isAdmin: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })),
+        )
+        .returning({ id: user.id, email: user.email });
+
+      const userIdByEmail = new Map(createdUsers.map((u) => [u.email, u.id]));
+
+      // Cria contas de autenticação (email+senha compatível com better-auth)
+      await tx.insert(account).values(
+        createdUsers.map((u) => ({
+          id: randomBytes(16).toString("hex"),
+          accountId: u.id,
+          providerId: "credential",
+          userId: u.id,
+          password: hashedPassword,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+      );
+
+      // Resolve teamId por nome
+      const allDemoTeamNames = [
+        ...demoFinishedMatches.flatMap((m) => [m.teamA, m.teamB]),
+        ...demoPendingMatchPairs.flatMap((m) => [m.teamA, m.teamB]),
+      ];
+
+      const teamRows = await tx
+        .select({ id: team.id, name: team.name })
+        .from(team)
+        .where(inArray(team.name, [...new Set(allDemoTeamNames)]));
+
+      const teamIdByName = new Map(teamRows.map((t) => [t.name, t.id]));
+
+      // Resolve matchId para partidas finalizadas e as marca como "finished"
+      const finishedMatchIds: number[] = [];
+
+      for (const m of demoFinishedMatches) {
+        const teamAId = teamIdByName.get(m.teamA);
+        const teamBId = teamIdByName.get(m.teamB);
+
+        if (!teamAId || !teamBId) {
+          throw new Error(`Time não encontrado: ${m.teamA} ou ${m.teamB}`);
+        }
+
+        const [matchRow] = await tx
+          .update(match)
+          .set({ scoreA: m.scoreA, scoreB: m.scoreB, status: "finished" })
+          .where(
+            and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)),
+          )
+          .returning({ id: match.id });
+
+        if (!matchRow) {
+          throw new Error(`Partida não encontrada: ${m.teamA} vs ${m.teamB}`);
+        }
+
+        finishedMatchIds.push(matchRow.id);
+      }
+
+      // Resolve matchId para partidas pendentes
+      const pendingMatchIds: number[] = [];
+
+      for (const m of demoPendingMatchPairs) {
+        const teamAId = teamIdByName.get(m.teamA);
+        const teamBId = teamIdByName.get(m.teamB);
+
+        if (!teamAId || !teamBId) {
+          throw new Error(`Time não encontrado: ${m.teamA} ou ${m.teamB}`);
+        }
+
+        const [matchRow] = await tx
+          .select({ id: match.id })
+          .from(match)
+          .where(
+            and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)),
+          );
+
+        if (!matchRow) {
+          throw new Error(`Partida não encontrada: ${m.teamA} vs ${m.teamB}`);
+        }
+
+        pendingMatchIds.push(matchRow.id);
+      }
+
+      // Cria apostas e ranking_log para cada usuário
+      const rankingByUserId = new Map<string, number>();
+
+      for (const u of demoUsersData) {
+        const userId = userIdByEmail.get(u.email)!;
+        const betsOnFinished = demoBetsOnFinished[u.email]!;
+        const betsOnPending = demoBetsOnPending[u.email]!;
+
+        // Apostas nas partidas finalizadas
+        const finishedBetValues = betsOnFinished.map((b, i) => ({
+          userId,
+          matchId: finishedMatchIds[i]!,
+          scoreA: b.scoreA,
+          scoreB: b.scoreB,
+          modifier: b.modifier,
+        }));
+
+        // Apostas nas partidas pendentes
+        const pendingBetValues = betsOnPending.map((b, i) => ({
+          userId,
+          matchId: pendingMatchIds[i]!,
+          scoreA: b.scoreA,
+          scoreB: b.scoreB,
+          modifier: b.modifier,
+        }));
+
+        await tx.insert(bet).values([...finishedBetValues, ...pendingBetValues]);
+
+        // Ranking_log apenas para partidas finalizadas
+        let totalUserPoints = 0;
+
+        const rankingLogValues = betsOnFinished.map((b, i) => {
+          const fm = demoFinishedMatches[i]!;
+          const { basePoints, modifierPoints, totalPoints } = calcPoints(
+            b.scoreA, b.scoreB,
+            fm.scoreA, fm.scoreB,
+            b.modifier,
+          );
+          totalUserPoints += totalPoints;
+          return {
+            userId,
+            matchId: finishedMatchIds[i]!,
+            basePoints,
+            modifierPoints,
+            totalPoints,
+            modifier: b.modifier,
+          };
+        });
+
+        await tx.insert(rankingLog).values(rankingLogValues);
+
+        rankingByUserId.set(userId, totalUserPoints);
+      }
+
+      // Cria entradas de ranking
+      await tx.insert(ranking).values(
+        [...rankingByUserId.entries()].map(([userId, points]) => ({
+          userId,
+          points,
+        })),
+      );
+
+      return {
+        users: createdUsers.length,
+        finishedMatches: finishedMatchIds.length,
+        totalBets: demoUsersData.length * (finishedMatchIds.length + pendingMatchIds.length),
+        rankingEntries: rankingByUserId.size,
+      };
+    });
+
+    console.log("\n🎲 Seed de demonstração concluído!\n");
+    console.table(demoResult);
+
+    if (env.NODE_ENV !== "production") {
+      console.log("\nCredenciais dos usuários de demonstração:");
+      for (const u of demoUsersData) {
+        console.log(`  ${u.name.padEnd(15)} | ${u.email}`);
+      }
+      console.log(`  Senha (todos): ${demoPassword}\n`);
+    }
+  } catch (error) {
+    console.error("❌ Erro durante o seed de demonstração:", error);
+    process.exit(1);
+  }
+}
+
+await pool.end();
