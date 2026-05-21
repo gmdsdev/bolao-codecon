@@ -50,24 +50,24 @@ const seedUsers = [seedLogin];
 // 16 Estádios oficiais da Copa do Mundo FIFA 2026
 const seedStadiums = [
   // México (3)
-  { name: "Estadio Azteca",          city: "Cidade do México, México" },
-  { name: "Estadio Akron",           city: "Guadalajara, México" },
-  { name: "Estadio BBVA",            city: "Monterrey, México" },
+  { name: "Estadio Azteca", city: "Cidade do México, México" },
+  { name: "Estadio Akron", city: "Guadalajara, México" },
+  { name: "Estadio BBVA", city: "Monterrey, México" },
   // Canadá (2)
-  { name: "BMO Field",               city: "Toronto, Canadá" },
-  { name: "BC Place",                city: "Vancouver, Canadá" },
+  { name: "BMO Field", city: "Toronto, Canadá" },
+  { name: "BC Place", city: "Vancouver, Canadá" },
   // Estados Unidos (11)
-  { name: "MetLife Stadium",         city: "East Rutherford, Nova Jersey, EUA" },
-  { name: "Gillette Stadium",        city: "Foxborough, Massachusetts, EUA" },
-  { name: "SoFi Stadium",            city: "Inglewood, Califórnia, EUA" },
-  { name: "AT&T Stadium",            city: "Arlington, Texas, EUA" },
-  { name: "Mercedes-Benz Stadium",   city: "Atlanta, Geórgia, EUA" },
-  { name: "Levi's Stadium",          city: "Santa Clara, Califórnia, EUA" },
-  { name: "NRG Stadium",             city: "Houston, Texas, EUA" },
-  { name: "Arrowhead Stadium",       city: "Kansas City, Missouri, EUA" },
-  { name: "Hard Rock Stadium",       city: "Miami Gardens, Flórida, EUA" },
+  { name: "MetLife Stadium", city: "East Rutherford, Nova Jersey, EUA" },
+  { name: "Gillette Stadium", city: "Foxborough, Massachusetts, EUA" },
+  { name: "SoFi Stadium", city: "Inglewood, Califórnia, EUA" },
+  { name: "AT&T Stadium", city: "Arlington, Texas, EUA" },
+  { name: "Mercedes-Benz Stadium", city: "Atlanta, Geórgia, EUA" },
+  { name: "Levi's Stadium", city: "Santa Clara, Califórnia, EUA" },
+  { name: "NRG Stadium", city: "Houston, Texas, EUA" },
+  { name: "Arrowhead Stadium", city: "Kansas City, Missouri, EUA" },
+  { name: "Hard Rock Stadium", city: "Miami Gardens, Flórida, EUA" },
   { name: "Lincoln Financial Field", city: "Filadélfia, Pensilvânia, EUA" },
-  { name: "Lumen Field",             city: "Seattle, Washington, EUA" },
+  { name: "Lumen Field", city: "Seattle, Washington, EUA" },
 ];
 
 const seedStadiumNames = seedStadiums.map((s) => s.name);
@@ -81,79 +81,87 @@ const seedGroupNames = Array.from(
 // 48 Seleções classificadas com seus grupos
 const seedTeams = [
   // GRUPO A
-  { name: "Mexico",          flag: "🇲🇽", groupName: "Grupo A" },
-  { name: "South Africa",    flag: "🇿🇦", groupName: "Grupo A" },
-  { name: "Korea Republic",  flag: "🇰🇷", groupName: "Grupo A" },
-  { name: "Czechia",         flag: "🇨🇿", groupName: "Grupo A" },
+  { name: "México", flag: "🇲🇽", groupName: "Grupo A" },
+  { name: "África do Sul", flag: "🇿🇦", groupName: "Grupo A" },
+  { name: "Coreia do Sul", flag: "🇰🇷", groupName: "Grupo A" },
+  { name: "Tchéquia", flag: "🇨🇿", groupName: "Grupo A" },
   // GRUPO B
-  { name: "Canada",                   flag: "🇨🇦", groupName: "Grupo B" },
-  { name: "Bosnia and Herzegovina",   flag: "🇧🇦", groupName: "Grupo B" },
-  { name: "Qatar",                    flag: "🇶🇦", groupName: "Grupo B" },
-  { name: "Switzerland",              flag: "🇨🇭", groupName: "Grupo B" },
+  { name: "Canadá", flag: "🇨🇦", groupName: "Grupo B" },
+  { name: "Bósnia e Herzegovina", flag: "🇧🇦", groupName: "Grupo B" },
+  { name: "Catar", flag: "🇶🇦", groupName: "Grupo B" },
+  { name: "Suíça", flag: "🇨🇭", groupName: "Grupo B" },
   // GRUPO C
-  { name: "Brazil",   flag: "🇧🇷",                                                    groupName: "Grupo C" },
-  { name: "Morocco",  flag: "🇲🇦",                                                    groupName: "Grupo C" },
-  { name: "Haiti",    flag: "🇭🇹",                                                    groupName: "Grupo C" },
-  { name: "Scotland", flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}", groupName: "Grupo C" },
+  { name: "Brasil", flag: "🇧🇷", groupName: "Grupo C" },
+  { name: "Marrocos", flag: "🇲🇦", groupName: "Grupo C" },
+  { name: "Haiti", flag: "🇭🇹", groupName: "Grupo C" },
+  {
+    name: "Escócia",
+    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",
+    groupName: "Grupo C",
+  },
   // GRUPO D
-  { name: "United States", flag: "🇺🇸", groupName: "Grupo D" },
-  { name: "Paraguay",      flag: "🇵🇾", groupName: "Grupo D" },
-  { name: "Australia",     flag: "🇦🇺", groupName: "Grupo D" },
-  { name: "Türkiye",       flag: "🇹🇷", groupName: "Grupo D" },
+  { name: "Estados Unidos", flag: "🇺🇸", groupName: "Grupo D" },
+  { name: "Paraguai", flag: "🇵🇾", groupName: "Grupo D" },
+  { name: "Austrália", flag: "🇦🇺", groupName: "Grupo D" },
+  { name: "Turquia", flag: "🇹🇷", groupName: "Grupo D" },
   // GRUPO E
-  { name: "Germany",     flag: "🇩🇪", groupName: "Grupo E" },
-  { name: "Curaçao",     flag: "🇨🇼", groupName: "Grupo E" },
-  { name: "Ivory Coast", flag: "🇨🇮", groupName: "Grupo E" },
-  { name: "Ecuador",     flag: "🇪🇨", groupName: "Grupo E" },
+  { name: "Alemanha", flag: "🇩🇪", groupName: "Grupo E" },
+  { name: "Curaçao", flag: "🇨🇼", groupName: "Grupo E" },
+  { name: "Costa do Marfim", flag: "🇨🇮", groupName: "Grupo E" },
+  { name: "Equador", flag: "🇪🇨", groupName: "Grupo E" },
   // GRUPO F
-  { name: "Netherlands", flag: "🇳🇱", groupName: "Grupo F" },
-  { name: "Japan",       flag: "🇯🇵", groupName: "Grupo F" },
-  { name: "Sweden",      flag: "🇸🇪", groupName: "Grupo F" },
-  { name: "Tunisia",     flag: "🇹🇳", groupName: "Grupo F" },
+  { name: "Holanda", flag: "🇳🇱", groupName: "Grupo F" },
+  { name: "Japão", flag: "🇯🇵", groupName: "Grupo F" },
+  { name: "Suécia", flag: "🇸🇪", groupName: "Grupo F" },
+  { name: "Tunísia", flag: "🇹🇳", groupName: "Grupo F" },
   // GRUPO G
-  { name: "Belgium",     flag: "🇧🇪", groupName: "Grupo G" },
-  { name: "Egypt",       flag: "🇪🇬", groupName: "Grupo G" },
-  { name: "Iran",        flag: "🇮🇷", groupName: "Grupo G" },
-  { name: "New Zealand", flag: "🇳🇿", groupName: "Grupo G" },
+  { name: "Bélgica", flag: "🇧🇪", groupName: "Grupo G" },
+  { name: "Egito", flag: "🇪🇬", groupName: "Grupo G" },
+  { name: "Irã", flag: "🇮🇷", groupName: "Grupo G" },
+  { name: "Nova Zelândia", flag: "🇳🇿", groupName: "Grupo G" },
   // GRUPO H
-  { name: "Spain",        flag: "🇪🇸", groupName: "Grupo H" },
-  { name: "Cape Verde",   flag: "🇨🇻", groupName: "Grupo H" },
-  { name: "Saudi Arabia", flag: "🇸🇦", groupName: "Grupo H" },
-  { name: "Uruguay",      flag: "🇺🇾", groupName: "Grupo H" },
+  { name: "Espanha", flag: "🇪🇸", groupName: "Grupo H" },
+  { name: "Cabo Verde", flag: "🇨🇻", groupName: "Grupo H" },
+  { name: "Arábia Saudita", flag: "🇸🇦", groupName: "Grupo H" },
+  { name: "Uruguai", flag: "🇺🇾", groupName: "Grupo H" },
   // GRUPO I
-  { name: "France",  flag: "🇫🇷", groupName: "Grupo I" },
+  { name: "França", flag: "🇫🇷", groupName: "Grupo I" },
   { name: "Senegal", flag: "🇸🇳", groupName: "Grupo I" },
-  { name: "Iraq",    flag: "🇮🇶", groupName: "Grupo I" },
-  { name: "Norway",  flag: "🇳🇴", groupName: "Grupo I" },
+  { name: "Iraque", flag: "🇮🇶", groupName: "Grupo I" },
+  { name: "Noruega", flag: "🇳🇴", groupName: "Grupo I" },
   // GRUPO J
   { name: "Argentina", flag: "🇦🇷", groupName: "Grupo J" },
-  { name: "Algeria",   flag: "🇩🇿", groupName: "Grupo J" },
-  { name: "Austria",   flag: "🇦🇹", groupName: "Grupo J" },
-  { name: "Jordan",    flag: "🇯🇴", groupName: "Grupo J" },
+  { name: "Argélia", flag: "🇩🇿", groupName: "Grupo J" },
+  { name: "Áustria", flag: "🇦🇹", groupName: "Grupo J" },
+  { name: "Jordânia", flag: "🇯🇴", groupName: "Grupo J" },
   // GRUPO K
-  { name: "Portugal",   flag: "🇵🇹", groupName: "Grupo K" },
-  { name: "DR Congo",   flag: "🇨🇩", groupName: "Grupo K" },
-  { name: "Uzbekistan", flag: "🇺🇿", groupName: "Grupo K" },
-  { name: "Colombia",   flag: "🇨🇴", groupName: "Grupo K" },
+  { name: "Portugal", flag: "🇵🇹", groupName: "Grupo K" },
+  { name: "RD Congo", flag: "🇨🇩", groupName: "Grupo K" },
+  { name: "Uzbequistão", flag: "🇺🇿", groupName: "Grupo K" },
+  { name: "Colômbia", flag: "🇨🇴", groupName: "Grupo K" },
   // GRUPO L
-  { name: "England", flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}", groupName: "Grupo L" },
-  { name: "Croatia", flag: "🇭🇷", groupName: "Grupo L" },
-  { name: "Ghana",   flag: "🇬🇭", groupName: "Grupo L" },
-  { name: "Panama",  flag: "🇵🇦", groupName: "Grupo L" },
+  {
+    name: "Inglaterra",
+    flag: "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
+    groupName: "Grupo L",
+  },
+  { name: "Croácia", flag: "🇭🇷", groupName: "Grupo L" },
+  { name: "Gana", flag: "🇬🇭", groupName: "Grupo L" },
+  { name: "Panamá", flag: "🇵🇦", groupName: "Grupo L" },
 ];
 
 const seedTeamNames = seedTeams.map((t) => t.name);
 
 const seedRounds = [
-  { number: 1, title: "Fase de grupos - Rodada 1",   status: "pending" },
-  { number: 2, title: "Fase de grupos - Rodada 2",   status: "pending" },
-  { number: 3, title: "Fase de grupos - Rodada 3",   status: "pending" },
-  { number: 4, title: "Dezesseis avos de final",      status: "pending" },
-  { number: 5, title: "Oitavas de final",             status: "pending" },
-  { number: 6, title: "Quartas de final",             status: "pending" },
-  { number: 7, title: "Semifinal",                   status: "pending" },
+  { number: 1, title: "Fase de grupos - Rodada 1", status: "pending" },
+  { number: 2, title: "Fase de grupos - Rodada 2", status: "pending" },
+  { number: 3, title: "Fase de grupos - Rodada 3", status: "pending" },
+  { number: 4, title: "Dezesseis avos de final", status: "pending" },
+  { number: 5, title: "Oitavas de final", status: "pending" },
+  { number: 6, title: "Quartas de final", status: "pending" },
+  { number: 7, title: "Semifinal", status: "pending" },
   { number: 8, title: "Disputa pelo terceiro lugar", status: "pending" },
-  { number: 9, title: "Final",                       status: "pending" },
+  { number: 9, title: "Final", status: "pending" },
 ];
 
 // ===================================================================
@@ -173,123 +181,555 @@ const seedGroupStageMatches: {
   // ──────────────────────────────────────────────────────────────────
 
   // GRUPO A
-  { teamA: "Mexico",         teamB: "South Africa",           round: 1, date: new Date("2026-06-11T19:00:00Z"), stadiumName: "Estadio Azteca" },
-  { teamA: "Korea Republic", teamB: "Czechia",                round: 1, date: new Date("2026-06-12T02:00:00Z"), stadiumName: "Estadio Akron" },
+  {
+    teamA: "México",
+    teamB: "África do Sul",
+    round: 1,
+    date: new Date("2026-06-11T19:00:00Z"),
+    stadiumName: "Estadio Azteca",
+  },
+  {
+    teamA: "Coreia do Sul",
+    teamB: "Tchéquia",
+    round: 1,
+    date: new Date("2026-06-12T02:00:00Z"),
+    stadiumName: "Estadio Akron",
+  },
   // GRUPO B
-  { teamA: "Canada",         teamB: "Bosnia and Herzegovina", round: 1, date: new Date("2026-06-12T19:00:00Z"), stadiumName: "BMO Field" },
-  { teamA: "Qatar",          teamB: "Switzerland",            round: 1, date: new Date("2026-06-13T19:00:00Z"), stadiumName: "Levi's Stadium" },
+  {
+    teamA: "Canadá",
+    teamB: "Bósnia e Herzegovina",
+    round: 1,
+    date: new Date("2026-06-12T19:00:00Z"),
+    stadiumName: "BMO Field",
+  },
+  {
+    teamA: "Catar",
+    teamB: "Suíça",
+    round: 1,
+    date: new Date("2026-06-13T19:00:00Z"),
+    stadiumName: "Levi's Stadium",
+  },
   // GRUPO C
-  { teamA: "Brazil",         teamB: "Morocco",                round: 1, date: new Date("2026-06-13T22:00:00Z"), stadiumName: "MetLife Stadium" },
-  { teamA: "Haiti",          teamB: "Scotland",               round: 1, date: new Date("2026-06-14T01:00:00Z"), stadiumName: "Gillette Stadium" },
+  {
+    teamA: "Brasil",
+    teamB: "Marrocos",
+    round: 1,
+    date: new Date("2026-06-13T22:00:00Z"),
+    stadiumName: "MetLife Stadium",
+  },
+  {
+    teamA: "Haiti",
+    teamB: "Escócia",
+    round: 1,
+    date: new Date("2026-06-14T01:00:00Z"),
+    stadiumName: "Gillette Stadium",
+  },
   // GRUPO D
-  { teamA: "United States",  teamB: "Paraguay",               round: 1, date: new Date("2026-06-13T01:00:00Z"), stadiumName: "SoFi Stadium" },
-  { teamA: "Australia",      teamB: "Türkiye",                round: 1, date: new Date("2026-06-13T04:00:00Z"), stadiumName: "BC Place" },
+  {
+    teamA: "Estados Unidos",
+    teamB: "Paraguai",
+    round: 1,
+    date: new Date("2026-06-13T01:00:00Z"),
+    stadiumName: "SoFi Stadium",
+  },
+  {
+    teamA: "Austrália",
+    teamB: "Turquia",
+    round: 1,
+    date: new Date("2026-06-13T04:00:00Z"),
+    stadiumName: "BC Place",
+  },
   // GRUPO E
-  { teamA: "Germany",        teamB: "Curaçao",                round: 1, date: new Date("2026-06-14T17:00:00Z"), stadiumName: "NRG Stadium" },
-  { teamA: "Ivory Coast",    teamB: "Ecuador",                round: 1, date: new Date("2026-06-14T23:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  {
+    teamA: "Alemanha",
+    teamB: "Curaçao",
+    round: 1,
+    date: new Date("2026-06-14T17:00:00Z"),
+    stadiumName: "NRG Stadium",
+  },
+  {
+    teamA: "Costa do Marfim",
+    teamB: "Equador",
+    round: 1,
+    date: new Date("2026-06-14T23:00:00Z"),
+    stadiumName: "Lincoln Financial Field",
+  },
   // GRUPO F
-  { teamA: "Netherlands",    teamB: "Japan",                  round: 1, date: new Date("2026-06-14T20:00:00Z"), stadiumName: "AT&T Stadium" },
-  { teamA: "Sweden",         teamB: "Tunisia",                round: 1, date: new Date("2026-06-15T02:00:00Z"), stadiumName: "Estadio BBVA" },
+  {
+    teamA: "Holanda",
+    teamB: "Japão",
+    round: 1,
+    date: new Date("2026-06-14T20:00:00Z"),
+    stadiumName: "AT&T Stadium",
+  },
+  {
+    teamA: "Suécia",
+    teamB: "Tunísia",
+    round: 1,
+    date: new Date("2026-06-15T02:00:00Z"),
+    stadiumName: "Estadio BBVA",
+  },
   // GRUPO G
-  { teamA: "Belgium",        teamB: "Egypt",                  round: 1, date: new Date("2026-06-15T19:00:00Z"), stadiumName: "Lumen Field" },
-  { teamA: "Iran",           teamB: "New Zealand",            round: 1, date: new Date("2026-06-16T01:00:00Z"), stadiumName: "SoFi Stadium" },
+  {
+    teamA: "Bélgica",
+    teamB: "Egito",
+    round: 1,
+    date: new Date("2026-06-15T19:00:00Z"),
+    stadiumName: "Lumen Field",
+  },
+  {
+    teamA: "Irã",
+    teamB: "Nova Zelândia",
+    round: 1,
+    date: new Date("2026-06-16T01:00:00Z"),
+    stadiumName: "SoFi Stadium",
+  },
   // GRUPO H
-  { teamA: "Spain",          teamB: "Cape Verde",             round: 1, date: new Date("2026-06-15T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
-  { teamA: "Saudi Arabia",   teamB: "Uruguay",                round: 1, date: new Date("2026-06-15T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
+  {
+    teamA: "Espanha",
+    teamB: "Cabo Verde",
+    round: 1,
+    date: new Date("2026-06-15T16:00:00Z"),
+    stadiumName: "Mercedes-Benz Stadium",
+  },
+  {
+    teamA: "Arábia Saudita",
+    teamB: "Uruguai",
+    round: 1,
+    date: new Date("2026-06-15T22:00:00Z"),
+    stadiumName: "Hard Rock Stadium",
+  },
   // GRUPO I
-  { teamA: "France",         teamB: "Senegal",                round: 1, date: new Date("2026-06-16T19:00:00Z"), stadiumName: "MetLife Stadium" },
-  { teamA: "Iraq",           teamB: "Norway",                 round: 1, date: new Date("2026-06-16T22:00:00Z"), stadiumName: "Gillette Stadium" },
+  {
+    teamA: "França",
+    teamB: "Senegal",
+    round: 1,
+    date: new Date("2026-06-16T19:00:00Z"),
+    stadiumName: "MetLife Stadium",
+  },
+  {
+    teamA: "Iraque",
+    teamB: "Noruega",
+    round: 1,
+    date: new Date("2026-06-16T22:00:00Z"),
+    stadiumName: "Gillette Stadium",
+  },
   // GRUPO J
-  { teamA: "Argentina",      teamB: "Algeria",                round: 1, date: new Date("2026-06-17T01:00:00Z"), stadiumName: "Arrowhead Stadium" },
-  { teamA: "Austria",        teamB: "Jordan",                 round: 1, date: new Date("2026-06-17T04:00:00Z"), stadiumName: "Levi's Stadium" },
+  {
+    teamA: "Argentina",
+    teamB: "Argélia",
+    round: 1,
+    date: new Date("2026-06-17T01:00:00Z"),
+    stadiumName: "Arrowhead Stadium",
+  },
+  {
+    teamA: "Áustria",
+    teamB: "Jordânia",
+    round: 1,
+    date: new Date("2026-06-17T04:00:00Z"),
+    stadiumName: "Levi's Stadium",
+  },
   // GRUPO K
-  { teamA: "Portugal",       teamB: "DR Congo",               round: 1, date: new Date("2026-06-17T17:00:00Z"), stadiumName: "NRG Stadium" },
-  { teamA: "Uzbekistan",     teamB: "Colombia",               round: 1, date: new Date("2026-06-18T02:00:00Z"), stadiumName: "Estadio Azteca" },
+  {
+    teamA: "Portugal",
+    teamB: "RD Congo",
+    round: 1,
+    date: new Date("2026-06-17T17:00:00Z"),
+    stadiumName: "NRG Stadium",
+  },
+  {
+    teamA: "Uzbequistão",
+    teamB: "Colômbia",
+    round: 1,
+    date: new Date("2026-06-18T02:00:00Z"),
+    stadiumName: "Estadio Azteca",
+  },
   // GRUPO L
-  { teamA: "England",        teamB: "Croatia",                round: 1, date: new Date("2026-06-17T20:00:00Z"), stadiumName: "AT&T Stadium" },
-  { teamA: "Ghana",          teamB: "Panama",                 round: 1, date: new Date("2026-06-17T23:00:00Z"), stadiumName: "BMO Field" },
+  {
+    teamA: "Inglaterra",
+    teamB: "Croácia",
+    round: 1,
+    date: new Date("2026-06-17T20:00:00Z"),
+    stadiumName: "AT&T Stadium",
+  },
+  {
+    teamA: "Gana",
+    teamB: "Panamá",
+    round: 1,
+    date: new Date("2026-06-17T23:00:00Z"),
+    stadiumName: "BMO Field",
+  },
 
   // ──────────────────────────────────────────────────────────────────
   // RODADA 2
   // ──────────────────────────────────────────────────────────────────
 
   // GRUPO A
-  { teamA: "Czechia",                  teamB: "South Africa",           round: 2, date: new Date("2026-06-18T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
-  { teamA: "Mexico",                   teamB: "Korea Republic",         round: 2, date: new Date("2026-06-19T01:00:00Z"), stadiumName: "Estadio Akron" },
+  {
+    teamA: "Tchéquia",
+    teamB: "África do Sul",
+    round: 2,
+    date: new Date("2026-06-18T16:00:00Z"),
+    stadiumName: "Mercedes-Benz Stadium",
+  },
+  {
+    teamA: "México",
+    teamB: "Coreia do Sul",
+    round: 2,
+    date: new Date("2026-06-19T01:00:00Z"),
+    stadiumName: "Estadio Akron",
+  },
   // GRUPO B
-  { teamA: "Switzerland",              teamB: "Bosnia and Herzegovina", round: 2, date: new Date("2026-06-18T19:00:00Z"), stadiumName: "SoFi Stadium" },
-  { teamA: "Canada",                   teamB: "Qatar",                  round: 2, date: new Date("2026-06-18T22:00:00Z"), stadiumName: "BC Place" },
+  {
+    teamA: "Suíça",
+    teamB: "Bósnia e Herzegovina",
+    round: 2,
+    date: new Date("2026-06-18T19:00:00Z"),
+    stadiumName: "SoFi Stadium",
+  },
+  {
+    teamA: "Canadá",
+    teamB: "Catar",
+    round: 2,
+    date: new Date("2026-06-18T22:00:00Z"),
+    stadiumName: "BC Place",
+  },
   // GRUPO C
-  { teamA: "Scotland",                 teamB: "Morocco",                round: 2, date: new Date("2026-06-19T22:00:00Z"), stadiumName: "Gillette Stadium" },
-  { teamA: "Brazil",                   teamB: "Haiti",                  round: 2, date: new Date("2026-06-20T00:30:00Z"), stadiumName: "Lincoln Financial Field" },
+  {
+    teamA: "Escócia",
+    teamB: "Marrocos",
+    round: 2,
+    date: new Date("2026-06-19T22:00:00Z"),
+    stadiumName: "Gillette Stadium",
+  },
+  {
+    teamA: "Brasil",
+    teamB: "Haiti",
+    round: 2,
+    date: new Date("2026-06-20T00:30:00Z"),
+    stadiumName: "Lincoln Financial Field",
+  },
   // GRUPO D
-  { teamA: "United States",            teamB: "Australia",              round: 2, date: new Date("2026-06-19T19:00:00Z"), stadiumName: "Lumen Field" },
-  { teamA: "Türkiye",                  teamB: "Paraguay",               round: 2, date: new Date("2026-06-20T03:00:00Z"), stadiumName: "Levi's Stadium" },
+  {
+    teamA: "Estados Unidos",
+    teamB: "Austrália",
+    round: 2,
+    date: new Date("2026-06-19T19:00:00Z"),
+    stadiumName: "Lumen Field",
+  },
+  {
+    teamA: "Turquia",
+    teamB: "Paraguai",
+    round: 2,
+    date: new Date("2026-06-20T03:00:00Z"),
+    stadiumName: "Levi's Stadium",
+  },
   // GRUPO E
-  { teamA: "Germany",                  teamB: "Ivory Coast",            round: 2, date: new Date("2026-06-20T20:00:00Z"), stadiumName: "BMO Field" },
-  { teamA: "Ecuador",                  teamB: "Curaçao",                round: 2, date: new Date("2026-06-21T00:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  {
+    teamA: "Alemanha",
+    teamB: "Costa do Marfim",
+    round: 2,
+    date: new Date("2026-06-20T20:00:00Z"),
+    stadiumName: "BMO Field",
+  },
+  {
+    teamA: "Equador",
+    teamB: "Curaçao",
+    round: 2,
+    date: new Date("2026-06-21T00:00:00Z"),
+    stadiumName: "Arrowhead Stadium",
+  },
   // GRUPO F
-  { teamA: "Netherlands",              teamB: "Sweden",                 round: 2, date: new Date("2026-06-20T17:00:00Z"), stadiumName: "NRG Stadium" },
-  { teamA: "Tunisia",                  teamB: "Japan",                  round: 2, date: new Date("2026-06-21T04:00:00Z"), stadiumName: "Estadio BBVA" },
+  {
+    teamA: "Holanda",
+    teamB: "Suécia",
+    round: 2,
+    date: new Date("2026-06-20T17:00:00Z"),
+    stadiumName: "NRG Stadium",
+  },
+  {
+    teamA: "Tunísia",
+    teamB: "Japão",
+    round: 2,
+    date: new Date("2026-06-21T04:00:00Z"),
+    stadiumName: "Estadio BBVA",
+  },
   // GRUPO G
-  { teamA: "Belgium",                  teamB: "Iran",                   round: 2, date: new Date("2026-06-21T19:00:00Z"), stadiumName: "SoFi Stadium" },
-  { teamA: "New Zealand",              teamB: "Egypt",                  round: 2, date: new Date("2026-06-22T01:00:00Z"), stadiumName: "BC Place" },
+  {
+    teamA: "Bélgica",
+    teamB: "Irã",
+    round: 2,
+    date: new Date("2026-06-21T19:00:00Z"),
+    stadiumName: "SoFi Stadium",
+  },
+  {
+    teamA: "Nova Zelândia",
+    teamB: "Egito",
+    round: 2,
+    date: new Date("2026-06-22T01:00:00Z"),
+    stadiumName: "BC Place",
+  },
   // GRUPO H
-  { teamA: "Spain",                    teamB: "Saudi Arabia",           round: 2, date: new Date("2026-06-21T16:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
-  { teamA: "Uruguay",                  teamB: "Cape Verde",             round: 2, date: new Date("2026-06-21T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
+  {
+    teamA: "Espanha",
+    teamB: "Arábia Saudita",
+    round: 2,
+    date: new Date("2026-06-21T16:00:00Z"),
+    stadiumName: "Mercedes-Benz Stadium",
+  },
+  {
+    teamA: "Uruguai",
+    teamB: "Cabo Verde",
+    round: 2,
+    date: new Date("2026-06-21T22:00:00Z"),
+    stadiumName: "Hard Rock Stadium",
+  },
   // GRUPO I
-  { teamA: "France",                   teamB: "Iraq",                   round: 2, date: new Date("2026-06-22T21:00:00Z"), stadiumName: "Lincoln Financial Field" },
-  { teamA: "Norway",                   teamB: "Senegal",                round: 2, date: new Date("2026-06-23T00:00:00Z"), stadiumName: "MetLife Stadium" },
+  {
+    teamA: "França",
+    teamB: "Iraque",
+    round: 2,
+    date: new Date("2026-06-22T21:00:00Z"),
+    stadiumName: "Lincoln Financial Field",
+  },
+  {
+    teamA: "Noruega",
+    teamB: "Senegal",
+    round: 2,
+    date: new Date("2026-06-23T00:00:00Z"),
+    stadiumName: "MetLife Stadium",
+  },
   // GRUPO J
-  { teamA: "Argentina",                teamB: "Austria",                round: 2, date: new Date("2026-06-22T17:00:00Z"), stadiumName: "AT&T Stadium" },
-  { teamA: "Jordan",                   teamB: "Algeria",                round: 2, date: new Date("2026-06-23T03:00:00Z"), stadiumName: "Levi's Stadium" },
+  {
+    teamA: "Argentina",
+    teamB: "Áustria",
+    round: 2,
+    date: new Date("2026-06-22T17:00:00Z"),
+    stadiumName: "AT&T Stadium",
+  },
+  {
+    teamA: "Jordânia",
+    teamB: "Argélia",
+    round: 2,
+    date: new Date("2026-06-23T03:00:00Z"),
+    stadiumName: "Levi's Stadium",
+  },
   // GRUPO K
-  { teamA: "Portugal",                 teamB: "Uzbekistan",             round: 2, date: new Date("2026-06-23T17:00:00Z"), stadiumName: "NRG Stadium" },
-  { teamA: "Colombia",                 teamB: "DR Congo",               round: 2, date: new Date("2026-06-24T02:00:00Z"), stadiumName: "Estadio Akron" },
+  {
+    teamA: "Portugal",
+    teamB: "Uzbequistão",
+    round: 2,
+    date: new Date("2026-06-23T17:00:00Z"),
+    stadiumName: "NRG Stadium",
+  },
+  {
+    teamA: "Colômbia",
+    teamB: "RD Congo",
+    round: 2,
+    date: new Date("2026-06-24T02:00:00Z"),
+    stadiumName: "Estadio Akron",
+  },
   // GRUPO L
-  { teamA: "England",                  teamB: "Ghana",                  round: 2, date: new Date("2026-06-23T20:00:00Z"), stadiumName: "Gillette Stadium" },
-  { teamA: "Panama",                   teamB: "Croatia",                round: 2, date: new Date("2026-06-23T23:00:00Z"), stadiumName: "BMO Field" },
+  {
+    teamA: "Inglaterra",
+    teamB: "Gana",
+    round: 2,
+    date: new Date("2026-06-23T20:00:00Z"),
+    stadiumName: "Gillette Stadium",
+  },
+  {
+    teamA: "Panamá",
+    teamB: "Croácia",
+    round: 2,
+    date: new Date("2026-06-23T23:00:00Z"),
+    stadiumName: "BMO Field",
+  },
 
   // ──────────────────────────────────────────────────────────────────
   // RODADA 3 (partidas simultâneas por grupo)
   // ──────────────────────────────────────────────────────────────────
 
   // GRUPO A — 24 jun (21h ET = 25 jun 01h UTC)
-  { teamA: "Czechia",                  teamB: "Mexico",                 round: 3, date: new Date("2026-06-25T01:00:00Z"), stadiumName: "Estadio Azteca" },
-  { teamA: "South Africa",             teamB: "Korea Republic",         round: 3, date: new Date("2026-06-25T01:00:00Z"), stadiumName: "Estadio BBVA" },
+  {
+    teamA: "Tchéquia",
+    teamB: "México",
+    round: 3,
+    date: new Date("2026-06-25T01:00:00Z"),
+    stadiumName: "Estadio Azteca",
+  },
+  {
+    teamA: "África do Sul",
+    teamB: "Coreia do Sul",
+    round: 3,
+    date: new Date("2026-06-25T01:00:00Z"),
+    stadiumName: "Estadio BBVA",
+  },
   // GRUPO B — 24 jun (15h ET = 19h UTC)
-  { teamA: "Switzerland",              teamB: "Canada",                 round: 3, date: new Date("2026-06-24T19:00:00Z"), stadiumName: "BC Place" },
-  { teamA: "Bosnia and Herzegovina",   teamB: "Qatar",                  round: 3, date: new Date("2026-06-24T19:00:00Z"), stadiumName: "Lumen Field" },
+  {
+    teamA: "Suíça",
+    teamB: "Canadá",
+    round: 3,
+    date: new Date("2026-06-24T19:00:00Z"),
+    stadiumName: "BC Place",
+  },
+  {
+    teamA: "Bósnia e Herzegovina",
+    teamB: "Catar",
+    round: 3,
+    date: new Date("2026-06-24T19:00:00Z"),
+    stadiumName: "Lumen Field",
+  },
   // GRUPO C — 24 jun (18h ET = 22h UTC)
-  { teamA: "Scotland",                 teamB: "Brazil",                 round: 3, date: new Date("2026-06-24T22:00:00Z"), stadiumName: "Hard Rock Stadium" },
-  { teamA: "Morocco",                  teamB: "Haiti",                  round: 3, date: new Date("2026-06-24T22:00:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  {
+    teamA: "Escócia",
+    teamB: "Brasil",
+    round: 3,
+    date: new Date("2026-06-24T22:00:00Z"),
+    stadiumName: "Hard Rock Stadium",
+  },
+  {
+    teamA: "Marrocos",
+    teamB: "Haiti",
+    round: 3,
+    date: new Date("2026-06-24T22:00:00Z"),
+    stadiumName: "Mercedes-Benz Stadium",
+  },
   // GRUPO D — 25 jun (22h ET = 26 jun 02h UTC)
-  { teamA: "Türkiye",                  teamB: "United States",          round: 3, date: new Date("2026-06-26T02:00:00Z"), stadiumName: "SoFi Stadium" },
-  { teamA: "Paraguay",                 teamB: "Australia",              round: 3, date: new Date("2026-06-26T02:00:00Z"), stadiumName: "Levi's Stadium" },
+  {
+    teamA: "Turquia",
+    teamB: "Estados Unidos",
+    round: 3,
+    date: new Date("2026-06-26T02:00:00Z"),
+    stadiumName: "SoFi Stadium",
+  },
+  {
+    teamA: "Paraguai",
+    teamB: "Austrália",
+    round: 3,
+    date: new Date("2026-06-26T02:00:00Z"),
+    stadiumName: "Levi's Stadium",
+  },
   // GRUPO E — 25 jun (16h ET = 20h UTC)
-  { teamA: "Ecuador",                  teamB: "Germany",                round: 3, date: new Date("2026-06-25T20:00:00Z"), stadiumName: "MetLife Stadium" },
-  { teamA: "Curaçao",                  teamB: "Ivory Coast",            round: 3, date: new Date("2026-06-25T20:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  {
+    teamA: "Equador",
+    teamB: "Alemanha",
+    round: 3,
+    date: new Date("2026-06-25T20:00:00Z"),
+    stadiumName: "MetLife Stadium",
+  },
+  {
+    teamA: "Curaçao",
+    teamB: "Costa do Marfim",
+    round: 3,
+    date: new Date("2026-06-25T20:00:00Z"),
+    stadiumName: "Lincoln Financial Field",
+  },
   // GRUPO F — 25 jun (19h ET = 23h UTC)
-  { teamA: "Japan",                    teamB: "Sweden",                 round: 3, date: new Date("2026-06-25T23:00:00Z"), stadiumName: "AT&T Stadium" },
-  { teamA: "Tunisia",                  teamB: "Netherlands",            round: 3, date: new Date("2026-06-25T23:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  {
+    teamA: "Japão",
+    teamB: "Suécia",
+    round: 3,
+    date: new Date("2026-06-25T23:00:00Z"),
+    stadiumName: "AT&T Stadium",
+  },
+  {
+    teamA: "Tunísia",
+    teamB: "Holanda",
+    round: 3,
+    date: new Date("2026-06-25T23:00:00Z"),
+    stadiumName: "Arrowhead Stadium",
+  },
   // GRUPO G — 26 jun (23h ET = 27 jun 03h UTC)
-  { teamA: "Egypt",                    teamB: "Iran",                   round: 3, date: new Date("2026-06-27T03:00:00Z"), stadiumName: "Lumen Field" },
-  { teamA: "New Zealand",              teamB: "Belgium",                round: 3, date: new Date("2026-06-27T03:00:00Z"), stadiumName: "BC Place" },
+  {
+    teamA: "Egito",
+    teamB: "Irã",
+    round: 3,
+    date: new Date("2026-06-27T03:00:00Z"),
+    stadiumName: "Lumen Field",
+  },
+  {
+    teamA: "Nova Zelândia",
+    teamB: "Bélgica",
+    round: 3,
+    date: new Date("2026-06-27T03:00:00Z"),
+    stadiumName: "BC Place",
+  },
   // GRUPO H — 26 jun (20h ET = 27 jun 00h UTC)
-  { teamA: "Cape Verde",               teamB: "Saudi Arabia",           round: 3, date: new Date("2026-06-27T00:00:00Z"), stadiumName: "NRG Stadium" },
-  { teamA: "Uruguay",                  teamB: "Spain",                  round: 3, date: new Date("2026-06-27T00:00:00Z"), stadiumName: "Estadio Akron" },
+  {
+    teamA: "Cabo Verde",
+    teamB: "Arábia Saudita",
+    round: 3,
+    date: new Date("2026-06-27T00:00:00Z"),
+    stadiumName: "NRG Stadium",
+  },
+  {
+    teamA: "Uruguai",
+    teamB: "Espanha",
+    round: 3,
+    date: new Date("2026-06-27T00:00:00Z"),
+    stadiumName: "Estadio Akron",
+  },
   // GRUPO I — 26 jun (15h ET = 19h UTC)
-  { teamA: "Norway",                   teamB: "France",                 round: 3, date: new Date("2026-06-26T19:00:00Z"), stadiumName: "Gillette Stadium" },
-  { teamA: "Senegal",                  teamB: "Iraq",                   round: 3, date: new Date("2026-06-26T19:00:00Z"), stadiumName: "BMO Field" },
+  {
+    teamA: "Noruega",
+    teamB: "França",
+    round: 3,
+    date: new Date("2026-06-26T19:00:00Z"),
+    stadiumName: "Gillette Stadium",
+  },
+  {
+    teamA: "Senegal",
+    teamB: "Iraque",
+    round: 3,
+    date: new Date("2026-06-26T19:00:00Z"),
+    stadiumName: "BMO Field",
+  },
   // GRUPO J — 27 jun (22h ET = 28 jun 02h UTC)
-  { teamA: "Jordan",                   teamB: "Argentina",              round: 3, date: new Date("2026-06-28T02:00:00Z"), stadiumName: "AT&T Stadium" },
-  { teamA: "Algeria",                  teamB: "Austria",                round: 3, date: new Date("2026-06-28T02:00:00Z"), stadiumName: "Arrowhead Stadium" },
+  {
+    teamA: "Jordânia",
+    teamB: "Argentina",
+    round: 3,
+    date: new Date("2026-06-28T02:00:00Z"),
+    stadiumName: "AT&T Stadium",
+  },
+  {
+    teamA: "Argélia",
+    teamB: "Áustria",
+    round: 3,
+    date: new Date("2026-06-28T02:00:00Z"),
+    stadiumName: "Arrowhead Stadium",
+  },
   // GRUPO K — 27 jun (19h30 ET = 23h30 UTC)
-  { teamA: "Colombia",                 teamB: "Portugal",               round: 3, date: new Date("2026-06-27T23:30:00Z"), stadiumName: "Hard Rock Stadium" },
-  { teamA: "DR Congo",                 teamB: "Uzbekistan",             round: 3, date: new Date("2026-06-27T23:30:00Z"), stadiumName: "Mercedes-Benz Stadium" },
+  {
+    teamA: "Colômbia",
+    teamB: "Portugal",
+    round: 3,
+    date: new Date("2026-06-27T23:30:00Z"),
+    stadiumName: "Hard Rock Stadium",
+  },
+  {
+    teamA: "RD Congo",
+    teamB: "Uzbequistão",
+    round: 3,
+    date: new Date("2026-06-27T23:30:00Z"),
+    stadiumName: "Mercedes-Benz Stadium",
+  },
   // GRUPO L — 27 jun (17h ET = 21h UTC)
-  { teamA: "Panama",                   teamB: "England",                round: 3, date: new Date("2026-06-27T21:00:00Z"), stadiumName: "MetLife Stadium" },
-  { teamA: "Croatia",                  teamB: "Ghana",                  round: 3, date: new Date("2026-06-27T21:00:00Z"), stadiumName: "Lincoln Financial Field" },
+  {
+    teamA: "Panamá",
+    teamB: "Inglaterra",
+    round: 3,
+    date: new Date("2026-06-27T21:00:00Z"),
+    stadiumName: "MetLife Stadium",
+  },
+  {
+    teamA: "Croácia",
+    teamB: "Gana",
+    round: 3,
+    date: new Date("2026-06-27T21:00:00Z"),
+    stadiumName: "Lincoln Financial Field",
+  },
 ];
 
 // ===================================================================
@@ -320,8 +760,8 @@ const db = drizzle(pool, {
 // ===================================================================
 
 const demoUsersData = [
-  { name: "Alice Demo",   email: "demo.alice@codecon.local" },
-  { name: "Bob Demo",     email: "demo.bob@codecon.local" },
+  { name: "Alice Demo", email: "demo.alice@codecon.local" },
+  { name: "Bob Demo", email: "demo.bob@codecon.local" },
   { name: "Charlie Demo", email: "demo.charlie@codecon.local" },
 ];
 
@@ -329,14 +769,14 @@ const demoPassword = "CodeCon-Demo-2026!";
 
 // Partidas da Rodada 1 que serão marcadas como finalizadas no demo
 const demoFinishedMatches = [
-  { teamA: "Mexico",        teamB: "South Africa",  scoreA: 2, scoreB: 1 },
-  { teamA: "Korea Republic",teamB: "Czechia",        scoreA: 1, scoreB: 1 },
-  { teamA: "Canada",        teamB: "Bosnia and Herzegovina", scoreA: 1, scoreB: 0 },
-  { teamA: "Brazil",        teamB: "Morocco",        scoreA: 3, scoreB: 1 },
-  { teamA: "Germany",       teamB: "Curaçao",        scoreA: 4, scoreB: 0 },
-  { teamA: "France",        teamB: "Senegal",        scoreA: 2, scoreB: 0 },
-  { teamA: "Argentina",     teamB: "Algeria",        scoreA: 1, scoreB: 0 },
-  { teamA: "England",       teamB: "Croatia",        scoreA: 2, scoreB: 1 },
+  { teamA: "México", teamB: "África do Sul", scoreA: 2, scoreB: 1 },
+  { teamA: "Coreia do Sul", teamB: "Tchéquia", scoreA: 1, scoreB: 1 },
+  { teamA: "Canadá", teamB: "Bósnia e Herzegovina", scoreA: 1, scoreB: 0 },
+  { teamA: "Brasil", teamB: "Marrocos", scoreA: 3, scoreB: 1 },
+  { teamA: "Alemanha", teamB: "Curaçao", scoreA: 4, scoreB: 0 },
+  { teamA: "França", teamB: "Senegal", scoreA: 2, scoreB: 0 },
+  { teamA: "Argentina", teamB: "Argélia", scoreA: 1, scoreB: 0 },
+  { teamA: "Inglaterra", teamB: "Croácia", scoreA: 2, scoreB: 1 },
 ];
 
 type BetRow = { scoreA: number; scoreB: number; modifier: string };
@@ -344,56 +784,56 @@ type BetRow = { scoreA: number; scoreB: number; modifier: string };
 // Apostas de cada usuário para as partidas finalizadas (mesma ordem de demoFinishedMatches)
 const demoBetsOnFinished: Record<string, BetRow[]> = {
   "demo.alice@codecon.local": [
-    { scoreA: 2, scoreB: 1, modifier: "normal" },        // exato → 3pts
-    { scoreA: 1, scoreB: 1, modifier: "normal" },        // exato → 3pts
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // exato → 3pts
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // exato → 3pts
     { scoreA: 1, scoreB: 0, modifier: "double_points" }, // exato + dobro → 6pts
-    { scoreA: 2, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
-    { scoreA: 3, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
-    { scoreA: 2, scoreB: 0, modifier: "normal" },        // exato → 3pts
-    { scoreA: 1, scoreB: 0, modifier: "normal" },        // exato → 3pts
-    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 3, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
   ],
   "demo.bob@codecon.local": [
-    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
-    { scoreA: 2, scoreB: 0, modifier: "normal" },        // errou → 0pts
-    { scoreA: 0, scoreB: 0, modifier: "normal" },        // errou → 0pts
-    { scoreA: 3, scoreB: 1, modifier: "normal" },        // exato → 3pts
-    { scoreA: 2, scoreB: 0, modifier: "half_points" },   // vencedor certo + metade → 0pts
-    { scoreA: 1, scoreB: 1, modifier: "normal" },        // errou → 0pts
-    { scoreA: 2, scoreB: 1, modifier: "normal" },        // vencedor certo → 1pt
-    { scoreA: 2, scoreB: 1, modifier: "normal" },        // exato → 3pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 0, modifier: "normal" }, // errou → 0pts
+    { scoreA: 3, scoreB: 1, modifier: "normal" }, // exato → 3pts
+    { scoreA: 2, scoreB: 0, modifier: "half_points" }, // vencedor certo + metade → 0pts
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // exato → 3pts
   ],
   "demo.charlie@codecon.local": [
-    { scoreA: 0, scoreB: 2, modifier: "normal" },        // errou → 0pts
-    { scoreA: 2, scoreB: 0, modifier: "normal" },        // errou → 0pts
-    { scoreA: 0, scoreB: 2, modifier: "normal" },        // errou → 0pts
-    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
-    { scoreA: 1, scoreB: 2, modifier: "normal" },        // errou → 0pts
-    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
-    { scoreA: 0, scoreB: 1, modifier: "normal" },        // errou → 0pts
-    { scoreA: 1, scoreB: 0, modifier: "normal" },        // vencedor certo → 1pt
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // errou → 0pts
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 1, scoreB: 2, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
   ],
 };
 
 // Apostas para as partidas pendentes da Rodada 1 (sem ranking_log)
 const demoBetsOnPending: Record<string, BetRow[]> = {
   "demo.alice@codecon.local": [
-    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Qatar vs Switzerland
-    { scoreA: 0, scoreB: 1, modifier: "normal" },  // Haiti vs Scotland
-    { scoreA: 2, scoreB: 0, modifier: "normal" },  // USA vs Paraguay
-    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Australia vs Türkiye
-    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Ivory Coast vs Ecuador
-    { scoreA: 2, scoreB: 1, modifier: "normal" },  // Netherlands vs Japan
-    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Sweden vs Tunisia
-    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Belgium vs Egypt
-    { scoreA: 1, scoreB: 0, modifier: "normal" },  // Iran vs New Zealand
-    { scoreA: 3, scoreB: 0, modifier: "normal" },  // Spain vs Cape Verde
-    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Saudi Arabia vs Uruguay
-    { scoreA: 0, scoreB: 1, modifier: "normal" },  // Iraq vs Norway
-    { scoreA: 2, scoreB: 0, modifier: "normal" },  // Austria vs Jordan
-    { scoreA: 3, scoreB: 0, modifier: "normal" },  // Portugal vs DR Congo
-    { scoreA: 0, scoreB: 2, modifier: "normal" },  // Uzbekistan vs Colombia
-    { scoreA: 1, scoreB: 1, modifier: "normal" },  // Ghana vs Panama
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // Qatar vs Switzerland
+    { scoreA: 0, scoreB: 1, modifier: "normal" }, // Haiti vs Scotland
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // USA vs Paraguay
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // Australia vs Türkiye
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // Ivory Coast vs Ecuador
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // Netherlands vs Japan
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // Sweden vs Tunisia
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // Belgium vs Egypt
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // Iran vs New Zealand
+    { scoreA: 3, scoreB: 0, modifier: "normal" }, // Spain vs Cape Verde
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // Saudi Arabia vs Uruguay
+    { scoreA: 0, scoreB: 1, modifier: "normal" }, // Iraq vs Norway
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // Austria vs Jordan
+    { scoreA: 3, scoreB: 0, modifier: "normal" }, // Portugal vs DR Congo
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // Uzbekistan vs Colombia
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // Ghana vs Panama
   ],
   "demo.bob@codecon.local": [
     { scoreA: 1, scoreB: 2, modifier: "normal" },
@@ -435,27 +875,29 @@ const demoBetsOnPending: Record<string, BetRow[]> = {
 
 // Partidas pendentes da Rodada 1 (mesma ordem de demoBetsOnPending)
 const demoPendingMatchPairs = [
-  { teamA: "Qatar",          teamB: "Switzerland" },
-  { teamA: "Haiti",          teamB: "Scotland" },
-  { teamA: "United States",  teamB: "Paraguay" },
-  { teamA: "Australia",      teamB: "Türkiye" },
-  { teamA: "Ivory Coast",    teamB: "Ecuador" },
-  { teamA: "Netherlands",    teamB: "Japan" },
-  { teamA: "Sweden",         teamB: "Tunisia" },
-  { teamA: "Belgium",        teamB: "Egypt" },
-  { teamA: "Iran",           teamB: "New Zealand" },
-  { teamA: "Spain",          teamB: "Cape Verde" },
-  { teamA: "Saudi Arabia",   teamB: "Uruguay" },
-  { teamA: "Iraq",           teamB: "Norway" },
-  { teamA: "Austria",        teamB: "Jordan" },
-  { teamA: "Portugal",       teamB: "DR Congo" },
-  { teamA: "Uzbekistan",     teamB: "Colombia" },
-  { teamA: "Ghana",          teamB: "Panama" },
+  { teamA: "Catar", teamB: "Suíça" },
+  { teamA: "Haiti", teamB: "Escócia" },
+  { teamA: "Estados Unidos", teamB: "Paraguai" },
+  { teamA: "Austrália", teamB: "Turquia" },
+  { teamA: "Costa do Marfim", teamB: "Equador" },
+  { teamA: "Holanda", teamB: "Japão" },
+  { teamA: "Suécia", teamB: "Tunísia" },
+  { teamA: "Bélgica", teamB: "Egito" },
+  { teamA: "Irã", teamB: "Nova Zelândia" },
+  { teamA: "Espanha", teamB: "Cabo Verde" },
+  { teamA: "Arábia Saudita", teamB: "Uruguai" },
+  { teamA: "Iraque", teamB: "Noruega" },
+  { teamA: "Áustria", teamB: "Jordânia" },
+  { teamA: "Portugal", teamB: "RD Congo" },
+  { teamA: "Uzbequistão", teamB: "Colômbia" },
+  { teamA: "Gana", teamB: "Panamá" },
 ];
 
 function calcPoints(
-  betA: number, betB: number,
-  actualA: number, actualB: number,
+  betA: number,
+  betB: number,
+  actualA: number,
+  actualB: number,
   modifier: string,
 ): { basePoints: number; modifierPoints: number; totalPoints: number } {
   let basePoints: number;
@@ -464,7 +906,8 @@ function calcPoints(
     basePoints = 3;
   } else {
     const betWinner = betA > betB ? "A" : betA < betB ? "B" : "draw";
-    const actualWinner = actualA > actualB ? "A" : actualA < actualB ? "B" : "draw";
+    const actualWinner =
+      actualA > actualB ? "A" : actualA < actualB ? "B" : "draw";
     basePoints = betWinner === actualWinner ? 1 : 0;
   }
 
@@ -504,22 +947,38 @@ try {
     const existingSeedUsers = await tx
       .select({ id: user.id, email: user.email })
       .from(user)
-      .where(inArray(user.email, seedUsers.map((u) => u.email)));
+      .where(
+        inArray(
+          user.email,
+          seedUsers.map((u) => u.email),
+        ),
+      );
 
     if (existingSeedUsers.length > 0) {
       await tx.delete(ranking).where(
-        inArray(ranking.userId, existingSeedUsers.map((u) => u.id)),
+        inArray(
+          ranking.userId,
+          existingSeedUsers.map((u) => u.id),
+        ),
       );
     }
 
     const existingSeedRounds = await tx
       .select({ id: round.id, title: round.title })
       .from(round)
-      .where(inArray(round.title, seedRounds.map((r) => r.title)));
+      .where(
+        inArray(
+          round.title,
+          seedRounds.map((r) => r.title),
+        ),
+      );
 
     if (existingSeedRounds.length > 0) {
       await tx.delete(match).where(
-        inArray(match.roundId, existingSeedRounds.map((r) => r.id)),
+        inArray(
+          match.roundId,
+          existingSeedRounds.map((r) => r.id),
+        ),
       );
     }
 
@@ -678,10 +1137,14 @@ try {
       const roundId = roundIdByNumber.get(m.round);
       const stadiumId = stadiumIdByName.get(m.stadiumName);
 
-      if (teamAId === undefined) throw new Error(`Time não encontrado: ${m.teamA}`);
-      if (teamBId === undefined) throw new Error(`Time não encontrado: ${m.teamB}`);
-      if (roundId === undefined) throw new Error(`Rodada não encontrada: ${m.round}`);
-      if (stadiumId === undefined) throw new Error(`Estádio não encontrado: ${m.stadiumName}`);
+      if (teamAId === undefined)
+        throw new Error(`Time não encontrado: ${m.teamA}`);
+      if (teamBId === undefined)
+        throw new Error(`Time não encontrado: ${m.teamB}`);
+      if (roundId === undefined)
+        throw new Error(`Rodada não encontrada: ${m.round}`);
+      if (stadiumId === undefined)
+        throw new Error(`Estádio não encontrado: ${m.stadiumName}`);
 
       return {
         teamAId,
@@ -731,11 +1194,19 @@ if (process.env.SEED_DEMO_DATA === "true") {
       const existingDemoUsers = await tx
         .select({ id: user.id })
         .from(user)
-        .where(inArray(user.email, demoUsersData.map((u) => u.email)));
+        .where(
+          inArray(
+            user.email,
+            demoUsersData.map((u) => u.email),
+          ),
+        );
 
       if (existingDemoUsers.length > 0) {
         await tx.delete(user).where(
-          inArray(user.id, existingDemoUsers.map((u) => u.id)),
+          inArray(
+            user.id,
+            existingDemoUsers.map((u) => u.id),
+          ),
         );
       }
 
@@ -797,9 +1268,7 @@ if (process.env.SEED_DEMO_DATA === "true") {
         const [matchRow] = await tx
           .update(match)
           .set({ scoreA: m.scoreA, scoreB: m.scoreB, status: "finished" })
-          .where(
-            and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)),
-          )
+          .where(and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)))
           .returning({ id: match.id });
 
         if (!matchRow) {
@@ -823,9 +1292,7 @@ if (process.env.SEED_DEMO_DATA === "true") {
         const [matchRow] = await tx
           .select({ id: match.id })
           .from(match)
-          .where(
-            and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)),
-          );
+          .where(and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)));
 
         if (!matchRow) {
           throw new Error(`Partida não encontrada: ${m.teamA} vs ${m.teamB}`);
@@ -860,7 +1327,9 @@ if (process.env.SEED_DEMO_DATA === "true") {
           modifier: b.modifier,
         }));
 
-        await tx.insert(bet).values([...finishedBetValues, ...pendingBetValues]);
+        await tx
+          .insert(bet)
+          .values([...finishedBetValues, ...pendingBetValues]);
 
         // Ranking_log apenas para partidas finalizadas
         let totalUserPoints = 0;
@@ -868,8 +1337,10 @@ if (process.env.SEED_DEMO_DATA === "true") {
         const rankingLogValues = betsOnFinished.map((b, i) => {
           const fm = demoFinishedMatches[i]!;
           const { basePoints, modifierPoints, totalPoints } = calcPoints(
-            b.scoreA, b.scoreB,
-            fm.scoreA, fm.scoreB,
+            b.scoreA,
+            b.scoreB,
+            fm.scoreA,
+            fm.scoreB,
             b.modifier,
           );
           totalUserPoints += totalPoints;
@@ -899,7 +1370,9 @@ if (process.env.SEED_DEMO_DATA === "true") {
       return {
         users: createdUsers.length,
         finishedMatches: finishedMatchIds.length,
-        totalBets: demoUsersData.length * (finishedMatchIds.length + pendingMatchIds.length),
+        totalBets:
+          demoUsersData.length *
+          (finishedMatchIds.length + pendingMatchIds.length),
         rankingEntries: rankingByUserId.size,
       };
     });

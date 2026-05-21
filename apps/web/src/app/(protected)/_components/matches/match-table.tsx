@@ -93,9 +93,9 @@ function MatchTableRow({
       : null;
 
   return (
-    <Item className="group/match-item w-full min-w-0 border-b border-border last:border-b-0">
+    <Item className="w-full min-w-0 border-b border-border last:border-b-0">
       <ItemHeader className="flex-col items-stretch justify-normal gap-3 sm:flex-row sm:items-center">
-        <ItemTitle className="mr-auto flex w-full min-w-0 flex-wrap gap-x-2 gap-y-1 text-base transition-all duration-300 grayscale-100 group-hover/match-item:grayscale-0 sm:text-lg">
+        <ItemTitle className="mr-auto flex w-full min-w-0 flex-wrap gap-x-2 gap-y-1 text-base transition-all duration-300 sm:text-lg">
           <span className="min-w-0 truncate">
             {match.teamAFlag} {match.teamAName}
           </span>
