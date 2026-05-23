@@ -88,11 +88,12 @@ function TableSelectRoundData({
           <button
             key={row.id}
             type="button"
+            aria-current={row.id === selectedRoundId ? "true" : undefined}
             className={cn(
-              "h-8 shrink-0 rounded border border-border px-2.5 text-xs font-medium transition-colors",
+              "h-8 shrink-0 rounded border px-2.5 text-xs font-medium transition-colors",
               row.id === selectedRoundId
-                ? "bg-background text-foreground"
-                : "bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                ? "border-foreground/40 bg-background text-foreground shadow-[inset_0_0_0_1px_var(--border)]"
+                : "border-border bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
             )}
             onClick={() => onClick(row)}
           >
@@ -104,13 +105,16 @@ function TableSelectRoundData({
         <Table>
           <TableBody>
             {data?.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                aria-current={row.id === selectedRoundId ? "true" : undefined}
+              >
                 <TableCell
                   className={cn(
-                    "cursor-pointer font-medium transition-colors",
+                    "cursor-pointer border-l-2 font-medium transition-colors",
                     row.id === selectedRoundId
-                      ? "bg-muted font-semibold"
-                      : "hover:bg-muted/50",
+                      ? "border-l-foreground/40 bg-background font-semibold text-foreground"
+                      : "border-l-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground",
                   )}
                   onClick={() => onClick(row)}
                 >
