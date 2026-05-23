@@ -55,7 +55,7 @@ export default function Header() {
             <NavigationMenuLink
               render={<Link href={to} />}
               data-active={pathname === to}
-              className="px-2 sm:px-3"
+              className="relative px-2 after:absolute after:right-2 after:bottom-0 after:left-2 after:h-0.5 after:bg-transparent data-active:after:bg-foreground/40 sm:px-3 sm:after:right-3 sm:after:left-3"
             >
               {label}
             </NavigationMenuLink>

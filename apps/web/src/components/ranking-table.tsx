@@ -4,8 +4,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@codecon/ui/components/table";
 import { cn } from "@codecon/ui/lib/utils";
@@ -23,10 +21,10 @@ type RankingTableProps<TUser extends RankingTableUser> = {
 
 export function getRankingPositionClassName(position: number) {
   if (position <= 3) {
-    return "text-green-300";
+    return "text-white";
   }
 
-  return undefined;
+  return "text-muted-foreground";
 }
 
 export function RankingTable<TUser extends RankingTableUser>({
@@ -37,13 +35,6 @@ export function RankingTable<TUser extends RankingTableUser>({
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10">#</TableHead>
-          <TableHead>Participante</TableHead>
-          <TableHead className="text-right">Pts</TableHead>
-        </TableRow>
-      </TableHeader>
       <TableBody>
         {ranking.map((row, index) => {
           const position = index + 1;
@@ -76,14 +67,15 @@ export function RankingTable<TUser extends RankingTableUser>({
                   "cursor-pointer hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none",
               )}
             >
-              <TableCell className="text-muted-foreground">
-                {position}
-              </TableCell>
+              <TableCell className="w-10">#{position}</TableCell>
               <TableCell className="max-w-32 truncate font-medium">
                 {row.userName}
               </TableCell>
               <TableCell className="text-right font-semibold">
-                {row.points}
+                <span>{row.points}</span>{" "}
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  pts
+                </span>
               </TableCell>
             </TableRow>
           );
