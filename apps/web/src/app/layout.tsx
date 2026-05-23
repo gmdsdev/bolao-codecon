@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "codecon",
-  description: "codecon",
+  title: "Codecon Bet",
+  description: "Sistema de bolão para Copa do Mundo FIFA 2026",
 };
 
 export default function RootLayout({

@@ -1,0 +1,89 @@
+"use client";
+
+import { Button } from "@codecon/ui/components/button";
+import { TableCell, TableRow } from "@codecon/ui/components/table";
+import { CheckCircle2 } from "lucide-react";
+
+import type { Match } from "./types";
+
+export function MatchRow({
+  match,
+  roundComplete,
+  onEdit,
+}: {
+  match: Match;
+  roundComplete: boolean;
+  onEdit: () => void;
+}) {
+  const isComplete = match.status === "complete";
+
+  const scoreLabel =
+    match.scoreA !== null && match.scoreB !== null
+      ? `${match.scoreA} - ${match.scoreB}`
+      : "-";
+
+  const expectedWinnerLabel = match.expectedWinnerName
+    ? match.expectedWinnerName === match.teamAName
+      ? `${match.teamAFlag} ${match.teamAName}`
+      : `${match.teamBFlag} ${match.teamBName}`
+    : "-";
+
+  return (
+    <TableRow
+      className={
+        isComplete
+          ? "block p-3 opacity-60 sm:table-row sm:p-0"
+          : "block p-3 sm:table-row sm:p-0"
+      }
+    >
+      <TableCell className="block whitespace-normal p-0 font-medium sm:table-cell sm:p-2">
+        <span className="break-words">
+          {match.teamAFlag} {match.teamAName}
+        </span>
+        <span className="mx-1.5 text-muted-foreground">x</span>
+        <span className="break-words">
+          {match.teamBName} {match.teamBFlag}
+        </span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">
+          Vencedor esperado
+        </span>
+        <span className="text-right sm:text-left">{expectedWinnerLabel}</span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2 sm:text-sm">
+        <span className="text-muted-foreground sm:hidden">Placar</span>
+        <span>{scoreLabel}</span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">Apostas</span>
+        <span className="text-muted-foreground">{match.totalBets ?? 0}</span>
+      </TableCell>
+      <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
+        <span className="text-muted-foreground sm:hidden">Status</span>
+        {isComplete ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+            <CheckCircle2 className="size-3.5" />
+            Concluída
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Pendente</span>
+        )}
+      </TableCell>
+      <TableCell className="block p-0 pt-3 text-right sm:table-cell sm:p-2">
+        <div className="flex justify-stretch gap-2 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+            onClick={onEdit}
+            disabled={isComplete || roundComplete}
+          >
+            Editar
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}

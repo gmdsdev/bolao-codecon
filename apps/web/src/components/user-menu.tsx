@@ -16,6 +16,7 @@ import {
   MailIcon,
   MonitorIcon,
   MoonIcon,
+  SettingsIcon,
   SunIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -63,6 +64,10 @@ export default function UserMenu() {
           <DropdownMenuItem>
             <MailIcon />
             {session.user.email}
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/settings" />}>
+            <SettingsIcon />
+            Configurações
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
