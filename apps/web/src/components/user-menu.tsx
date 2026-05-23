@@ -13,7 +13,6 @@ import { cn } from "@codecon/ui/lib/utils";
 import { Skeleton } from "@codecon/ui/components/skeleton";
 import {
   LogOutIcon,
-  MailIcon,
   MonitorIcon,
   MoonIcon,
   SettingsIcon,
@@ -61,10 +60,6 @@ export default function UserMenu() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Minha conta</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <MailIcon />
-            {session.user.email}
-          </DropdownMenuItem>
           <DropdownMenuItem render={<Link href="/settings" />}>
             <SettingsIcon />
             Configurações
@@ -76,11 +71,7 @@ export default function UserMenu() {
           <DropdownMenuRadioGroup
             value={theme}
             onValueChange={(value) => {
-              if (
-                value === "light" ||
-                value === "dark" ||
-                value === "system"
-              ) {
+              if (value === "light" || value === "dark" || value === "system") {
                 setTheme(value);
               }
             }}
