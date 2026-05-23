@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 
+import faviconDark from "../assets/favicon-dark.png";
+import faviconLight from "../assets/favicon-light.png";
 import "../index.css";
 import Header from "@/components/header";
 import Providers from "@/components/providers";
@@ -24,6 +26,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Codecon Bet",
   description: "Sistema de bolão para Copa do Mundo FIFA 2026",
+  icons: {
+    icon: [
+      {
+        url: faviconDark.src,
+        media: "(prefers-color-scheme: light)",
+        type: "image/png",
+      },
+      {
+        url: faviconLight.src,
+        media: "(prefers-color-scheme: dark)",
+        type: "image/png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
