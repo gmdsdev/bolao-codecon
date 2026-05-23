@@ -763,6 +763,8 @@ const demoUsersData = [
   { name: "Alice Demo", email: "demo.alice@codecon.local" },
   { name: "Bob Demo", email: "demo.bob@codecon.local" },
   { name: "Charlie Demo", email: "demo.charlie@codecon.local" },
+  { name: "Diana Demo", email: "demo.diana@codecon.local" },
+  { name: "Eve Demo", email: "demo.eve@codecon.local" },
 ];
 
 const demoPassword = "CodeCon-Demo-2026!";
@@ -812,6 +814,26 @@ const demoBetsOnFinished: Record<string, BetRow[]> = {
     { scoreA: 0, scoreB: 1, modifier: "normal" }, // errou → 0pts
     { scoreA: 0, scoreB: 1, modifier: "normal" }, // errou → 0pts
     { scoreA: 1, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+  ],
+  "demo.diana@codecon.local": [
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // exato → 3pts
+    { scoreA: 1, scoreB: 1, modifier: "half_points" }, // exato + metade → 1pt
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 3, scoreB: 1, modifier: "lucky_duck" }, // exato + bônus → 6pts
+    { scoreA: 4, scoreB: 0, modifier: "invalid_bet" }, // invalidada → 0pts
+    { scoreA: 2, scoreB: 0, modifier: "normal" }, // exato → 3pts
+    { scoreA: 0, scoreB: 0, modifier: "normal" }, // errou → 0pts
+    { scoreA: 3, scoreB: 1, modifier: "normal" }, // vencedor certo → 1pt
+  ],
+  "demo.eve@codecon.local": [
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // exato → 3pts
+    { scoreA: 1, scoreB: 2, modifier: "normal" }, // errou → 0pts
+    { scoreA: 2, scoreB: 1, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 1, scoreB: 0, modifier: "normal" }, // vencedor certo → 1pt
+    { scoreA: 1, scoreB: 1, modifier: "normal" }, // errou → 0pts
+    { scoreA: 0, scoreB: 2, modifier: "normal" }, // errou → 0pts
   ],
 };
 
@@ -870,6 +892,42 @@ const demoBetsOnPending: Record<string, BetRow[]> = {
     { scoreA: 1, scoreB: 1, modifier: "normal" },
     { scoreA: 2, scoreB: 0, modifier: "normal" },
     { scoreA: 0, scoreB: 1, modifier: "normal" },
+  ],
+  "demo.diana@codecon.local": [
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 2, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 2, modifier: "normal" },
+    { scoreA: 3, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 4, scoreB: 0, modifier: "normal" },
+    { scoreA: 1, scoreB: 3, modifier: "normal" },
+    { scoreA: 0, scoreB: 2, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 2, scoreB: 2, modifier: "normal" },
+  ],
+  "demo.eve@codecon.local": [
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 0, scoreB: 0, modifier: "normal" },
+    { scoreA: 3, scoreB: 0, modifier: "normal" },
+    { scoreA: 1, scoreB: 2, modifier: "normal" },
+    { scoreA: 2, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 2, scoreB: 0, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 0, scoreB: 1, modifier: "normal" },
+    { scoreA: 3, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 1, modifier: "normal" },
+    { scoreA: 1, scoreB: 0, modifier: "normal" },
   ],
 };
 
@@ -1254,7 +1312,7 @@ if (process.env.SEED_DEMO_DATA === "true") {
 
       const teamIdByName = new Map(teamRows.map((t) => [t.name, t.id]));
 
-      // Resolve matchId para partidas finalizadas e as marca como "finished"
+      // Resolve matchId para partidas finalizadas e as marca como "complete"
       const finishedMatchIds: number[] = [];
 
       for (const m of demoFinishedMatches) {
@@ -1267,7 +1325,7 @@ if (process.env.SEED_DEMO_DATA === "true") {
 
         const [matchRow] = await tx
           .update(match)
-          .set({ scoreA: m.scoreA, scoreB: m.scoreB, status: "finished" })
+          .set({ scoreA: m.scoreA, scoreB: m.scoreB, status: "complete" })
           .where(and(eq(match.teamAId, teamAId), eq(match.teamBId, teamBId)))
           .returning({ id: match.id });
 

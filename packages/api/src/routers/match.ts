@@ -192,7 +192,7 @@ export const matchRouter = router({
         });
       }
 
-      if (matchRow.status === "complete") {
+      if (matchRow.status !== "pending") {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Não é possível editar uma partida já concluída",
@@ -219,7 +219,7 @@ export const matchRouter = router({
             ? matchRow.teamBId
             : null;
 
-      return await db
+      const [updatedMatch] = await db
         .update(match)
         .set({
           scoreA: input.scoreA,
@@ -228,7 +228,17 @@ export const matchRouter = router({
           date: new Date(input.date),
           expectedWinnerId,
         })
-        .where(eq(match.id, input.matchId));
+        .where(and(eq(match.id, input.matchId), eq(match.status, "pending")))
+        .returning({ id: match.id });
+
+      if (!updatedMatch) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Não é possível editar uma partida já concluída",
+        });
+      }
+
+      return updatedMatch;
     }),
 
   complete: adminProcedure

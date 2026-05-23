@@ -43,6 +43,11 @@ export function RoundMatches({
 
   const isRoundComplete = round.status === "complete";
 
+  const handleEditMatch = (match: Match) => {
+    if (isRoundComplete || match.status !== "pending") return;
+    setSelectedMatch(match);
+  };
+
   return (
     <Card className="min-w-0">
       <CardHeader className="flex flex-col gap-3 align-top sm:flex-row sm:justify-between">
@@ -70,7 +75,7 @@ export function RoundMatches({
           isLoading={matches.isLoading}
           errorMessage={matches.error?.message}
           roundComplete={isRoundComplete}
-          onEditMatch={setSelectedMatch}
+          onEditMatch={handleEditMatch}
         />
 
         <Dialog open={isAddMatchOpen} onOpenChange={setIsAddMatchOpen}>

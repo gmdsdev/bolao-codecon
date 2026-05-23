@@ -15,7 +15,7 @@ export function MatchRow({
   roundComplete: boolean;
   onEdit: () => void;
 }) {
-  const isComplete = match.status === "complete";
+  const isComplete = match.status !== "pending";
 
   const scoreLabel =
     match.scoreA !== null && match.scoreB !== null

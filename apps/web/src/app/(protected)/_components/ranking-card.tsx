@@ -14,14 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@codecon/ui/components/empty";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@codecon/ui/components/table";
+import { RankingTable } from "@/components/ranking-table";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { TrophyIcon } from "lucide-react";
@@ -87,50 +80,5 @@ export function RankingCard({ ranking }: RankingCardProps) {
         }
       />
     </Dialog>
-  );
-}
-
-function RankingTable({
-  ranking,
-  onSelectUser,
-}: RankingCardProps & {
-  onSelectUser: (user: RankingUser) => void;
-}) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-10">#</TableHead>
-          <TableHead>Participante</TableHead>
-          <TableHead className="text-right">Pts</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {ranking.map((row, index) => (
-          <TableRow
-            key={row.id}
-            role="button"
-            tabIndex={0}
-            aria-label={`Ver detalhes da pontuação de ${row.userName}`}
-            onClick={() => onSelectUser(row)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onSelectUser(row);
-              }
-            }}
-            className="cursor-pointer nth-[1]:text-amber-300 nth-[2]:text-green-300 nth-[3]:text-blue-300 hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none"
-          >
-            <TableCell className="text-muted-foreground">{index + 1}</TableCell>
-            <TableCell className="max-w-32 truncate font-medium">
-              {row.userName}
-            </TableCell>
-            <TableCell className="text-right font-semibold">
-              {row.points}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
   );
 }

@@ -2,6 +2,7 @@
 
 import { Input } from "@codecon/ui/components/input";
 import { Label } from "@codecon/ui/components/label";
+import type { Ref } from "react";
 
 import type { Match } from "./types";
 
@@ -10,6 +11,7 @@ export function MatchScoreFields({
   scoreA,
   scoreB,
   disabled,
+  scoreAInputRef,
   onScoreAChange,
   onScoreBChange,
 }: {
@@ -17,6 +19,7 @@ export function MatchScoreFields({
   scoreA: string;
   scoreB: string;
   disabled: boolean;
+  scoreAInputRef?: Ref<HTMLInputElement>;
   onScoreAChange: (value: string) => void;
   onScoreBChange: (value: string) => void;
 }) {
@@ -27,6 +30,7 @@ export function MatchScoreFields({
           {match.teamAFlag} {match.teamAName}
         </Label>
         <Input
+          ref={scoreAInputRef}
           id={`score-a-${match.id}`}
           type="number"
           min={0}

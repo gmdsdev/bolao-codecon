@@ -5,9 +5,7 @@ import { getRequestOrigin } from "@/lib/request-origin";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { headers } from "next/headers";
 
-const DEFAULT_ROUND_ID = 1;
-
-export async function getProtectedHomePageData(roundId = DEFAULT_ROUND_ID) {
+export async function getProtectedHomePageData() {
   const requestHeaders = await headers();
   const client = createTRPCClient<AppRouter>({
     links: [
@@ -20,11 +18,32 @@ export async function getProtectedHomePageData(roundId = DEFAULT_ROUND_ID) {
     ],
   });
 
-  const [rounds, ranking, matches] = await Promise.all([
+  const [rounds, ranking] = await Promise.all([
     client.round.getAll.query(),
     client.ranking.getAll.query({ limit: 10 }),
-    client.match.getByRound.query({ roundId }),
   ]);
+  const roundsWithMatches = await Promise.all(
+    rounds.map(async (round) => ({
+      round,
+      matches: await client.match.getByRound.query({ roundId: round.id }),
+    })),
+  );
+  const nextMatch = roundsWithMatches
+    .flatMap(({ round, matches }) =>
+      matches
+        .filter((match) => match.status === "pending")
+        .map((match) => ({ match, round })),
+    )
+    .sort((a, b) => {
+      const dateDiff =
+        new Date(a.match.date).getTime() - new Date(b.match.date).getTime();
+
+      return dateDiff || a.match.id - b.match.id;
+    })[0];
+  const selectedRound = nextMatch?.round ?? rounds[0];
+  const roundId = selectedRound?.id ?? 1;
+  const matches =
+    roundsWithMatches.find(({ round }) => round.id === roundId)?.matches ?? [];
 
   return {
     roundId,

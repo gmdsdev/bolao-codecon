@@ -3,7 +3,7 @@
 import { Button } from "@codecon/ui/components/button";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
 import { trpc } from "@/utils/trpc";
@@ -49,6 +49,8 @@ export function MatchResultForm({
   const [pendingAction, setPendingAction] = useState<"save" | "complete" | null>(
     null,
   );
+  const isComplete = match.status !== "pending";
+  const scoreAInputRef = useRef<HTMLInputElement>(null);
 
   const updateResult = useMutation(trpc.match.updateResult.mutationOptions());
 
@@ -67,6 +69,7 @@ export function MatchResultForm({
 
   const parsedStadiumId = Number(stadiumId);
   const canSubmit =
+    !isComplete &&
     scoreA.trim() !== "" &&
     scoreB.trim() !== "" &&
     Number.isInteger(parsedStadiumId) &&
@@ -78,6 +81,17 @@ export function MatchResultForm({
     Number.isInteger(Number(scoreB));
 
   const isPending = updateResult.isPending || completeMatch.isPending;
+
+  useEffect(() => {
+    if (isComplete) return;
+
+    const frameId = requestAnimationFrame(() => {
+      scoreAInputRef.current?.focus();
+      scoreAInputRef.current?.select();
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [isComplete, match.id]);
 
   const getResultPayload = () => {
     if (!canSubmit) return null;
@@ -130,30 +144,37 @@ export function MatchResultForm({
       <ExpectedWinnerField
         match={match}
         value={expectedWinner}
-        disabled={isPending}
+        disabled={isPending || isComplete}
         onChange={setExpectedWinner}
       />
       <StadiumSelectField
         id={`stadium-result-${match.id}`}
         value={stadiumId}
         stadiums={stadiums}
-        disabled={isPending}
+        disabled={isPending || isComplete}
         onChange={setStadiumId}
       />
       <MatchDateTimeField
         id={`date-result-${match.id}`}
         value={matchDate}
         onChange={setMatchDate}
-        disabled={isPending}
+        disabled={isPending || isComplete}
       />
       <MatchScoreFields
         match={match}
         scoreA={scoreA}
         scoreB={scoreB}
-        disabled={isPending}
+        disabled={isPending || isComplete}
+        scoreAInputRef={scoreAInputRef}
         onScoreAChange={setScoreA}
         onScoreBChange={setScoreB}
       />
+
+      {isComplete && (
+        <p className="text-xs text-muted-foreground">
+          Esta partida já foi concluída e não pode ser editada.
+        </p>
+      )}
 
       {updateResult.isError && (
         <p className="text-xs text-destructive">{updateResult.error.message}</p>
