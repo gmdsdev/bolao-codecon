@@ -4,5 +4,10 @@ import { getServerSession } from "@/lib/server-session";
 export default async function Page() {
   const session = await getServerSession();
 
-  return <SettingsForm initialName={session?.user.name ?? ""} />;
+  return (
+    <SettingsForm
+      initialEmail={session?.user.email ?? ""}
+      initialName={session?.user.name ?? ""}
+    />
+  );
 }

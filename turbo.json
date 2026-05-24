@@ -8,7 +8,8 @@
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
         "CORS_ORIGIN",
-        "DATABASE_URL"
+        "DATABASE_URL",
+        "RESEND_API_KEY"
       ],
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],

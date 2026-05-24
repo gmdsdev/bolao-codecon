@@ -1,4 +1,5 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+import { accountRouter } from "./account";
 import { betRouter } from "./bet";
 import { matchRouter } from "./match";
 import { rankingRouter } from "./ranking";
@@ -16,6 +17,7 @@ export const appRouter = router({
       user: ctx.session.user,
     };
   }),
+  account: accountRouter,
   bet: betRouter,
   match: matchRouter,
   ranking: rankingRouter,
