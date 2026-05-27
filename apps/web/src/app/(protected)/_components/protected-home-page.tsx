@@ -1,4 +1,5 @@
 import { MySummaryCard } from "./my-summary-card";
+import { PrizeCard } from "./prize-card";
 import { ProtectedHomePageClient } from "./protected-home-page-client";
 import { getProtectedHomePageData } from "./protected-home-page-data";
 import { RankingCard } from "./ranking-card";
@@ -19,6 +20,7 @@ export async function ProtectedHomePage() {
       <div className="flex min-w-0 shrink-0 flex-col gap-3 lg:w-72">
         <RankingCard ranking={initialData.ranking} />
         <MySummaryCard />
+        <PrizeCard />
       </div>
     </div>
   );

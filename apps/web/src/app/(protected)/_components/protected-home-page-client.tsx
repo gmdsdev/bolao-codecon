@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 
 import { MatchList } from "./matches/match-list";
 import type { ProtectedHomePageData } from "./protected-home-page-data";
+import { LogoCard } from "./logo-card";
 
 type ProtectedHomePageClientProps = {
   initialData: Pick<
@@ -40,8 +41,7 @@ export function ProtectedHomePageClient({
     initialData:
       roundId === initialData.roundId ? initialData.matches : undefined,
   });
-  const isUsingInitialMatches =
-    !hasHydrated && roundId === initialData.roundId;
+  const isUsingInitialMatches = !hasHydrated && roundId === initialData.roundId;
   const visibleMatches = isUsingInitialMatches
     ? initialData.matches
     : matches.data;
@@ -53,13 +53,16 @@ export function ProtectedHomePageClient({
 
   return (
     <>
-      <TableSelectRound
-        rounds={rounds as never}
-        selectedRoundId={roundId}
-        onSelectRound={(round) => {
-          setRoundId(round.id);
-        }}
-      />
+      <aside className="flex min-w-0 shrink-0 flex-col gap-3">
+        <LogoCard />
+        <TableSelectRound
+          rounds={rounds as never}
+          selectedRoundId={roundId}
+          onSelectRound={(round) => {
+            setRoundId(round.id);
+          }}
+        />
+      </aside>
       <main className="min-w-0 w-full flex-1">
         {hasHydrated && matches.isError ? (
           <Empty>
@@ -69,7 +72,8 @@ export function ProtectedHomePageClient({
               </EmptyMedia>
               <EmptyTitle>Erro ao carregar partidas</EmptyTitle>
               <EmptyDescription>
-                Não foi possível buscar as partidas desta rodada. Tente novamente.
+                Não foi possível buscar as partidas desta rodada. Tente
+                novamente.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>

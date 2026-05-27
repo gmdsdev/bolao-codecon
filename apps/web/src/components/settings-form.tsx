@@ -154,7 +154,9 @@ export default function SettingsForm({
       });
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Não foi possível excluir a conta",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível excluir a conta",
       );
     }
   };
@@ -304,7 +306,7 @@ export default function SettingsForm({
             </div>
 
             <FieldDescription>
-              A nova senha deve ter entre 8 e 128 caracteres.
+              A nova senha deve ter no mínimo 8 caracteres.
             </FieldDescription>
 
             <passwordForm.Subscribe

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 
-import faviconDark from "../assets/favicon-dark.png";
-import faviconLight from "../assets/favicon-light.png";
-import "../index.css";
-import Header from "@/components/header";
 import Providers from "@/components/providers";
 import { cn } from "@codecon/ui/lib/utils";
+import faviconDark from "../assets/images/favicons/favicon-dark.png";
+import faviconLight from "../assets/images/favicons/favicon-light.png";
+import "../index.css";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -24,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Codecon Bet",
+  title: "Bolão da Codecon",
   description: "Sistema de bolão para Copa do Mundo FIFA 2026",
   icons: {
     icon: [

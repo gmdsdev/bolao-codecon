@@ -1,4 +1,4 @@
-import logo from "@/assets/codecon.svg";
+import logo from "@/assets/images/logos/codecon.svg";
 import { cn } from "@codecon/ui/lib/utils";
 import type { CSSProperties, ComponentPropsWithoutRef } from "react";
 
