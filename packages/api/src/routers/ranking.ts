@@ -6,7 +6,18 @@ import { ranking } from "@codecon/db/schema/ranking.schema";
 import { rankingLog } from "@codecon/db/schema/ranking_log.schema";
 import { round } from "@codecon/db/schema/round.schema";
 import { team } from "@codecon/db/schema/team.schema";
-import { and, asc, count, desc, eq, gt, isNull } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  isNull,
+  lt,
+  or,
+  sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
@@ -14,6 +25,16 @@ import { protectedProcedure, router } from "../index";
 
 const teamA = alias(team, "teamA");
 const teamB = alias(team, "teamB");
+
+const firstBetByUser = db
+  .select({
+    userId: bet.userId,
+    // Existing bets do not store timestamps, so the serial id preserves bet order.
+    firstBetId: sql<number>`min(${bet.id})`.as("first_bet_id"),
+  })
+  .from(bet)
+  .groupBy(bet.userId)
+  .as("first_bet_by_user");
 
 export const rankingRouter = router({
   getAll: protectedProcedure
@@ -30,7 +51,8 @@ export const rankingRouter = router({
         })
         .from(ranking)
         .innerJoin(user, eq(ranking.userId, user.id))
-        .orderBy(desc(ranking.points), user.name)
+        .leftJoin(firstBetByUser, eq(ranking.userId, firstBetByUser.userId))
+        .orderBy(desc(ranking.points), asc(firstBetByUser.firstBetId), user.name)
         .limit(input?.limit ?? 100);
     }),
 
@@ -76,8 +98,12 @@ export const rankingRouter = router({
     const userId = ctx.session.user.id;
 
     const [myRanking] = await db
-      .select({ points: ranking.points })
+      .select({
+        points: ranking.points,
+        firstBetId: firstBetByUser.firstBetId,
+      })
       .from(ranking)
+      .leftJoin(firstBetByUser, eq(ranking.userId, firstBetByUser.userId))
       .where(eq(ranking.userId, userId))
       .limit(1);
 
@@ -87,9 +113,16 @@ export const rankingRouter = router({
         db
           .select({ count: count() })
           .from(ranking)
+          .leftJoin(firstBetByUser, eq(ranking.userId, firstBetByUser.userId))
           .where(
-            myRanking
-              ? gt(ranking.points, myRanking.points)
+            myRanking?.firstBetId
+              ? or(
+                  gt(ranking.points, myRanking.points),
+                  and(
+                    eq(ranking.points, myRanking.points),
+                    lt(firstBetByUser.firstBetId, myRanking.firstBetId),
+                  ),
+                )
               : eq(ranking.userId, userId),
           ),
 
@@ -107,7 +140,13 @@ export const rankingRouter = router({
             bet,
             and(eq(bet.matchId, match.id), eq(bet.userId, userId)),
           )
-          .where(and(isNull(match.scoreA), isNull(bet.id))),
+          .where(
+            and(
+              eq(match.status, "pending"),
+              isNull(match.scoreA),
+              isNull(bet.id),
+            ),
+          ),
 
         // Last points earned
         db

@@ -23,11 +23,18 @@ export function MatchScoreFields({
   onScoreAChange: (value: string) => void;
   onScoreBChange: (value: string) => void;
 }) {
+  const teamALabel = `${match.teamAFlag ?? ""} ${
+    match.teamAName ?? "Time A"
+  }`.trim();
+  const teamBLabel = `${match.teamBFlag ?? ""} ${
+    match.teamBName ?? "Time B"
+  }`.trim();
+
   return (
     <div className="grid min-w-0 grid-cols-2 gap-3">
       <div className="min-w-0 space-y-2">
         <Label htmlFor={`score-a-${match.id}`} className="block truncate">
-          {match.teamAFlag} {match.teamAName}
+          {teamALabel}
         </Label>
         <Input
           ref={scoreAInputRef}
@@ -39,12 +46,11 @@ export function MatchScoreFields({
           value={scoreA}
           onChange={(event) => onScoreAChange(event.target.value)}
           disabled={disabled}
-          required
         />
       </div>
       <div className="min-w-0 space-y-2">
         <Label htmlFor={`score-b-${match.id}`} className="block truncate">
-          {match.teamBFlag} {match.teamBName}
+          {teamBLabel}
         </Label>
         <Input
           id={`score-b-${match.id}`}
@@ -55,7 +61,6 @@ export function MatchScoreFields({
           value={scoreB}
           onChange={(event) => onScoreBChange(event.target.value)}
           disabled={disabled}
-          required
         />
       </div>
     </div>

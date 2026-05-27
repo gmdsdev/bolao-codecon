@@ -7,10 +7,12 @@ export type Round = {
 export type Match = {
   id: number;
   status: string;
-  teamAName: string;
-  teamAFlag: string;
-  teamBName: string;
-  teamBFlag: string;
+  teamAId: number | null;
+  teamBId: number | null;
+  teamAName: string | null;
+  teamAFlag: string | null;
+  teamBName: string | null;
+  teamBFlag: string | null;
   date: string;
   scoreA: number | null;
   scoreB: number | null;

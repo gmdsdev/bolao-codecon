@@ -44,7 +44,7 @@ export function RoundMatches({
   const isRoundComplete = round.status === "complete";
 
   const handleEditMatch = (match: Match) => {
-    if (isRoundComplete || match.status !== "pending") return;
+    if (isRoundComplete || match.status === "complete") return;
     setSelectedMatch(match);
   };
 
@@ -108,12 +108,18 @@ export function RoundMatches({
               <DialogHeader>
                 <DialogTitle>Editar partida</DialogTitle>
                 <DialogDescription>
-                  {selectedMatch.teamAFlag} {selectedMatch.teamAName} x{" "}
-                  {selectedMatch.teamBName} {selectedMatch.teamBFlag}
+                  {`${selectedMatch.teamAFlag ?? ""} ${
+                    selectedMatch.teamAName ?? "A definir"
+                  }`.trim()}{" "}
+                  x{" "}
+                  {`${selectedMatch.teamBName ?? "A definir"} ${
+                    selectedMatch.teamBFlag ?? ""
+                  }`.trim()}
                 </DialogDescription>
               </DialogHeader>
               <MatchResultForm
                 match={selectedMatch}
+                teams={teams}
                 stadiums={stadiums}
                 onCancel={() => setSelectedMatch(null)}
                 onSaved={() => {

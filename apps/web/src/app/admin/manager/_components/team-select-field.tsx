@@ -12,12 +12,15 @@ import {
 import { getTeamOptions } from "./match-utils";
 import type { Team } from "./types";
 
+const NO_TEAM_VALUE = "__no-team__";
+
 export function TeamSelectField({
   id,
   label,
   value,
   teams,
   disabled,
+  allowEmpty = false,
   onChange,
 }: {
   id: string;
@@ -25,6 +28,7 @@ export function TeamSelectField({
   value: string;
   teams: Team[];
   disabled: boolean;
+  allowEmpty?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
@@ -34,9 +38,10 @@ export function TeamSelectField({
         id={id}
         items={getTeamOptions(teams)}
         value={value}
-        onValueChange={(nextValue) => onChange(nextValue ?? "")}
+        onValueChange={(nextValue) =>
+          onChange(nextValue === NO_TEAM_VALUE ? "" : (nextValue ?? ""))
+        }
         disabled={disabled || teams.length === 0}
-        required
       >
         <SelectTrigger className="w-full min-w-0" size="default">
           <SelectValue
@@ -45,6 +50,11 @@ export function TeamSelectField({
           />
         </SelectTrigger>
         <SelectContent align="start">
+          {allowEmpty && (
+            <SelectItem value={NO_TEAM_VALUE} className="min-w-0">
+              <span className="block min-w-0 truncate">A definir</span>
+            </SelectItem>
+          )}
           {teams.map((team) => (
             <SelectItem
               key={team.id}

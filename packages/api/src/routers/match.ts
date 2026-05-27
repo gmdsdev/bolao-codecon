@@ -8,7 +8,7 @@ import { stadium } from "@codecon/db/schema/stadium.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
@@ -22,6 +22,7 @@ const teamBGroup = alias(teamGroup, "teamBGroup");
 const expectedWinner = alias(team, "expectedWinner");
 const idSchema = z.number().int().positive();
 const scoreSchema = z.number().int().min(0).max(99);
+const editableMatchStatusSchema = z.enum(["draft", "pending"]);
 
 export const matchRouter = router({
   getAll: adminProcedure.query(async () => {
@@ -34,19 +35,27 @@ export const matchRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const whereConditions = [eq(match.roundId, input.roundId)];
+
+      if (!ctx.session.user.isAdmin) {
+        whereConditions.push(ne(match.status, "draft"));
+      }
+
       return await db
         .select({
           id: match.id,
+          teamAId: match.teamAId,
+          teamBId: match.teamBId,
           roundId: match.roundId,
           roundNumber: round.number,
           status: match.status,
-          teamAGroupId: teamAGroup.id,
-          teamAGroupName: teamAGroup.name,
-          teamAName: teamA.name,
-          teamAFlag: teamA.flag,
-          teamBGroupId: teamBGroup.id,
-          teamBName: teamB.name,
-          teamBFlag: teamB.flag,
+          teamAGroupId: sql<number>`coalesce(${teamAGroup.id}, 0)`,
+          teamAGroupName: sql<string>`coalesce(${teamAGroup.name}, 'A definir')`,
+          teamAName: sql<string>`coalesce(${teamA.name}, 'A definir')`,
+          teamAFlag: sql<string>`coalesce(${teamA.flag}, '')`,
+          teamBGroupId: sql<number>`coalesce(${teamBGroup.id}, 0)`,
+          teamBName: sql<string>`coalesce(${teamB.name}, 'A definir')`,
+          teamBFlag: sql<string>`coalesce(${teamB.flag}, '')`,
           date: match.date,
           scoreA: match.scoreA,
           scoreB: match.scoreB,
@@ -62,32 +71,43 @@ export const matchRouter = router({
         })
         .from(match)
         .innerJoin(round, eq(match.roundId, round.id))
-        .innerJoin(teamA, eq(match.teamAId, teamA.id))
-        .innerJoin(teamB, eq(match.teamBId, teamB.id))
-        .innerJoin(teamAGroup, eq(teamA.teamGroupId, teamAGroup.id))
-        .innerJoin(teamBGroup, eq(teamB.teamGroupId, teamBGroup.id))
+        .leftJoin(teamA, eq(match.teamAId, teamA.id))
+        .leftJoin(teamB, eq(match.teamBId, teamB.id))
+        .leftJoin(teamAGroup, eq(teamA.teamGroupId, teamAGroup.id))
+        .leftJoin(teamBGroup, eq(teamB.teamGroupId, teamBGroup.id))
         .innerJoin(stadium, eq(match.stadiumId, stadium.id))
         .leftJoin(expectedWinner, eq(match.expectedWinnerId, expectedWinner.id))
         .leftJoin(
           bet,
           and(eq(bet.matchId, match.id), eq(bet.userId, ctx.session.user.id)),
         )
-        .where(eq(match.roundId, input.roundId))
+        .where(and(...whereConditions))
         .orderBy(asc(match.id));
     }),
 
   create: adminProcedure
     .input(
       z.object({
-        teamAId: idSchema,
-        teamBId: idSchema,
+        teamAId: idSchema.nullable().optional(),
+        teamBId: idSchema.nullable().optional(),
         roundId: idSchema,
         stadiumId: idSchema,
         date: z.string().datetime(),
+        status: editableMatchStatusSchema.default("pending"),
       }),
     )
     .mutation(async ({ input }) => {
-      if (input.teamAId === input.teamBId) {
+      const teamAId = input.teamAId ?? null;
+      const teamBId = input.teamBId ?? null;
+
+      if (input.status === "pending" && (!teamAId || !teamBId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Publique apenas partidas com dois times definidos",
+        });
+      }
+
+      if (teamAId !== null && teamBId !== null && teamAId === teamBId) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Uma partida precisa de dois times diferentes",
@@ -119,24 +139,25 @@ export const matchRouter = router({
         });
       }
 
-      const teams = await db
-        .select({
-          id: team.id,
-        })
-        .from(team)
-        .where(
-          and(
-            inArray(team.id, [input.teamAId, input.teamBId]),
-            isNull(team.deletedAt),
-          ),
-        );
-      const teamIds = new Set(teams.map((teamRow) => teamRow.id));
+      const requestedTeamIds = [...new Set([teamAId, teamBId].filter(isId))];
 
-      if (!teamIds.has(input.teamAId) || !teamIds.has(input.teamBId)) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Time não encontrado",
-        });
+      if (requestedTeamIds.length > 0) {
+        const teams = await db
+          .select({
+            id: team.id,
+          })
+          .from(team)
+          .where(
+            and(inArray(team.id, requestedTeamIds), isNull(team.deletedAt)),
+          );
+        const teamIds = new Set(teams.map((teamRow) => teamRow.id));
+
+        if (requestedTeamIds.some((teamId) => !teamIds.has(teamId))) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Time não encontrado",
+          });
+        }
       }
 
       const stadiumRows = await db
@@ -153,11 +174,12 @@ export const matchRouter = router({
       }
 
       return await db.insert(match).values({
-        teamAId: input.teamAId,
-        teamBId: input.teamBId,
+        teamAId,
+        teamBId,
         roundId: input.roundId,
         stadiumId: input.stadiumId,
         date: new Date(input.date),
+        status: input.status,
       });
     }),
 
@@ -165,11 +187,14 @@ export const matchRouter = router({
     .input(
       z.object({
         matchId: idSchema,
-        scoreA: scoreSchema,
-        scoreB: scoreSchema,
+        teamAId: idSchema.nullable().optional(),
+        teamBId: idSchema.nullable().optional(),
+        scoreA: scoreSchema.nullable().optional(),
+        scoreB: scoreSchema.nullable().optional(),
         stadiumId: idSchema,
         date: z.string().datetime(),
         expectedWinner: z.enum(["teamA", "teamB"]).nullable().optional(),
+        status: editableMatchStatusSchema.optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -177,6 +202,9 @@ export const matchRouter = router({
         .select({
           teamAId: match.teamAId,
           teamBId: match.teamBId,
+          scoreA: match.scoreA,
+          scoreB: match.scoreB,
+          expectedWinnerId: match.expectedWinnerId,
           status: match.status,
         })
         .from(match)
@@ -192,11 +220,52 @@ export const matchRouter = router({
         });
       }
 
-      if (matchRow.status !== "pending") {
+      if (matchRow.status === "complete") {
         throw new TRPCError({
           code: "CONFLICT",
           message: "Não é possível editar uma partida já concluída",
         });
+      }
+
+      const nextStatus = input.status ?? matchRow.status;
+      const teamAId =
+        input.teamAId === undefined ? matchRow.teamAId : input.teamAId;
+      const teamBId =
+        input.teamBId === undefined ? matchRow.teamBId : input.teamBId;
+      const scoreA = input.scoreA === undefined ? matchRow.scoreA : input.scoreA;
+      const scoreB = input.scoreB === undefined ? matchRow.scoreB : input.scoreB;
+
+      if (nextStatus === "pending" && (!teamAId || !teamBId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Publique apenas partidas com dois times definidos",
+        });
+      }
+
+      if (teamAId !== null && teamBId !== null && teamAId === teamBId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Uma partida precisa de dois times diferentes",
+        });
+      }
+
+      const requestedTeamIds = [...new Set([teamAId, teamBId].filter(isId))];
+
+      if (requestedTeamIds.length > 0) {
+        const teams = await db
+          .select({ id: team.id })
+          .from(team)
+          .where(
+            and(inArray(team.id, requestedTeamIds), isNull(team.deletedAt)),
+          );
+        const teamIds = new Set(teams.map((teamRow) => teamRow.id));
+
+        if (requestedTeamIds.some((teamId) => !teamIds.has(teamId))) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Time não encontrado",
+          });
+        }
       }
 
       const stadiumRows = await db
@@ -213,22 +282,34 @@ export const matchRouter = router({
       }
 
       const expectedWinnerId =
-        input.expectedWinner === "teamA"
-          ? matchRow.teamAId
-          : input.expectedWinner === "teamB"
-            ? matchRow.teamBId
-            : null;
+        input.expectedWinner === undefined
+          ? matchRow.expectedWinnerId
+          : input.expectedWinner === "teamA"
+            ? teamAId
+            : input.expectedWinner === "teamB"
+              ? teamBId
+              : null;
+
+      if (input.expectedWinner && expectedWinnerId === null) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Defina o time antes de marcar o vencedor esperado",
+        });
+      }
 
       const [updatedMatch] = await db
         .update(match)
         .set({
-          scoreA: input.scoreA,
-          scoreB: input.scoreB,
+          teamAId,
+          teamBId,
+          scoreA,
+          scoreB,
           stadiumId: input.stadiumId,
           date: new Date(input.date),
           expectedWinnerId,
+          status: nextStatus,
         })
-        .where(and(eq(match.id, input.matchId), eq(match.status, "pending")))
+        .where(and(eq(match.id, input.matchId), ne(match.status, "complete")))
         .returning({ id: match.id });
 
       if (!updatedMatch) {
@@ -263,7 +344,7 @@ export const matchRouter = router({
 
         if (!matchRow) {
           const existingMatch = await tx
-            .select({ id: match.id })
+            .select({ id: match.id, status: match.status })
             .from(match)
             .where(eq(match.id, input.matchId))
             .limit(1);
@@ -272,6 +353,13 @@ export const matchRouter = router({
             throw new TRPCError({
               code: "NOT_FOUND",
               message: "Partida não encontrada",
+            });
+          }
+
+          if (existingMatch[0].status === "draft") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Publique a partida antes de concluí-la",
             });
           }
 
@@ -361,3 +449,7 @@ export const matchRouter = router({
       });
     }),
 });
+
+function isId(value: number | null): value is number {
+  return value !== null;
+}

@@ -15,10 +15,8 @@ export const match = pgTable(
   {
     id: serial("id").primaryKey(),
     teamAId: integer("team_a_id")
-      .notNull()
       .references(() => team.id, { onDelete: "cascade" }),
     teamBId: integer("team_b_id")
-      .notNull()
       .references(() => team.id, { onDelete: "cascade" }),
     roundId: integer("round_id")
       .notNull()

@@ -89,6 +89,7 @@ export function MatchList({
 
   const canSubmit =
     selectedMatch !== null &&
+    selectedMatch.status !== "draft" &&
     getMatchDateMs(selectedMatch) > currentTimeMs &&
     selectedMatch.scoreA === null &&
     selectedMatch.scoreB === null &&
@@ -104,6 +105,10 @@ export function MatchList({
   const matchGroups = getGroupStageMatchGroups(matches);
 
   const openBetModal = (match: Match) => {
+    if (match.status === "draft") {
+      return;
+    }
+
     const isScored = match.scoreA !== null || match.scoreB !== null;
     const isClosed = isScored || getMatchDateMs(match) <= currentTimeMs;
 

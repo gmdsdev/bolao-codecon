@@ -24,10 +24,16 @@ export function ExpectedWinnerField({
   onChange: (value: ExpectedWinner | null) => void;
 }) {
   const selectValue = value ?? NO_EXPECTED_WINNER_VALUE;
+  const teamALabel = `${match.teamAFlag ?? ""} ${
+    match.teamAName ?? "A definir"
+  }`.trim();
+  const teamBLabel = `${match.teamBFlag ?? ""} ${
+    match.teamBName ?? "A definir"
+  }`.trim();
   const options = [
     { value: NO_EXPECTED_WINNER_VALUE, label: "Nenhum" },
-    { value: "teamA", label: `${match.teamAFlag} ${match.teamAName}` },
-    { value: "teamB", label: `${match.teamBFlag} ${match.teamBName}` },
+    { value: "teamA", label: teamALabel, disabled: match.teamAId === null },
+    { value: "teamB", label: teamBLabel, disabled: match.teamBId === null },
   ];
 
   return (
@@ -50,7 +56,11 @@ export function ExpectedWinnerField({
         </SelectTrigger>
         <SelectContent align="start">
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
               {option.label}
             </SelectItem>
           ))}
@@ -60,8 +70,8 @@ export function ExpectedWinnerField({
         <p className="text-xs text-muted-foreground">
           Atual:{" "}
           {match.expectedWinnerName === match.teamAName
-            ? `${match.teamAFlag} ${match.teamAName}`
-            : `${match.teamBFlag} ${match.teamBName}`}
+            ? teamALabel
+            : teamBLabel}
         </p>
       )}
     </div>

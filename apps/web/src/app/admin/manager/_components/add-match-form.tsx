@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@codecon/ui/components/checkbox";
+import { Label } from "@codecon/ui/components/label";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -34,14 +36,16 @@ export function AddMatchForm({
   const [teamBId, setTeamBId] = useState("");
   const [stadiumId, setStadiumId] = useState("");
   const [matchDate, setMatchDate] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
   const createMatch = useMutation(
     trpc.match.create.mutationOptions({
       onSuccess: () => {
-        toast.success("Partida adicionada");
+        toast.success(isDraft ? "Rascunho salvo" : "Partida adicionada");
         setTeamAId("");
         setTeamBId("");
         setStadiumId("");
         setMatchDate("");
+        setIsDraft(false);
         onCreated();
       },
     }),
@@ -50,25 +54,28 @@ export function AddMatchForm({
   const parsedTeamAId = Number(teamAId);
   const parsedTeamBId = Number(teamBId);
   const parsedStadiumId = Number(stadiumId);
+  const hasTeamA = teamAId !== "" && Number.isInteger(parsedTeamAId);
+  const hasTeamB = teamBId !== "" && Number.isInteger(parsedTeamBId);
+  const hasDifferentTeams =
+    !hasTeamA || !hasTeamB || parsedTeamAId !== parsedTeamBId;
   const canSubmit =
-    Number.isInteger(parsedTeamAId) &&
-    Number.isInteger(parsedTeamBId) &&
     Number.isInteger(parsedStadiumId) &&
-    parsedTeamAId > 0 &&
-    parsedTeamBId > 0 &&
     parsedStadiumId > 0 &&
     isValidDatetimeLocal(matchDate) &&
-    parsedTeamAId !== parsedTeamBId;
+    hasDifferentTeams &&
+    (isDraft ||
+      (hasTeamA && hasTeamB && parsedTeamAId > 0 && parsedTeamBId > 0));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
     createMatch.mutate({
       roundId,
-      teamAId: parsedTeamAId,
-      teamBId: parsedTeamBId,
+      teamAId: hasTeamA ? parsedTeamAId : null,
+      teamBId: hasTeamB ? parsedTeamBId : null,
       stadiumId: parsedStadiumId,
       date: datetimeLocalToIso(matchDate),
+      status: isDraft ? "draft" : "pending",
     });
   };
 
@@ -80,6 +87,7 @@ export function AddMatchForm({
           label="Time A"
           value={teamAId}
           teams={teams}
+          allowEmpty={isDraft}
           disabled={createMatch.isPending}
           onChange={setTeamAId}
         />
@@ -88,9 +96,25 @@ export function AddMatchForm({
           label="Time B"
           value={teamBId}
           teams={teams}
+          allowEmpty={isDraft}
           disabled={createMatch.isPending}
           onChange={setTeamBId}
         />
+      </div>
+
+      <div className="flex items-start gap-2 rounded-none border border-border p-3">
+        <Checkbox
+          id={`draft-${roundId}`}
+          checked={isDraft}
+          onCheckedChange={(checked) => setIsDraft(checked === true)}
+          disabled={createMatch.isPending}
+        />
+        <div className="grid gap-1">
+          <Label htmlFor={`draft-${roundId}`}>Salvar como rascunho</Label>
+          <p className="text-xs text-muted-foreground">
+            Rascunhos ficam visíveis apenas para administradores.
+          </p>
+        </div>
       </div>
 
       <StadiumSelectField
@@ -129,7 +153,7 @@ export function AddMatchForm({
       )}
 
       <AdminDialogFooter
-        submitLabel="Adicionar partida"
+        submitLabel={isDraft ? "Salvar rascunho" : "Adicionar partida"}
         isPending={createMatch.isPending}
         canSubmit={canSubmit}
         pendingContent={<Loader2 className="size-4 animate-spin" />}

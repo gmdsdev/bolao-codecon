@@ -1,5 +1,6 @@
 export type Match = {
   id: number;
+  status: string;
   roundNumber: number;
   teamAGroupId: number;
   teamAGroupName: string;

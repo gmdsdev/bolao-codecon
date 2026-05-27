@@ -2,7 +2,7 @@
 
 import { Button } from "@codecon/ui/components/button";
 import { TableCell, TableRow } from "@codecon/ui/components/table";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, FileText } from "lucide-react";
 
 import type { Match } from "./types";
 
@@ -15,7 +15,14 @@ export function MatchRow({
   roundComplete: boolean;
   onEdit: () => void;
 }) {
-  const isComplete = match.status !== "pending";
+  const isComplete = match.status === "complete";
+  const isDraft = match.status === "draft";
+  const teamALabel = `${match.teamAFlag ?? ""} ${
+    match.teamAName ?? "A definir"
+  }`.trim();
+  const teamBLabel = `${match.teamBName ?? "A definir"} ${
+    match.teamBFlag ?? ""
+  }`.trim();
 
   const scoreLabel =
     match.scoreA !== null && match.scoreB !== null
@@ -24,8 +31,8 @@ export function MatchRow({
 
   const expectedWinnerLabel = match.expectedWinnerName
     ? match.expectedWinnerName === match.teamAName
-      ? `${match.teamAFlag} ${match.teamAName}`
-      : `${match.teamBFlag} ${match.teamBName}`
+      ? `${match.teamAFlag ?? ""} ${match.teamAName ?? "A definir"}`.trim()
+      : `${match.teamBFlag ?? ""} ${match.teamBName ?? "A definir"}`.trim()
     : "-";
 
   return (
@@ -33,17 +40,15 @@ export function MatchRow({
       className={
         isComplete
           ? "block p-3 opacity-60 sm:table-row sm:p-0"
+          : isDraft
+            ? "block bg-muted/40 p-3 sm:table-row sm:p-0"
           : "block p-3 sm:table-row sm:p-0"
       }
     >
       <TableCell className="block whitespace-normal p-0 font-medium sm:table-cell sm:p-2">
-        <span className="break-words">
-          {match.teamAFlag} {match.teamAName}
-        </span>
+        <span className="break-words">{teamALabel}</span>
         <span className="mx-1.5 text-muted-foreground">x</span>
-        <span className="break-words">
-          {match.teamBName} {match.teamBFlag}
-        </span>
+        <span className="break-words">{teamBLabel}</span>
       </TableCell>
       <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
         <span className="text-muted-foreground sm:hidden">
@@ -61,7 +66,12 @@ export function MatchRow({
       </TableCell>
       <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">
         <span className="text-muted-foreground sm:hidden">Status</span>
-        {isComplete ? (
+        {isDraft ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+            <FileText className="size-3.5" />
+            Rascunho
+          </span>
+        ) : isComplete ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
             <CheckCircle2 className="size-3.5" />
             Concluída

@@ -15,6 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@codecon/ui/components/tooltip";
+import { FileText } from "lucide-react";
 
 type MatchTableProps = {
   matches: Match[];
@@ -63,8 +64,10 @@ function MatchTableRow({
   const betScoreA = savedBet?.scoreA ?? match.betScoreA;
   const betScoreB = savedBet?.scoreB ?? match.betScoreB;
   const betModifier = savedBet?.modifier ?? match.betModifier;
+  const isDraft = match.status === "draft";
   const isScored = match.scoreA !== null || match.scoreB !== null;
-  const isClosed = isScored || new Date(match.date).getTime() <= currentTimeMs;
+  const isClosed =
+    isDraft || isScored || new Date(match.date).getTime() <= currentTimeMs;
   const hasBet = match.hasBet || savedBet !== undefined;
   const betLabel =
     hasBet && betScoreA !== null && betScoreB !== null
@@ -103,6 +106,12 @@ function MatchTableRow({
           <span className="min-w-0 truncate">
             {match.teamBName} {match.teamBFlag}
           </span>
+          {isDraft && (
+            <span className="inline-flex shrink-0 items-center gap-1 border border-amber-500/30 px-1.5 py-0.5 text-xs font-medium text-amber-600">
+              <FileText className="size-3" />
+              Rascunho
+            </span>
+          )}
         </ItemTitle>
         <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           <Tooltip>
@@ -128,14 +137,21 @@ function MatchTableRow({
               disabled={isClosed || hasBet || isBetPending}
               className="min-w-24"
             >
-              {isClosed ? "Encerrada" : hasBet ? "Aposta feita" : "Apostar"}
+              {isDraft
+                ? "Rascunho"
+                : isClosed
+                  ? "Encerrada"
+                  : hasBet
+                    ? "Aposta feita"
+                    : "Apostar"}
             </Button>
           </ItemActions>
         </div>
       </ItemHeader>
       <Separator />
       <ItemContent className="min-w-0 text-muted-foreground">
-        {!hasBet && <span>Aposta não efetuada</span>}
+        {isDraft && <span>Partida ainda não publicada para apostas</span>}
+        {!isDraft && !hasBet && <span>Aposta não efetuada</span>}
         {hasBet && (
           <div className="grid gap-1 sm:grid-cols-3 sm:gap-3">
             <span>Sua aposta: {betLabel}</span>
