@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@codecon/ui/components/tooltip";
-import { FileText } from "lucide-react";
+import { FileText, GitBranch } from "lucide-react";
 
 type MatchTableProps = {
   matches: Match[];
@@ -99,6 +99,12 @@ function MatchTableRow({
     <Item className="w-full min-w-0 border-b border-border last:border-b-0">
       <ItemHeader className="flex-col items-stretch justify-normal gap-3 sm:flex-row sm:items-center">
         <ItemTitle className="mr-auto flex w-full min-w-0 flex-wrap gap-x-2 gap-y-1 text-base transition-all duration-300 sm:text-lg">
+          {match.matchNumber !== null && (
+            <span className="inline-flex shrink-0 items-center gap-1 self-center border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+              <GitBranch className="size-3" />
+              Jogo {match.matchNumber}
+            </span>
+          )}
           <span className="min-w-0 truncate">
             {match.teamAFlag} {match.teamAName}
           </span>

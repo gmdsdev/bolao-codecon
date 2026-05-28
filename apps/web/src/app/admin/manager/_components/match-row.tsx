@@ -2,7 +2,7 @@
 
 import { Button } from "@codecon/ui/components/button";
 import { TableCell, TableRow } from "@codecon/ui/components/table";
-import { CheckCircle2, FileText } from "lucide-react";
+import { CheckCircle2, FileText, GitBranch } from "lucide-react";
 
 import type { Match } from "./types";
 
@@ -18,9 +18,9 @@ export function MatchRow({
   const isComplete = match.status === "complete";
   const isDraft = match.status === "draft";
   const teamALabel = `${match.teamAFlag ?? ""} ${
-    match.teamAName ?? "A definir"
+    match.teamAName ?? match.teamASource ?? "A definir"
   }`.trim();
-  const teamBLabel = `${match.teamBName ?? "A definir"} ${
+  const teamBLabel = `${match.teamBName ?? match.teamBSource ?? "A definir"} ${
     match.teamBFlag ?? ""
   }`.trim();
 
@@ -46,6 +46,14 @@ export function MatchRow({
       }
     >
       <TableCell className="block whitespace-normal p-0 font-medium sm:table-cell sm:p-2">
+        <div className="mb-1 flex min-w-0 flex-wrap items-center gap-1.5">
+          {match.matchNumber !== null && (
+            <span className="inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              <GitBranch className="size-3" />
+              Jogo {match.matchNumber}
+            </span>
+          )}
+        </div>
         <span className="break-words">{teamALabel}</span>
         <span className="mx-1.5 text-muted-foreground">x</span>
         <span className="break-words">{teamBLabel}</span>

@@ -7,6 +7,7 @@ import { round } from "@codecon/db/schema/round.schema";
 import { stadium } from "@codecon/db/schema/stadium.schema";
 import { team } from "@codecon/db/schema/team.schema";
 import { teamGroup } from "@codecon/db/schema/teamGroup.schema";
+import { roundOf32Assignments } from "@codecon/db/world-cup-2026";
 import { TRPCError } from "@trpc/server";
 import { and, asc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -14,6 +15,12 @@ import z from "zod";
 
 import { adminProcedure, protectedProcedure, router } from "../index";
 import { calculateBetPoints } from "../lib/bet-scoring";
+import {
+  BracketRuleError,
+  applyKnockoutPlacement,
+  getKnockoutPlacements,
+  getRoundOf32Updates,
+} from "../lib/world-cup-2026-bracket";
 
 const teamA = alias(team, "teamA");
 const teamB = alias(team, "teamB");
@@ -48,13 +55,16 @@ export const matchRouter = router({
           teamBId: match.teamBId,
           roundId: match.roundId,
           roundNumber: round.number,
+          matchNumber: match.matchNumber,
+          teamASource: match.teamASource,
+          teamBSource: match.teamBSource,
           status: match.status,
           teamAGroupId: sql<number>`coalesce(${teamAGroup.id}, 0)`,
           teamAGroupName: sql<string>`coalesce(${teamAGroup.name}, 'A definir')`,
-          teamAName: sql<string>`coalesce(${teamA.name}, 'A definir')`,
+          teamAName: sql<string>`coalesce(${teamA.name}, ${match.teamASource}, 'A definir')`,
           teamAFlag: sql<string>`coalesce(${teamA.flag}, '')`,
           teamBGroupId: sql<number>`coalesce(${teamBGroup.id}, 0)`,
-          teamBName: sql<string>`coalesce(${teamB.name}, 'A definir')`,
+          teamBName: sql<string>`coalesce(${teamB.name}, ${match.teamBSource}, 'A definir')`,
           teamBFlag: sql<string>`coalesce(${teamB.flag}, '')`,
           date: match.date,
           scoreA: match.scoreA,
@@ -82,105 +92,7 @@ export const matchRouter = router({
           and(eq(bet.matchId, match.id), eq(bet.userId, ctx.session.user.id)),
         )
         .where(and(...whereConditions))
-        .orderBy(asc(match.id));
-    }),
-
-  create: adminProcedure
-    .input(
-      z.object({
-        teamAId: idSchema.nullable().optional(),
-        teamBId: idSchema.nullable().optional(),
-        roundId: idSchema,
-        stadiumId: idSchema,
-        date: z.string().datetime(),
-        status: editableMatchStatusSchema.default("pending"),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const teamAId = input.teamAId ?? null;
-      const teamBId = input.teamBId ?? null;
-
-      if (input.status === "pending" && (!teamAId || !teamBId)) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Publique apenas partidas com dois times definidos",
-        });
-      }
-
-      if (teamAId !== null && teamBId !== null && teamAId === teamBId) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Uma partida precisa de dois times diferentes",
-        });
-      }
-
-      const roundRows = await db
-        .select({
-          id: round.id,
-          status: round.status,
-        })
-        .from(round)
-        .where(eq(round.id, input.roundId))
-        .limit(1);
-
-      const roundRow = roundRows[0];
-
-      if (!roundRow) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Rodada não encontrada",
-        });
-      }
-
-      if (roundRow.status === "complete") {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Não é possível adicionar partidas a uma rodada concluída",
-        });
-      }
-
-      const requestedTeamIds = [...new Set([teamAId, teamBId].filter(isId))];
-
-      if (requestedTeamIds.length > 0) {
-        const teams = await db
-          .select({
-            id: team.id,
-          })
-          .from(team)
-          .where(
-            and(inArray(team.id, requestedTeamIds), isNull(team.deletedAt)),
-          );
-        const teamIds = new Set(teams.map((teamRow) => teamRow.id));
-
-        if (requestedTeamIds.some((teamId) => !teamIds.has(teamId))) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Time não encontrado",
-          });
-        }
-      }
-
-      const stadiumRows = await db
-        .select({ id: stadium.id })
-        .from(stadium)
-        .where(and(eq(stadium.id, input.stadiumId), isNull(stadium.deletedAt)))
-        .limit(1);
-
-      if (!stadiumRows[0]) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Estádio não encontrado",
-        });
-      }
-
-      return await db.insert(match).values({
-        teamAId,
-        teamBId,
-        roundId: input.roundId,
-        stadiumId: input.stadiumId,
-        date: new Date(input.date),
-        status: input.status,
-      });
+        .orderBy(asc(match.matchNumber), asc(match.id));
     }),
 
   updateResult: adminProcedure
@@ -331,51 +243,70 @@ export const matchRouter = router({
     .mutation(async ({ input }) => {
       return await db.transaction(async (tx) => {
         const [matchRow] = await tx
-          .update(match)
-          .set({ status: "complete" })
-          .where(and(eq(match.id, input.matchId), eq(match.status, "pending")))
-          .returning({
+          .select({
             id: match.id,
+            matchNumber: match.matchNumber,
+            teamAId: match.teamAId,
+            teamBId: match.teamBId,
             status: match.status,
             scoreA: match.scoreA,
             scoreB: match.scoreB,
             expectedWinnerId: match.expectedWinnerId,
-          });
+            roundNumber: round.number,
+          })
+          .from(match)
+          .innerJoin(round, eq(match.roundId, round.id))
+          .where(eq(match.id, input.matchId))
+          .limit(1);
 
         if (!matchRow) {
-          const existingMatch = await tx
-            .select({ id: match.id, status: match.status })
-            .from(match)
-            .where(eq(match.id, input.matchId))
-            .limit(1);
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Partida não encontrada",
+          });
+        }
 
-          if (!existingMatch[0]) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Partida não encontrada",
-            });
-          }
+        if (matchRow.status === "draft") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Publique a partida antes de concluí-la",
+          });
+        }
 
-          if (existingMatch[0].status === "draft") {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "Publique a partida antes de concluí-la",
-            });
-          }
-
+        if (matchRow.status === "complete") {
           throw new TRPCError({
             code: "CONFLICT",
             message: "A partida já foi concluída",
           });
         }
 
-        if (
-          matchRow.scoreA === null ||
-          matchRow.scoreB === null
-        ) {
+        if (matchRow.scoreA === null || matchRow.scoreB === null) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
             message: "A partida precisa ter placar antes de ser concluída",
+          });
+        }
+
+        if (
+          matchRow.roundNumber >= 4 &&
+          matchRow.scoreA === matchRow.scoreB
+        ) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Partidas eliminatórias precisam de um vencedor",
+          });
+        }
+
+        const [updatedMatch] = await tx
+          .update(match)
+          .set({ status: "complete" })
+          .where(and(eq(match.id, input.matchId), eq(match.status, "pending")))
+          .returning({ id: match.id });
+
+        if (!updatedMatch) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "A partida não está mais pendente",
           });
         }
 
@@ -445,11 +376,194 @@ export const matchRouter = router({
           await tx.insert(rankingLog).values(logEntries);
         }
 
-        return { awardedUsers: pointsByUserId.size, betsFound: bets.length };
+        let bracketUpdated = false;
+
+        try {
+          bracketUpdated =
+            matchRow.roundNumber <= 3
+              ? await tryGenerateRoundOf32(tx)
+              : await advanceKnockoutMatch(tx, {
+                  ...matchRow,
+                  scoreA: matchRow.scoreA,
+                  scoreB: matchRow.scoreB,
+                });
+        } catch (error) {
+          throw toTrpcError(error);
+        }
+
+        return {
+          awardedUsers: pointsByUserId.size,
+          betsFound: bets.length,
+          bracketUpdated,
+        };
       });
     }),
 });
 
 function isId(value: number | null): value is number {
   return value !== null;
+}
+
+type TournamentTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function tryGenerateRoundOf32(tx: TournamentTx) {
+  const groupMatches = await tx
+    .select({
+      status: match.status,
+      teamAId: match.teamAId,
+      teamBId: match.teamBId,
+      scoreA: match.scoreA,
+      scoreB: match.scoreB,
+    })
+    .from(match)
+    .innerJoin(round, eq(match.roundId, round.id))
+    .where(sql`${round.number} <= 3`);
+
+  const roundOf32MatchNumbers = Object.keys(roundOf32Assignments).map(Number);
+  const existingRoundOf32Teams = await tx
+    .select({
+      teamAId: match.teamAId,
+      teamBId: match.teamBId,
+    })
+    .from(match)
+    .where(inArray(match.matchNumber, roundOf32MatchNumbers));
+
+  const teamRows = await tx
+    .select({
+      id: team.id,
+      name: team.name,
+      groupName: teamGroup.name,
+    })
+    .from(team)
+    .innerJoin(teamGroup, eq(team.teamGroupId, teamGroup.id))
+    .where(isNull(team.deletedAt));
+
+  const updates = getRoundOf32Updates({
+    groupMatches,
+    teams: teamRows,
+    existingRoundOf32Matches: existingRoundOf32Teams,
+  });
+
+  if (!updates) return false;
+
+  for (const update of updates) {
+    await tx
+      .update(match)
+      .set({
+        teamAId: update.teamAId,
+        teamBId: update.teamBId,
+        status: update.status,
+      })
+      .where(eq(match.matchNumber, update.matchNumber));
+  }
+
+  await tx.update(round).set({ status: "complete" }).where(sql`${round.number} <= 3`);
+  await tx.update(round).set({ status: "pending" }).where(eq(round.number, 4));
+
+  return true;
+}
+
+async function advanceKnockoutMatch(
+  tx: TournamentTx,
+  matchRow: {
+    matchNumber: number | null;
+    teamAId: number | null;
+    teamBId: number | null;
+    scoreA: number;
+    scoreB: number;
+    roundNumber: number;
+  },
+) {
+  if (matchRow.matchNumber === null) return false;
+  if (matchRow.teamAId === null || matchRow.teamBId === null) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: "A partida precisa ter dois times definidos",
+    });
+  }
+
+  const placements = getKnockoutPlacements(matchRow);
+
+  if (placements.length === 0) {
+    await completeRoundIfDone(tx, matchRow.roundNumber);
+    return false;
+  }
+
+  for (const placement of placements) {
+    await placeTeamInMatch(tx, placement);
+  }
+
+  await completeRoundIfDone(tx, matchRow.roundNumber);
+
+  return true;
+}
+
+async function placeTeamInMatch(
+  tx: TournamentTx,
+  placement: ReturnType<typeof getKnockoutPlacements>[number],
+) {
+  const [targetMatch] = await tx
+    .select({
+      id: match.id,
+      matchNumber: match.matchNumber,
+      teamAId: match.teamAId,
+      teamBId: match.teamBId,
+    })
+    .from(match)
+    .where(eq(match.matchNumber, placement.matchNumber))
+    .limit(1);
+
+  const update = applyKnockoutPlacement(
+    targetMatch
+      ? {
+          ...targetMatch,
+          matchNumber: targetMatch.matchNumber ?? placement.matchNumber,
+        }
+      : undefined,
+    placement,
+  );
+
+  await tx
+    .update(match)
+    .set({
+      teamAId: update.teamAId,
+      teamBId: update.teamBId,
+      status: update.status,
+    })
+    .where(eq(match.id, update.id));
+}
+
+async function completeRoundIfDone(tx: TournamentTx, roundNumber: number) {
+  const roundMatches = await tx
+    .select({ status: match.status })
+    .from(match)
+    .innerJoin(round, eq(match.roundId, round.id))
+    .where(eq(round.number, roundNumber));
+
+  if (
+    roundMatches.length > 0 &&
+    roundMatches.every((roundMatch) => roundMatch.status === "complete")
+  ) {
+    await tx
+      .update(round)
+      .set({ status: "complete" })
+      .where(eq(round.number, roundNumber));
+  }
+}
+
+function toTrpcError(error: unknown) {
+  if (!(error instanceof BracketRuleError)) return error;
+
+  if (error.reason === "conflict") {
+    return new TRPCError({ code: "CONFLICT", message: error.message });
+  }
+
+  if (error.reason === "not_found") {
+    return new TRPCError({ code: "NOT_FOUND", message: error.message });
+  }
+
+  return new TRPCError({
+    code: "PRECONDITION_FAILED",
+    message: error.message,
+  });
 }

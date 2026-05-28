@@ -2,6 +2,9 @@ export type Match = {
   id: number;
   status: string;
   roundNumber: number;
+  matchNumber: number | null;
+  teamASource: string | null;
+  teamBSource: string | null;
   teamAGroupId: number;
   teamAGroupName: string;
   teamAName: string;

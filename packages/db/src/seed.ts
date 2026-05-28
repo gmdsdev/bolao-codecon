@@ -20,6 +20,7 @@ import {
   teamGroup,
   user,
 } from "./schema";
+import { seedKnockoutMatches } from "./world-cup-2026";
 
 const envPaths = [
   resolve(process.cwd(), ".env"),
@@ -1205,11 +1206,14 @@ try {
         throw new Error(`Estádio não encontrado: ${m.stadiumName}`);
 
       return {
+        matchNumber: null,
         teamAId,
         teamBId,
         roundId,
         date: m.date,
         stadiumId,
+        teamASource: m.teamA,
+        teamBSource: m.teamB,
         scoreA: null,
         scoreB: null,
         expectedWinnerId: null,
@@ -1217,7 +1221,32 @@ try {
       };
     });
 
-    await tx.insert(match).values(groupStageMatchRows);
+    const knockoutMatchRows = seedKnockoutMatches.map((m) => {
+      const roundId = roundIdByNumber.get(m.round);
+      const stadiumId = stadiumIdByName.get(m.stadiumName);
+
+      if (roundId === undefined)
+        throw new Error(`Rodada não encontrada: ${m.round}`);
+      if (stadiumId === undefined)
+        throw new Error(`Estádio não encontrado: ${m.stadiumName}`);
+
+      return {
+        matchNumber: m.matchNumber,
+        teamAId: null,
+        teamBId: null,
+        roundId,
+        date: m.date,
+        stadiumId,
+        teamASource: m.teamASource,
+        teamBSource: m.teamBSource,
+        scoreA: null,
+        scoreB: null,
+        expectedWinnerId: null,
+        status: "draft" as const,
+      };
+    });
+
+    await tx.insert(match).values([...groupStageMatchRows, ...knockoutMatchRows]);
 
     return {
       stadiums: stadiumIdByName.size,
@@ -1225,6 +1254,7 @@ try {
       teams: teamIdByName.size,
       rounds: roundIdByNumber.size,
       groupStageMatches: groupStageMatchRows.length,
+      knockoutMatches: knockoutMatchRows.length,
     };
   });
 

@@ -9,6 +9,9 @@ export type Match = {
   status: string;
   teamAId: number | null;
   teamBId: number | null;
+  matchNumber: number | null;
+  teamASource: string | null;
+  teamBSource: string | null;
   teamAName: string | null;
   teamAFlag: string | null;
   teamBName: string | null;

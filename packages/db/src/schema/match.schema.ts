@@ -5,6 +5,7 @@ import {
   serial,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { round } from "./round.schema";
 import { team } from "./team.schema";
@@ -30,9 +31,13 @@ export const match = pgTable(
     expectedWinnerId: integer("expected_winner_id").references(() => team.id, {
       onDelete: "cascade",
     }),
+    matchNumber: integer("match_number"),
+    teamASource: text("team_a_source"),
+    teamBSource: text("team_b_source"),
     status: text("status").notNull().default("pending"),
   },
   (table) => [
+    uniqueIndex("match_number_unique").on(table.matchNumber),
     index("match_round_id_idx").on(table.roundId),
     index("match_status_idx").on(table.status),
   ],

@@ -1,6 +1,27 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 
 import { applyBetScoreModifier, calculateBetPoints } from "./bet-scoring";
+
+const modifierCases: Array<[string, number, number, number]> = [
+  ["normal", 0, 0, 0],
+  ["invert_bet", 0, 0, 0],
+  ["double_points", 0, 0, 0],
+  ["half_points", 0, 0, 0],
+  ["invalid_bet", 0, 0, 0],
+  ["lucky_duck", 0, 0, 0],
+  ["normal", 1, 0, 1],
+  ["invert_bet", 1, 0, 1],
+  ["double_points", 1, 1, 2],
+  ["half_points", 1, -1, 0],
+  ["invalid_bet", 1, -1, 0],
+  ["lucky_duck", 1, 1, 2],
+  ["normal", 3, 0, 3],
+  ["invert_bet", 3, 0, 3],
+  ["double_points", 3, 3, 6],
+  ["half_points", 3, -2, 1],
+  ["invalid_bet", 3, -3, 0],
+  ["lucky_duck", 3, 1, 4],
+];
 
 describe("calculateBetPoints", () => {
   test("awards 3 points for the exact score", () => {
@@ -61,26 +82,7 @@ describe("calculateBetPoints", () => {
     ).toBe(0);
   });
 
-  test.each([
-    ["normal", 0, 0, 0],
-    ["invert_bet", 0, 0, 0],
-    ["double_points", 0, 0, 0],
-    ["half_points", 0, 0, 0],
-    ["invalid_bet", 0, 0, 0],
-    ["lucky_duck", 0, 0, 0],
-    ["normal", 1, 0, 1],
-    ["invert_bet", 1, 0, 1],
-    ["double_points", 1, 1, 2],
-    ["half_points", 1, -1, 0],
-    ["invalid_bet", 1, -1, 0],
-    ["lucky_duck", 1, 1, 2],
-    ["normal", 3, 0, 3],
-    ["invert_bet", 3, 0, 3],
-    ["double_points", 3, 3, 6],
-    ["half_points", 3, -2, 1],
-    ["invalid_bet", 3, -3, 0],
-    ["lucky_duck", 3, 1, 4],
-  ])(
+  test.each(modifierCases)(
     "applies %s to %i base points",
     (modifier, basePoints, modifierPoints, totalPoints) => {
       const scores = getScoresForBasePoints(basePoints);

@@ -66,9 +66,11 @@ export function MatchResultForm({
 
   const completeMatch = useMutation(
     trpc.match.complete.mutationOptions({
-      onSuccess: ({ awardedUsers, betsFound }) => {
+      onSuccess: ({ awardedUsers, betsFound, bracketUpdated }) => {
         toast.success(
-          `Partida concluída — ${betsFound} aposta(s) encontrada(s), ${awardedUsers} usuário(s) pontuado(s)`,
+          `Partida concluída — ${betsFound} aposta(s), ${awardedUsers} usuário(s) pontuado(s)${
+            bracketUpdated ? ", chaveamento atualizado" : ""
+          }`,
         );
       },
       onError: (err) => {

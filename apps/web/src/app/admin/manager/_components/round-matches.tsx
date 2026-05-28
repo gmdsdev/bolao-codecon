@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@codecon/ui/components/button";
 import {
   Card,
   CardContent,
@@ -20,7 +19,6 @@ import { useState } from "react";
 
 import { trpc } from "@/utils/trpc";
 
-import { AddMatchForm } from "./add-match-form";
 import { MatchResultForm } from "./match-result-form";
 import { MatchesTable } from "./matches-table";
 import type { Match, Round, Stadium, Team } from "./types";
@@ -34,7 +32,6 @@ export function RoundMatches({
   teams: Team[];
   stadiums: Stadium[];
 }) {
-  const [isAddMatchOpen, setIsAddMatchOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   const matches = useQuery(
@@ -57,16 +54,6 @@ export function RoundMatches({
             Status: {isRoundComplete ? "concluída" : round.status}
           </CardDescription>
         </div>
-        {!isRoundComplete && (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={() => setIsAddMatchOpen(true)}
-          >
-            Adicionar partida
-          </Button>
-        )}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -77,25 +64,6 @@ export function RoundMatches({
           roundComplete={isRoundComplete}
           onEditMatch={handleEditMatch}
         />
-
-        <Dialog open={isAddMatchOpen} onOpenChange={setIsAddMatchOpen}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Adicionar partida</DialogTitle>
-              <DialogDescription>{round.title}</DialogDescription>
-            </DialogHeader>
-            <AddMatchForm
-              roundId={round.id}
-              teams={teams}
-              stadiums={stadiums}
-              onCancel={() => setIsAddMatchOpen(false)}
-              onCreated={() => {
-                matches.refetch();
-                setIsAddMatchOpen(false);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
 
         <Dialog
           open={selectedMatch !== null}
