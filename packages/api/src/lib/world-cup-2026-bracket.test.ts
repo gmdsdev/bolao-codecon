@@ -1,4 +1,8 @@
-import { seedKnockoutMatches } from "@codecon/db/world-cup-2026";
+import {
+  knockoutAdvanceSlots,
+  seedKnockoutMatches,
+  thirdPlaceMatrix,
+} from "@codecon/db/world-cup-2026";
 import { describe, expect, test } from "vitest";
 
 import {
@@ -12,6 +16,22 @@ import {
 } from "./world-cup-2026-bracket";
 
 describe("getRoundOf32Updates", () => {
+  test("covers every possible combination of eight third-place qualifiers", () => {
+    const combinations = choose([...defaultGroupLetters], 8);
+
+    expect(thirdPlaceMatrix.size).toBe(combinations.length);
+
+    for (const combination of combinations) {
+      const key = combination.join("");
+      const slots = thirdPlaceMatrix.get(key);
+
+      expect(slots, key).toBeDefined();
+      if (!slots) throw new Error(`Missing third-place matrix row ${key}`);
+      expect(slots, key).toHaveLength(8);
+      expect([...new Set(slots)].sort().join(""), key).toBe(key);
+    }
+  });
+
   test("returns null until every group-stage match is complete", () => {
     const updates = getRoundOf32Updates({
       groupMatches: [
@@ -82,9 +102,61 @@ describe("getRoundOf32Updates", () => {
       teamBId: teamId("D", 3),
     });
   });
+
+  test("throws when a group match references a team outside the seeded groups", () => {
+    expect(() =>
+      getRoundOf32Updates({
+        groupMatches: [
+          { ...makeGroupMatches()[0]!, teamAId: 999 },
+          ...makeGroupMatches().slice(1),
+        ],
+        teams: makeTeams(),
+        existingRoundOf32Matches: makeEmptyRoundOf32Matches(),
+      }),
+    ).toThrowError(BracketRuleError);
+  });
+
+  test("throws when a group is missing enough teams for qualification", () => {
+    expect(() =>
+      getRoundOf32Updates({
+        groupMatches: makeGroupMatches(),
+        teams: makeTeams().filter((team) => team.groupName !== "Grupo L"),
+        existingRoundOf32Matches: makeEmptyRoundOf32Matches(),
+      }),
+    ).toThrowError(BracketRuleError);
+  });
 });
 
 describe("getKnockoutPlacements", () => {
+  test("every knockout fixture has the expected match number range and no duplicates", () => {
+    const matchNumbers = seedKnockoutMatches.map(
+      (fixture) => fixture.matchNumber,
+    );
+
+    expect(matchNumbers).toHaveLength(32);
+    expect([...new Set(matchNumbers)]).toHaveLength(32);
+    expect(Math.min(...matchNumbers)).toBe(73);
+    expect(Math.max(...matchNumbers)).toBe(104);
+  });
+
+  test("all configured knockout destinations point to existing later matches", () => {
+    const seededMatchNumbers = new Set(
+      seedKnockoutMatches.map((fixture) => fixture.matchNumber),
+    );
+
+    for (const [sourceMatchNumber, destinations] of Object.entries(
+      knockoutAdvanceSlots,
+    )) {
+      for (const destination of destinations) {
+        expect(
+          seededMatchNumbers.has(destination.matchNumber),
+          `${sourceMatchNumber} -> ${destination.matchNumber}`,
+        ).toBe(true);
+        expect(destination.matchNumber).toBeGreaterThan(Number(sourceMatchNumber));
+      }
+    }
+  });
+
   test("moves the winner of a round-of-32 match to the configured next slot", () => {
     expect(
       getKnockoutPlacements({
@@ -112,6 +184,21 @@ describe("getKnockoutPlacements", () => {
     ]);
   });
 
+  test("moves the winner from the second semifinal to the other final slot", () => {
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 102,
+        teamAId: 203,
+        teamBId: 204,
+        scoreA: 4,
+        scoreB: 3,
+      }),
+    ).toEqual([
+      { matchNumber: 104, side: "teamBId", teamId: 203 },
+      { matchNumber: 103, side: "teamBId", teamId: 204 },
+    ]);
+  });
+
   test("does not advance anyone from the final", () => {
     expect(
       getKnockoutPlacements({
@@ -134,6 +221,30 @@ describe("getKnockoutPlacements", () => {
         scoreB: 1,
       }),
     ).toThrowError(BracketRuleError);
+  });
+
+  test("rejects knockout matches without both teams", () => {
+    expect(() =>
+      getKnockoutPlacements({
+        matchNumber: 90,
+        teamAId: 101,
+        teamBId: null,
+        scoreA: 1,
+        scoreB: 0,
+      }),
+    ).toThrowError(BracketRuleError);
+  });
+
+  test("returns no placements for matches without a fixed match number", () => {
+    expect(
+      getKnockoutPlacements({
+        matchNumber: null,
+        teamAId: 1,
+        teamBId: 2,
+        scoreA: 1,
+        scoreB: 0,
+      }),
+    ).toEqual([]);
   });
 
   test("all pre-final knockout matches have at least one configured destination", () => {
@@ -207,10 +318,37 @@ describe("applyKnockoutPlacement", () => {
       ),
     ).toThrowError(BracketRuleError);
   });
+
+  test("rejects applying a placement to a missing target match", () => {
+    expect(() =>
+      applyKnockoutPlacement(undefined, {
+        matchNumber: 90,
+        side: "teamAId",
+        teamId: 101,
+      }),
+    ).toThrowError(BracketRuleError);
+  });
 });
 
+const defaultGroupLetters = "ABCDEFGHIJKL".split("");
+
+function choose<T>(items: T[], size: number): T[][] {
+  if (size === 0) return [[]];
+  if (items.length < size) return [];
+
+  const first = items[0] as T;
+  const rest = items.slice(1);
+  const withFirst = choose(rest, size - 1).map((combination) => [
+    first,
+    ...combination,
+  ]);
+  const withoutFirst = choose(rest, size);
+
+  return [...withFirst, ...withoutFirst];
+}
+
 function makeTeams(): GroupTeam[] {
-  return [..."ABCDEFGHIJKL"].flatMap((groupLetter) =>
+  return defaultGroupLetters.flatMap((groupLetter) =>
     [1, 2, 3, 4].map((position) => ({
       id: teamId(groupLetter, position),
       name: `${groupLetter}${position}`,
@@ -220,7 +358,7 @@ function makeTeams(): GroupTeam[] {
 }
 
 function makeGroupMatches(): GroupMatch[] {
-  return [..."ABCDEFGHIJKL"].flatMap((groupLetter) => {
+  return defaultGroupLetters.flatMap((groupLetter) => {
     const isStrongThirdPlaceGroup = groupLetter <= "H";
     const thirdPlaceLoss = isStrongThirdPlaceGroup ? 1 : 5;
     const thirdPlaceWin = isStrongThirdPlaceGroup ? 5 : 1;

@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 
-import { applyBetScoreModifier, calculateBetPoints } from "./bet-scoring";
+import {
+  applyBetScoreModifier,
+  calculateBetPoints,
+  type BetScore,
+} from "./bet-scoring";
 
 const modifierCases: Array<[string, number, number, number]> = [
   ["normal", 0, 0, 0],
@@ -21,6 +25,35 @@ const modifierCases: Array<[string, number, number, number]> = [
   ["half_points", 3, -2, 1],
   ["invalid_bet", 3, -3, 0],
   ["lucky_duck", 3, 1, 4],
+];
+
+const missedOutcomeCases: Array<[string, BetScore, BetScore]> = [
+  [
+    "team A win bet misses when team B wins",
+    { scoreA: 2, scoreB: 0 },
+    { scoreA: 0, scoreB: 1 },
+  ],
+  [
+    "team B win bet misses when team A wins",
+    { scoreA: 0, scoreB: 2 },
+    { scoreA: 1, scoreB: 0 },
+  ],
+  [
+    "team A win bet misses when match is a draw",
+    { scoreA: 3, scoreB: 1 },
+    { scoreA: 2, scoreB: 2 },
+  ],
+  [
+    "team B win bet misses when match is a draw",
+    { scoreA: 1, scoreB: 3 },
+    { scoreA: 2, scoreB: 2 },
+  ],
+];
+
+const exactScoreCases: Array<[string, BetScore]> = [
+  ["0 - 0", { scoreA: 0, scoreB: 0 }],
+  ["4 - 3", { scoreA: 4, scoreB: 3 }],
+  ["3 - 4", { scoreA: 3, scoreB: 4 }],
 ];
 
 describe("calculateBetPoints", () => {
@@ -82,9 +115,64 @@ describe("calculateBetPoints", () => {
     ).toBe(0);
   });
 
+  test.each(missedOutcomeCases)(
+    "%s",
+    (_: string, betScore: BetScore, matchScore: BetScore) => {
+      expect(calculateBetPoints(betScore, matchScore, "normal")).toEqual({
+        basePoints: 0,
+        modifierPoints: 0,
+        totalPoints: 0,
+      });
+    },
+  );
+
+  test.each(exactScoreCases)(
+    "awards exact score points for %s",
+    (_: string, score: BetScore) => {
+      expect(calculateBetPoints(score, score, "normal")).toEqual({
+        basePoints: 3,
+        modifierPoints: 0,
+        totalPoints: 3,
+      });
+    },
+  );
+
+  test("treats unknown modifiers as normal scoring", () => {
+    expect(
+      calculateBetPoints(
+        { scoreA: 2, scoreB: 1 },
+        { scoreA: 2, scoreB: 1 },
+        "surprise_modifier",
+      ),
+    ).toEqual({
+      basePoints: 3,
+      modifierPoints: 0,
+      totalPoints: 3,
+    });
+  });
+
+  test("does not apply lucky duck bonus when the bet scores zero", () => {
+    expect(
+      calculateBetPoints(
+        { scoreA: 2, scoreB: 1 },
+        { scoreA: 0, scoreB: 1 },
+        "lucky_duck",
+      ),
+    ).toEqual({
+      basePoints: 0,
+      modifierPoints: 0,
+      totalPoints: 0,
+    });
+  });
+
   test.each(modifierCases)(
     "applies %s to %i base points",
-    (modifier, basePoints, modifierPoints, totalPoints) => {
+    (
+      modifier: string,
+      basePoints: number,
+      modifierPoints: number,
+      totalPoints: number,
+    ) => {
       const scores = getScoresForBasePoints(basePoints);
 
       expect(
@@ -161,5 +249,29 @@ describe("applyBetScoreModifier", () => {
       scoreA: 2,
       scoreB: 0,
     });
+  });
+
+  test.each([
+    "normal",
+    "double_points",
+    "half_points",
+    "invalid_bet",
+    "lucky_duck",
+    "unknown",
+  ])("does not mutate the original score for %s", (modifier: string) => {
+    const score = { scoreA: 5, scoreB: 4 };
+
+    expect(applyBetScoreModifier(score, modifier)).toEqual(score);
+    expect(score).toEqual({ scoreA: 5, scoreB: 4 });
+  });
+
+  test("returns a swapped copy for inverted bets without mutating the input", () => {
+    const score = { scoreA: 5, scoreB: 4 };
+
+    expect(applyBetScoreModifier(score, "invert_bet")).toEqual({
+      scoreA: 4,
+      scoreB: 5,
+    });
+    expect(score).toEqual({ scoreA: 5, scoreB: 4 });
   });
 });

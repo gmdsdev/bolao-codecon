@@ -7,6 +7,7 @@ import { randomInt } from "node:crypto";
 import z from "zod";
 
 import { adminProcedure, protectedProcedure, router } from "../index";
+import { isBetClosed } from "../lib/bet-rules";
 import { applyBetScoreModifier } from "../lib/bet-scoring";
 
 const betModifiers = [
@@ -64,12 +65,7 @@ export const betRouter = router({
         });
       }
 
-      if (
-        matchRow.status !== "pending" ||
-        matchRow.scoreA !== null ||
-        matchRow.scoreB !== null ||
-        matchRow.date <= new Date()
-      ) {
+      if (isBetClosed(matchRow)) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "As apostas estão encerradas para esta partida",
