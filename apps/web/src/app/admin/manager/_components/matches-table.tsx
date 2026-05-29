@@ -12,7 +12,7 @@ import {
   TableEmptyState,
   TableErrorState,
   TableLoadingState,
-} from "../../_components/table-state";
+} from "@/components/tables/table-state";
 import { MatchRow } from "./match-row";
 import type { Match } from "./types";
 

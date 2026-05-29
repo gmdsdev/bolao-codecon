@@ -12,7 +12,7 @@ import {
   TableEmptyState,
   TableErrorState,
   TableLoadingState,
-} from "../../_components/table-state";
+} from "@/components/tables/table-state";
 import { StadiumRow } from "./stadium-row";
 import type { Stadium } from "./types";
 

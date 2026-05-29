@@ -10,14 +10,19 @@ import {
 } from "@codecon/ui/components/card";
 import { Dialog } from "@codecon/ui/components/dialog";
 import { Separator } from "@codecon/ui/components/separator";
+import { cn } from "@codecon/ui/lib/utils";
 import { trpc } from "@/utils/trpc";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 
-import { ScoreLogDialog } from "./score-log-dialog";
+import { ScoreLogDialog } from "@/components/score-log-dialog";
 
-export function MySummaryCard() {
+type MySummaryCardProps = {
+  className?: string;
+};
+
+export function MySummaryCard({ className }: MySummaryCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const summary = useQuery(trpc.ranking.getMySummary.queryOptions());
   const scoreLog = useQuery(
@@ -28,7 +33,7 @@ export function MySummaryCard() {
 
   return (
     <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-      <Card className="w-full h-min shrink-0 lg:w-72">
+      <Card className={cn("w-full h-min shrink-0 lg:w-72", className)}>
         <CardHeader className="!flex items-center justify-between">
           <CardTitle>Meu Resumo</CardTitle>
           <CardAction className="col-auto row-auto row-span-1 self-center justify-self-auto">

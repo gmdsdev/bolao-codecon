@@ -10,7 +10,7 @@ import {
 } from "@codecon/ui/components/table";
 import { Plus } from "lucide-react";
 
-import { TableEmptyState } from "../../_components/table-state";
+import { TableEmptyState } from "@/components/tables/table-state";
 import { TeamRow } from "./team-row";
 import type { Team, TeamGroup } from "./types";
 

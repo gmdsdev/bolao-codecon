@@ -17,7 +17,7 @@ import {
 type HeaderLink = {
   to:
     | "/"
-    | "/admin/ranking"
+    | "/ranking"
     | "/admin/manager"
     | "/admin/stadiums"
     | "/admin/teams";
@@ -28,14 +28,16 @@ export default function Header() {
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
   const isAdmin = session?.user.isAdmin === true;
-  const links: HeaderLink[] = [
+  const commonLinks: HeaderLink[] = [
     { to: "/", label: "Rodadas" },
-    { to: "/admin/ranking", label: "Ranking" },
+    { to: "/ranking", label: "Ranking" },
+  ];
+  const adminLinks: HeaderLink[] = [
     { to: "/admin/manager", label: "Partidas" },
     { to: "/admin/stadiums", label: "Estádios" },
     { to: "/admin/teams", label: "Times" },
   ];
-  const visibleLinks = isAdmin ? links : [];
+  const visibleLinks = isAdmin ? [...commonLinks, ...adminLinks] : commonLinks;
 
   return (
     <NavigationMenu className="sticky top-0 z-40 w-full max-w-full overflow-hidden border-b border-border bg-secondary px-2 sm:px-3">

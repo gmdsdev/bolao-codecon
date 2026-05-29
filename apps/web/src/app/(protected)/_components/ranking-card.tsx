@@ -2,10 +2,12 @@
 
 import {
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@codecon/ui/components/card";
+import { Button } from "@codecon/ui/components/button";
 import { Dialog } from "@codecon/ui/components/dialog";
 import {
   Empty,
@@ -18,10 +20,11 @@ import { RankingTable } from "@/components/ranking-table";
 import { trpc } from "@/utils/trpc";
 import { useQuery } from "@tanstack/react-query";
 import { TrophyIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import type { ProtectedHomePageData } from "./protected-home-page-data";
-import { ScoreLogDialog } from "./score-log-dialog";
+import { ScoreLogDialog } from "@/components/score-log-dialog";
 
 type RankingCardProps = {
   ranking: ProtectedHomePageData["ranking"];
@@ -31,6 +34,7 @@ type RankingUser = ProtectedHomePageData["ranking"][number];
 
 export function RankingCard({ ranking }: RankingCardProps) {
   const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
+  const visibleRanking = ranking.slice(0, 10);
   const scoreLog = useQuery(
     trpc.ranking.getLog.queryOptions(
       { userId: selectedUser?.userId ?? "" },
@@ -48,12 +52,25 @@ export function RankingCard({ ranking }: RankingCardProps) {
       }}
     >
       <Card className="h-min w-full min-w-0">
-        <CardHeader>
+        <CardHeader className="!flex items-center justify-between">
           <CardTitle>Classificação</CardTitle>
+          <CardAction className="col-auto row-auto row-span-1 self-center justify-self-auto">
+            <Button
+              variant="outline"
+              size="xs"
+              nativeButton={false}
+              render={<Link href="/ranking" />}
+            >
+              Ver tudo
+            </Button>
+          </CardAction>
         </CardHeader>
         <CardContent className="p-0">
-          {ranking.length ? (
-            <RankingTable ranking={ranking} onSelectUser={setSelectedUser} />
+          {visibleRanking.length ? (
+            <RankingTable
+              ranking={visibleRanking}
+              onSelectUser={setSelectedUser}
+            />
           ) : (
             <Empty className="py-8">
               <EmptyHeader>

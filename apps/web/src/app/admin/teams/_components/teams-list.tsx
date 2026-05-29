@@ -4,7 +4,7 @@ import {
   TableEmptyState,
   TableErrorState,
   TableLoadingState,
-} from "../../_components/table-state";
+} from "@/components/tables/table-state";
 import { TeamGroupSection } from "./team-group-section";
 import type { Team, TeamGroup } from "./types";
 

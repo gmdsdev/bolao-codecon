@@ -1,5 +1,5 @@
 import { RankingPage } from "@/components/ranking-page";
 
-export function AdminRankingPage() {
+export default function Page() {
   return <RankingPage />;
 }

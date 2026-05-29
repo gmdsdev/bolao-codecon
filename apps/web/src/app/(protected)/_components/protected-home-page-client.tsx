@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 
 import { MatchList } from "./matches/match-list";
 import type { ProtectedHomePageData } from "./protected-home-page-data";
-import { LogoCard } from "./logo-card";
+import { LogoCard } from "@/components/bolao/logo-card";
 
 type ProtectedHomePageClientProps = {
   initialData: Pick<

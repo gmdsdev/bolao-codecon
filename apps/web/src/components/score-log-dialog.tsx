@@ -10,8 +10,6 @@ import { Separator } from "@codecon/ui/components/separator";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Loader2Icon, ScrollTextIcon } from "lucide-react";
 
-import { getBetModifierLabel } from "./matches/match-utils";
-
 export type ScoreLogEntry = {
   id: number;
   matchId: number;
@@ -186,4 +184,23 @@ function formatLogDate(value: string | Date) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
+}
+
+function getBetModifierLabel(modifier: string) {
+  switch (modifier) {
+    case "invert_bet":
+      return "Inverter aposta";
+    case "double_points":
+      return "Pontos em dobro";
+    case "half_points":
+      return "Metade dos pontos";
+    case "invalid_bet":
+      return "Aposta inválida";
+    case "lucky_duck":
+      return "Pato da sorte";
+    case "normal":
+      return "Sem efeito";
+    default:
+      return "Sem efeito";
+  }
 }

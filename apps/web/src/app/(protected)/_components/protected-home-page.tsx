@@ -1,5 +1,5 @@
-import { MySummaryCard } from "./my-summary-card";
-import { PrizeCard } from "./prize-card";
+import { MySummaryCard } from "@/components/my-summary-card";
+import { PrizeCard } from "@/components/bolao/prize-card";
 import { ProtectedHomePageClient } from "./protected-home-page-client";
 import { getProtectedHomePageData } from "./protected-home-page-data";
 import { RankingCard } from "./ranking-card";

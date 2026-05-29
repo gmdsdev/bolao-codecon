@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import premio from "@/assets/images/bolao/premio.png";
 import { Card, CardContent } from "@codecon/ui/components/card";
 import {
   Dialog,
@@ -9,9 +8,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@codecon/ui/components/dialog";
+import { cn } from "@codecon/ui/lib/utils";
 import { useState } from "react";
 
-export function PrizeCard() {
+import premio from "@/assets/images/bolao/premio.png";
+
+type PrizeCardProps = {
+  className?: string;
+};
+
+export function PrizeCard({ className }: PrizeCardProps) {
   const [isPrizeOpen, setIsPrizeOpen] = useState(false);
 
   return (
@@ -20,7 +26,10 @@ export function PrizeCard() {
         role="button"
         tabIndex={0}
         aria-label="Abrir imagem da premiação em tamanho maior"
-        className="h-min w-full shrink-0 cursor-pointer transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-72"
+        className={cn(
+          "h-min w-full shrink-0 cursor-pointer transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring lg:w-72",
+          className,
+        )}
         onClick={() => setIsPrizeOpen(true)}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
