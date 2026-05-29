@@ -44,10 +44,6 @@ export const matchRouter = router({
     .query(async ({ ctx, input }) => {
       const whereConditions = [eq(match.roundId, input.roundId)];
 
-      if (!ctx.session.user.isAdmin) {
-        whereConditions.push(ne(match.status, "draft"));
-      }
-
       return await db
         .select({
           id: match.id,

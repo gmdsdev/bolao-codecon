@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@codecon/ui/components/tooltip";
-import { FileText, GitBranch } from "lucide-react";
+import { GitBranch } from "lucide-react";
 
 type MatchTableProps = {
   matches: Match[];
@@ -112,12 +112,6 @@ function MatchTableRow({
           <span className="min-w-0 truncate">
             {match.teamBName} {match.teamBFlag}
           </span>
-          {isDraft && (
-            <span className="inline-flex shrink-0 items-center gap-1 border border-amber-500/30 px-1.5 py-0.5 text-xs font-medium text-amber-600">
-              <FileText className="size-3" />
-              Rascunho
-            </span>
-          )}
         </ItemTitle>
         <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
           <Tooltip>
@@ -144,7 +138,7 @@ function MatchTableRow({
               className="min-w-24"
             >
               {isDraft
-                ? "Rascunho"
+                ? "À definir"
                 : isClosed
                   ? "Encerrada"
                   : hasBet
