@@ -7,7 +7,15 @@ import {
   CardTitle,
 } from "@codecon/ui/components/card";
 import { Dialog } from "@codecon/ui/components/dialog";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@codecon/ui/components/empty";
 import { useQuery } from "@tanstack/react-query";
+import { TrophyIcon } from "lucide-react";
 import { useState } from "react";
 
 import { LogoCard } from "@/components/bolao/logo-card";
@@ -18,7 +26,6 @@ import { ScoreLogDialog } from "@/components/score-log-dialog";
 import { trpc } from "@/utils/trpc";
 
 import {
-  TableEmptyState,
   TableErrorState,
   TableLoadingState,
 } from "@/components/tables/table-state";
@@ -67,7 +74,18 @@ export function RankingPage() {
                   onSelectUser={setSelectedUser}
                 />
               ) : (
-                <TableEmptyState>Ainda não há classificação.</TableEmptyState>
+                <Empty className="py-8">
+                  <EmptyHeader>
+                    <EmptyMedia>
+                      <TrophyIcon className="size-8 text-muted-foreground" />
+                    </EmptyMedia>
+                    <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
+                    <EmptyDescription>
+                      As pontuações aparecerão aqui conforme as apostas forem
+                      resolvidas.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               )}
             </CardContent>
           </Card>
