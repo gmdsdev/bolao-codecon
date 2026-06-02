@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { getUserErrorMessage } from "@/lib/error-message";
 import { trpc } from "@/utils/trpc";
 
 import { AdminDialogFooter } from "../../_components/admin-dialog-footer";
@@ -62,7 +63,9 @@ export function DeleteUserForm({
       </div>
 
       {deleteUser.isError && (
-        <p className="text-xs text-destructive">{deleteUser.error.message}</p>
+        <p className="text-xs text-destructive">
+          {getUserErrorMessage(deleteUser.error)}
+        </p>
       )}
 
       <AdminDialogFooter

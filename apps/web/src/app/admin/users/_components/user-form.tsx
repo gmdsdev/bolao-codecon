@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
+import { getUserErrorMessage } from "@/lib/error-message";
 import { trpc } from "@/utils/trpc";
 
 import { AdminDialogFooter } from "../../_components/admin-dialog-footer";
@@ -89,7 +90,9 @@ export function UserForm({
       ) : null}
 
       {updateUser.isError && (
-        <p className="text-xs text-destructive">{updateUser.error.message}</p>
+        <p className="text-xs text-destructive">
+          {getUserErrorMessage(updateUser.error)}
+        </p>
       )}
 
       <AdminDialogFooter

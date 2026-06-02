@@ -1,5 +1,7 @@
 import { Loader2 } from "lucide-react";
 
+import { getUserErrorMessage } from "@/lib/error-message";
+
 export function TableLoadingState() {
   return (
     <div className="flex justify-center py-4">
@@ -11,7 +13,7 @@ export function TableLoadingState() {
 export function TableErrorState({ message }: { message: string }) {
   return (
     <div className="py-6 text-center text-sm text-destructive">
-      Erro: {message}
+      Erro: {getUserErrorMessage(message)}
     </div>
   );
 }

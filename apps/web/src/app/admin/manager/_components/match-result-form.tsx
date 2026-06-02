@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 
+import { getUserErrorMessage } from "@/lib/error-message";
 import { trpc } from "@/utils/trpc";
 
 import { AdminDialogFooter } from "../../_components/admin-dialog-footer";
@@ -74,7 +75,7 @@ export function MatchResultForm({
         );
       },
       onError: (err) => {
-        toast.error(err.message);
+        toast.error(getUserErrorMessage(err));
       },
     }),
   );
@@ -292,7 +293,9 @@ export function MatchResultForm({
       )}
 
       {updateResult.isError && (
-        <p className="text-xs text-destructive">{updateResult.error.message}</p>
+        <p className="text-xs text-destructive">
+          {getUserErrorMessage(updateResult.error)}
+        </p>
       )}
 
       <AdminDialogFooter

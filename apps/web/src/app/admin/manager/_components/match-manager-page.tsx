@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { TableSelectRound } from "@/components/tables/table-select-round";
+import { getUserErrorMessage } from "@/lib/error-message";
 import { trpc } from "@/utils/trpc";
 
 import { RoundMatches } from "./round-matches";
@@ -39,15 +40,15 @@ export function MatchManagerPage() {
   }
 
   if (rounds.isError) {
-    return <div>Erro: {rounds.error.message}</div>;
+    return <div>Erro: {getUserErrorMessage(rounds.error)}</div>;
   }
 
   if (teams.isError) {
-    return <div>Erro: {teams.error.message}</div>;
+    return <div>Erro: {getUserErrorMessage(teams.error)}</div>;
   }
 
   if (stadiums.isError) {
-    return <div>Erro: {stadiums.error.message}</div>;
+    return <div>Erro: {getUserErrorMessage(stadiums.error)}</div>;
   }
 
   if (!rounds.data?.length) {

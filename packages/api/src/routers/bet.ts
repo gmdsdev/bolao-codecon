@@ -211,7 +211,11 @@ export const betRouter = router({
           });
         }
 
-        throw error;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Não foi possível salvar sua aposta. Tente novamente.",
+          cause: error,
+        });
       }
 
       return {

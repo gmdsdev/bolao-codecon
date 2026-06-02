@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { getUserErrorMessage } from "@/lib/error-message";
 import { trpc } from "@/utils/trpc";
 
 import { AdminDialogFooter } from "../../_components/admin-dialog-footer";
@@ -39,7 +40,7 @@ export function DeleteStadiumForm({
     <div className="grid min-w-0 gap-4">
       {deleteStadium.isError && (
         <p className="text-xs text-destructive">
-          {deleteStadium.error.message}
+          {getUserErrorMessage(deleteStadium.error)}
         </p>
       )}
 

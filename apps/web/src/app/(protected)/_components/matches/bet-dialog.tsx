@@ -15,6 +15,8 @@ import {
   useId,
 } from "react";
 
+import { getUserErrorMessage } from "@/lib/error-message";
+
 import { BetWheel } from "./bet-wheel";
 import { ScoreInputs } from "./score-inputs";
 import type { BetWheelOption, Match } from "./types";
@@ -102,7 +104,10 @@ export function BetDialog({
 
             {createBet.isError && (
               <p className="text-xs text-destructive">
-                {createBet.error?.message}
+                {getUserErrorMessage(
+                  createBet.error,
+                  "Não foi possível salvar sua aposta. Tente novamente.",
+                )}
               </p>
             )}
 
