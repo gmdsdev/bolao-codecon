@@ -43,6 +43,13 @@
       "when": 1779981673036,
       "tag": "0006_dusty_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1780401954021,
+      "tag": "0007_past_firelord",
+      "breakpoints": true
     }
   ]
 }

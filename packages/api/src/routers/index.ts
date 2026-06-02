@@ -6,6 +6,7 @@ import { rankingRouter } from "./ranking";
 import { roundRouter } from "./round";
 import { stadiumRouter } from "./stadium";
 import { teamRouter } from "./team";
+import { userRouter } from "./user";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -24,5 +25,6 @@ export const appRouter = router({
   round: roundRouter,
   stadium: stadiumRouter,
   team: teamRouter,
+  user: userRouter,
 });
 export type AppRouter = typeof appRouter;

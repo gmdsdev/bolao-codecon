@@ -4,6 +4,7 @@ import {
   pgTable,
   serial,
   text,
+  timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
@@ -22,10 +23,12 @@ export const bet = pgTable(
     matchId: integer("match_id")
       .notNull()
       .references(() => match.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => [
     uniqueIndex("bet_user_match_unique").on(table.userId, table.matchId),
     index("bet_match_id_idx").on(table.matchId),
     index("bet_user_id_idx").on(table.userId),
+    index("bet_created_at_idx").on(table.createdAt),
   ],
 );

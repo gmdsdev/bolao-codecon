@@ -20,7 +20,9 @@ type HeaderLink = {
     | "/ranking"
     | "/admin/manager"
     | "/admin/stadiums"
-    | "/admin/teams";
+    | "/admin/teams"
+    | "/admin/users"
+    | "/admin/bets";
   label: string;
 };
 
@@ -36,6 +38,8 @@ export default function Header() {
     { to: "/admin/manager", label: "Partidas" },
     { to: "/admin/stadiums", label: "Estádios" },
     { to: "/admin/teams", label: "Times" },
+    { to: "/admin/users", label: "Usuários" },
+    { to: "/admin/bets", label: "Apostas" },
   ];
   const visibleLinks = isAdmin ? [...commonLinks, ...adminLinks] : commonLinks;
 
