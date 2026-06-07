@@ -259,7 +259,7 @@ function TeamRow({
 function FinalMatchBlock({ matchPosition }: { matchPosition: MatchPosition }) {
   return (
     <aside
-      className="absolute z-20 border border-border bg-background"
+      className="absolute z-20 overflow-hidden border border-border bg-background"
       style={{
         left: matchPosition.x,
         top: matchPosition.y - MATCH_BLOCK_HEADER_HEIGHT,
@@ -278,11 +278,9 @@ function FinalMatchBlock({ matchPosition }: { matchPosition: MatchPosition }) {
           position: "relative",
           left: 0,
           top: 0,
-          width: COLUMN_WIDTH,
-          height: MATCH_HEIGHT,
-          borderLeft: 0,
-          borderRight: 0,
-          borderBottom: 0,
+          width: "100%",
+          height: `calc(100% - ${MATCH_BLOCK_HEADER_HEIGHT}px)`,
+          border: 0,
         }}
       />
     </aside>
@@ -296,7 +294,7 @@ function ThirdPlaceBlock({
 }) {
   return (
     <aside
-      className="absolute z-20 border border-border bg-background"
+      className="absolute z-20 overflow-hidden border border-border bg-background"
       style={{
         left: matchPosition.x,
         top: matchPosition.y,
@@ -315,11 +313,9 @@ function ThirdPlaceBlock({
           position: "relative",
           left: 0,
           top: 0,
-          width: COLUMN_WIDTH,
-          height: MATCH_HEIGHT,
-          borderLeft: 0,
-          borderRight: 0,
-          borderBottom: 0,
+          width: "100%",
+          height: `calc(100% - ${MATCH_BLOCK_HEADER_HEIGHT}px)`,
+          border: 0,
         }}
       />
     </aside>
