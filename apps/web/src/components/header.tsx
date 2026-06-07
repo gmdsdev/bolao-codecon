@@ -17,6 +17,7 @@ import {
 type HeaderLink = {
   to:
     | "/"
+    | "/chaveamento"
     | "/ranking"
     | "/admin/manager"
     | "/admin/stadiums"
@@ -32,6 +33,7 @@ export default function Header() {
   const isAdmin = session?.user.isAdmin === true;
   const commonLinks: HeaderLink[] = [
     { to: "/", label: "Rodadas" },
+    { to: "/chaveamento", label: "Chaveamento" },
     { to: "/ranking", label: "Ranking" },
   ];
   const adminLinks: HeaderLink[] = [
@@ -59,7 +61,7 @@ export default function Header() {
         {visibleLinks.map(({ to, label }) => (
           <NavigationMenuItem key={to} className="shrink-0">
             <NavigationMenuLink
-              render={<Link href={to} />}
+              render={<Link href={to as never} />}
               data-active={pathname === to}
               className="relative px-2 after:absolute after:right-2 after:bottom-0 after:left-2 after:h-0.5 after:bg-transparent data-active:after:bg-foreground/40 sm:px-3 sm:after:right-3 sm:after:left-3"
             >
