@@ -41,6 +41,7 @@ const COLUMN_GAP = 32;
 const MATCH_HEIGHT = 88;
 const MATCH_GAP = 52;
 const THIRD_PLACE_OFFSET_Y = 280;
+const MATCH_BLOCK_HEADER_HEIGHT = 32;
 
 const ROUND_COLUMN_INDEX: Record<number, number> = {
   4: 0,
@@ -169,19 +170,25 @@ export function BracketPage({ data }: BracketPageProps) {
               ))}
             </svg>
 
-            {layout.matches.map((matchPosition) => (
-              <BracketMatchBox
-                key={matchPosition.match.id}
-                match={matchPosition.match}
-                isFinal={matchPosition.match.roundNumber === 9}
-                style={{
-                  left: matchPosition.x,
-                  top: matchPosition.y,
-                  width: COLUMN_WIDTH,
-                  height: MATCH_HEIGHT,
-                }}
-              />
-            ))}
+            {layout.matches.map((matchPosition) =>
+              matchPosition.match.roundNumber === 9 ? (
+                <FinalMatchBlock
+                  key={matchPosition.match.id}
+                  matchPosition={matchPosition}
+                />
+              ) : (
+                <BracketMatchBox
+                  key={matchPosition.match.id}
+                  match={matchPosition.match}
+                  style={{
+                    left: matchPosition.x,
+                    top: matchPosition.y,
+                    width: COLUMN_WIDTH,
+                    height: MATCH_HEIGHT,
+                  }}
+                />
+              ),
+            )}
 
             {layout.thirdPlaceMatch && (
               <ThirdPlaceBlock matchPosition={layout.thirdPlaceMatch} />
@@ -249,6 +256,39 @@ function TeamRow({
   );
 }
 
+function FinalMatchBlock({ matchPosition }: { matchPosition: MatchPosition }) {
+  return (
+    <aside
+      className="absolute z-20 border border-border bg-background"
+      style={{
+        left: matchPosition.x,
+        top: matchPosition.y - MATCH_BLOCK_HEADER_HEIGHT,
+        width: COLUMN_WIDTH,
+        height: MATCH_HEIGHT + MATCH_BLOCK_HEADER_HEIGHT,
+      }}
+    >
+      <div className="flex h-8 items-center gap-2 border-b border-border bg-secondary px-2 text-xs font-medium text-foreground">
+        <TrophyIcon className="size-3.5" />
+        Final
+      </div>
+      <BracketMatchBox
+        match={matchPosition.match}
+        isFinal
+        style={{
+          position: "relative",
+          left: 0,
+          top: 0,
+          width: COLUMN_WIDTH,
+          height: MATCH_HEIGHT,
+          borderLeft: 0,
+          borderRight: 0,
+          borderBottom: 0,
+        }}
+      />
+    </aside>
+  );
+}
+
 function ThirdPlaceBlock({
   matchPosition,
 }: {
@@ -261,7 +301,7 @@ function ThirdPlaceBlock({
         left: matchPosition.x,
         top: matchPosition.y,
         width: COLUMN_WIDTH,
-        height: MATCH_HEIGHT + 32,
+        height: MATCH_HEIGHT + MATCH_BLOCK_HEADER_HEIGHT,
       }}
     >
       <div className="flex h-8 items-center gap-2 border-b border-border bg-secondary px-2 text-xs font-medium text-foreground">
@@ -348,7 +388,7 @@ function createBracketLayout(
   const maxMatchY = Math.max(
     ...matches.map((matchPosition) => matchPosition.y + MATCH_HEIGHT),
     thirdPlacePosition
-      ? thirdPlacePosition.y + MATCH_HEIGHT + 32
+      ? thirdPlacePosition.y + MATCH_HEIGHT + MATCH_BLOCK_HEADER_HEIGHT
       : BOARD_PADDING_Y,
   );
 
