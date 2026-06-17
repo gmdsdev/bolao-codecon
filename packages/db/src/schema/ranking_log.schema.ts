@@ -2,6 +2,7 @@ import {
   index,
   integer,
   pgTable,
+  real,
   serial,
   text,
   timestamp,
@@ -21,11 +22,11 @@ export const rankingLog = pgTable(
       .notNull()
       .references(() => match.id, { onDelete: "cascade" }),
     // Pontos base: 3 (placar exato), 1 (vencedor certo), 0 (errou)
-    basePoints: integer("base_points").notNull(),
-    // Delta da roleta: pode ser negativo (half_points, invalid_bet) ou positivo (double_points, lucky_duck)
-    modifierPoints: integer("modifier_points").notNull(),
-    // Pontuação final creditada ao usuário
-    totalPoints: integer("total_points").notNull(),
+    basePoints: real("base_points").notNull(),
+    // Delta da roleta: pode ser fracionário/negativo (half_points, invalid_bet) ou positivo (double_points, lucky_duck)
+    modifierPoints: real("modifier_points").notNull(),
+    // Pontuação final creditada ao usuário (pode ser fracionária, ex.: 1.5 com half_points)
+    totalPoints: real("total_points").notNull(),
     // Modificador da roleta aplicado
     modifier: text("modifier").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

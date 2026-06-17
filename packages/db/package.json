@@ -23,6 +23,7 @@
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun run src/seed.ts",
+    "db:backfill-half-points": "bun run src/backfill-half-points.ts",
     "db:start": "docker compose up -d",
     "db:watch": "docker compose up",
     "db:stop": "docker compose stop",

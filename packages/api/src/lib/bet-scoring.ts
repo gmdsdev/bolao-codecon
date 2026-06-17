@@ -82,7 +82,7 @@ function applyBetPointsModifier(points: number, modifier: string) {
   }
 
   if (modifier === "half_points") {
-    return Math.floor(points / 2);
+    return points / 2;
   }
 
   if (modifier === "invalid_bet") {
