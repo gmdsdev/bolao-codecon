@@ -88,7 +88,10 @@ function MatchTableRow({
     match.stadiumCity?.split(",")[0]?.trim() || match.stadiumName || null;
   const dateLabel = formatMatchDateTime(match.date);
   const hasPenaltyScore =
-    match.penaltyScoreA !== null && match.penaltyScoreB !== null;
+    match.penaltyScoreA !== null &&
+    match.penaltyScoreB !== null &&
+    String(match.penaltyScoreA).trim() !== "" &&
+    String(match.penaltyScoreB).trim() !== "";
   const penaltyScoreLabel = hasPenaltyScore
     ? `${match.penaltyScoreA} - ${match.penaltyScoreB}`
     : null;
