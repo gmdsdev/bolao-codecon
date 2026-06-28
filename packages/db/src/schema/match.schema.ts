@@ -35,6 +35,8 @@ export const match = pgTable(
     teamASource: text("team_a_source"),
     teamBSource: text("team_b_source"),
     status: text("status").notNull().default("pending"),
+    penaltyScoreA: integer("penalty_score_a"),
+    penaltyScoreB: integer("penalty_score_b"),
   },
   (table) => [
     uniqueIndex("match_number_unique").on(table.matchNumber),

@@ -15,9 +15,13 @@ export type Match = {
   date: string | Date;
   scoreA: number | null;
   scoreB: number | null;
+  penaltyScoreA: number | null;
+  penaltyScoreB: number | null;
   hasBet: boolean;
   betScoreA: number | null;
   betScoreB: number | null;
+  betPenaltyScoreA: number | null;
+  betPenaltyScoreB: number | null;
   betModifier: string | null;
 };
 
@@ -44,5 +48,7 @@ export type BetWheelOption = {
 export type SavedBet = {
   scoreA: number;
   scoreB: number;
+  penaltyScoreA: number | null;
+  penaltyScoreB: number | null;
   modifier: BetModifier;
 };

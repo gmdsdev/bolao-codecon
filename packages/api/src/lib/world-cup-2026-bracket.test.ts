@@ -223,6 +223,20 @@ describe("getKnockoutPlacements", () => {
     ).toThrowError(BracketRuleError);
   });
 
+  test("uses penalties to advance a tied knockout match", () => {
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 88,
+        teamAId: 401,
+        teamBId: 402,
+        scoreA: 1,
+        scoreB: 1,
+        penaltyScoreA: 4,
+        penaltyScoreB: 3,
+      }),
+    ).toEqual([{ matchNumber: 95, side: "teamBId", teamId: 401 }]);
+  });
+
   test("rejects knockout matches without both teams", () => {
     expect(() =>
       getKnockoutPlacements({

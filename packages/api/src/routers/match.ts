@@ -14,7 +14,7 @@ import { alias } from "drizzle-orm/pg-core";
 import z from "zod";
 
 import { adminProcedure, protectedProcedure, router } from "../index";
-import { calculateBetPoints } from "../lib/bet-scoring";
+import { calculateBetPointsWithPenalties } from "../lib/bet-scoring";
 import {
   BracketRuleError,
   applyKnockoutPlacement,
@@ -65,6 +65,8 @@ export const matchRouter = router({
           date: match.date,
           scoreA: match.scoreA,
           scoreB: match.scoreB,
+          penaltyScoreA: match.penaltyScoreA,
+          penaltyScoreB: match.penaltyScoreB,
           stadiumId: stadium.id,
           stadiumName: stadium.name,
           stadiumCity: stadium.city,
@@ -72,6 +74,8 @@ export const matchRouter = router({
           hasBet: sql<boolean>`${bet.id} is not null`,
           betScoreA: bet.scoreA,
           betScoreB: bet.scoreB,
+          betPenaltyScoreA: bet.penaltyScoreA,
+          betPenaltyScoreB: bet.penaltyScoreB,
           betModifier: bet.modifier,
           totalBets: sql<number>`(select count(*) from "bet" where "bet"."match_id" = ${match.id})`,
         })
@@ -99,6 +103,8 @@ export const matchRouter = router({
         teamBId: idSchema.nullable().optional(),
         scoreA: scoreSchema.nullable().optional(),
         scoreB: scoreSchema.nullable().optional(),
+        penaltyScoreA: scoreSchema.nullable().optional(),
+        penaltyScoreB: scoreSchema.nullable().optional(),
         stadiumId: idSchema,
         date: z.string().datetime(),
         expectedWinner: z.enum(["teamA", "teamB"]).nullable().optional(),
@@ -112,10 +118,14 @@ export const matchRouter = router({
           teamBId: match.teamBId,
           scoreA: match.scoreA,
           scoreB: match.scoreB,
+          penaltyScoreA: match.penaltyScoreA,
+          penaltyScoreB: match.penaltyScoreB,
           expectedWinnerId: match.expectedWinnerId,
           status: match.status,
+          roundNumber: round.number,
         })
         .from(match)
+        .innerJoin(round, eq(match.roundId, round.id))
         .where(eq(match.id, input.matchId))
         .limit(1);
 
@@ -142,6 +152,25 @@ export const matchRouter = router({
         input.teamBId === undefined ? matchRow.teamBId : input.teamBId;
       const scoreA = input.scoreA === undefined ? matchRow.scoreA : input.scoreA;
       const scoreB = input.scoreB === undefined ? matchRow.scoreB : input.scoreB;
+      const requestedPenaltyScoreA =
+        input.penaltyScoreA === undefined
+          ? matchRow.penaltyScoreA
+          : input.penaltyScoreA;
+      const requestedPenaltyScoreB =
+        input.penaltyScoreB === undefined
+          ? matchRow.penaltyScoreB
+          : input.penaltyScoreB;
+      const penaltyScore =
+        scoreA !== null &&
+        scoreB !== null &&
+        scoreA === scoreB &&
+        matchRow.roundNumber >= 4
+          ? validatePenaltyScore(
+              requestedPenaltyScoreA,
+              requestedPenaltyScoreB,
+              "Informe um vencedor nos pênaltis para empates no mata-mata",
+            )
+          : { scoreA: null, scoreB: null };
 
       if (nextStatus === "pending" && (!teamAId || !teamBId)) {
         throw new TRPCError({
@@ -212,6 +241,8 @@ export const matchRouter = router({
           teamBId,
           scoreA,
           scoreB,
+          penaltyScoreA: penaltyScore.scoreA,
+          penaltyScoreB: penaltyScore.scoreB,
           stadiumId: input.stadiumId,
           date: new Date(input.date),
           expectedWinnerId,
@@ -247,6 +278,8 @@ export const matchRouter = router({
             status: match.status,
             scoreA: match.scoreA,
             scoreB: match.scoreB,
+            penaltyScoreA: match.penaltyScoreA,
+            penaltyScoreB: match.penaltyScoreB,
             expectedWinnerId: match.expectedWinnerId,
             roundNumber: round.number,
           })
@@ -283,14 +316,12 @@ export const matchRouter = router({
           });
         }
 
-        if (
-          matchRow.roundNumber >= 4 &&
-          matchRow.scoreA === matchRow.scoreB
-        ) {
-          throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message: "Partidas eliminatórias precisam de um vencedor",
-          });
+        if (matchRow.roundNumber >= 4 && matchRow.scoreA === matchRow.scoreB) {
+          validatePenaltyScore(
+            matchRow.penaltyScoreA,
+            matchRow.penaltyScoreB,
+            "Partidas eliminatórias empatadas precisam de pênaltis",
+          );
         }
 
         const [updatedMatch] = await tx
@@ -311,6 +342,8 @@ export const matchRouter = router({
             userId: bet.userId,
             scoreA: bet.scoreA,
             scoreB: bet.scoreB,
+            penaltyScoreA: bet.penaltyScoreA,
+            penaltyScoreB: bet.penaltyScoreB,
             modifier: bet.modifier,
           })
           .from(bet)
@@ -327,17 +360,22 @@ export const matchRouter = router({
         }> = [];
 
         for (const betRow of bets) {
-          const { basePoints, modifierPoints, totalPoints } = calculateBetPoints(
-            {
-              scoreA: betRow.scoreA,
-              scoreB: betRow.scoreB,
-            },
-            {
-              scoreA: matchRow.scoreA,
-              scoreB: matchRow.scoreB,
-            },
-            betRow.modifier,
-          );
+          const { basePoints, modifierPoints, totalPoints } =
+            calculateBetPointsWithPenalties(
+              {
+                scoreA: betRow.scoreA,
+                scoreB: betRow.scoreB,
+                penaltyScoreA: betRow.penaltyScoreA,
+                penaltyScoreB: betRow.penaltyScoreB,
+              },
+              {
+                scoreA: matchRow.scoreA,
+                scoreB: matchRow.scoreB,
+                penaltyScoreA: matchRow.penaltyScoreA,
+                penaltyScoreB: matchRow.penaltyScoreB,
+              },
+              betRow.modifier,
+            );
 
           logEntries.push({
             userId: betRow.userId,
@@ -382,6 +420,8 @@ export const matchRouter = router({
                   ...matchRow,
                   scoreA: matchRow.scoreA,
                   scoreB: matchRow.scoreB,
+                  penaltyScoreA: matchRow.penaltyScoreA,
+                  penaltyScoreB: matchRow.penaltyScoreB,
                 });
         } catch (error) {
           throw toTrpcError(error);
@@ -398,6 +438,21 @@ export const matchRouter = router({
 
 function isId(value: number | null): value is number {
   return value !== null;
+}
+
+function validatePenaltyScore(
+  scoreA: number | null,
+  scoreB: number | null,
+  message: string,
+) {
+  if (scoreA === null || scoreB === null || scoreA === scoreB) {
+    throw new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message,
+    });
+  }
+
+  return { scoreA, scoreB };
 }
 
 type TournamentTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -467,6 +522,8 @@ async function advanceKnockoutMatch(
     teamBId: number | null;
     scoreA: number;
     scoreB: number;
+    penaltyScoreA: number | null;
+    penaltyScoreB: number | null;
     roundNumber: number;
   },
 ) {

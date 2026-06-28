@@ -13,6 +13,11 @@ export type BetScore = {
   scoreB: number;
 };
 
+export type BetWithOptionalPenaltyScore = BetScore & {
+  penaltyScoreA?: number | null;
+  penaltyScoreB?: number | null;
+};
+
 export type BetPoints = {
   basePoints: number;
   modifierPoints: number;
@@ -46,6 +51,47 @@ export function calculateBetPoints(
     modifierPoints: totalPoints - basePoints,
     totalPoints,
   };
+}
+
+export function calculateBetPointsWithPenalties(
+  betScore: BetWithOptionalPenaltyScore,
+  matchScore: BetWithOptionalPenaltyScore,
+  modifier: string,
+): BetPoints {
+  const regularPoints = calculateBetPoints(betScore, matchScore, modifier);
+
+  if (!hasPenaltyScore(betScore) || !hasPenaltyScore(matchScore)) {
+    return regularPoints;
+  }
+
+  const penaltyPoints = calculateBetPoints(
+    {
+      scoreA: betScore.penaltyScoreA,
+      scoreB: betScore.penaltyScoreB,
+    },
+    {
+      scoreA: matchScore.penaltyScoreA,
+      scoreB: matchScore.penaltyScoreB,
+    },
+    modifier,
+  );
+
+  return {
+    basePoints: regularPoints.basePoints + penaltyPoints.basePoints,
+    modifierPoints: regularPoints.modifierPoints + penaltyPoints.modifierPoints,
+    totalPoints: regularPoints.totalPoints + penaltyPoints.totalPoints,
+  };
+}
+
+function hasPenaltyScore(
+  score: BetWithOptionalPenaltyScore,
+): score is BetScore & { penaltyScoreA: number; penaltyScoreB: number } {
+  return (
+    score.penaltyScoreA !== null &&
+    score.penaltyScoreA !== undefined &&
+    score.penaltyScoreB !== null &&
+    score.penaltyScoreB !== undefined
+  );
 }
 
 function calculateBaseBetPoints(betScore: BetScore, matchScore: BetScore) {

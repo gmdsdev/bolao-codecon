@@ -26,7 +26,11 @@ export function MatchRow({
 
   const scoreLabel =
     match.scoreA !== null && match.scoreB !== null
-      ? `${match.scoreA} - ${match.scoreB}`
+      ? `${match.scoreA} - ${match.scoreB}${
+          match.penaltyScoreA !== null && match.penaltyScoreB !== null
+            ? ` (Pênaltis: ${match.penaltyScoreA} - ${match.penaltyScoreB})`
+            : ""
+        }`
       : "-";
 
   const expectedWinnerLabel = match.expectedWinnerName

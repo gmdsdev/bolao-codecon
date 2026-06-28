@@ -42,6 +42,9 @@ export function BetLogRow({ bet }: { bet: BetLog }) {
         <span className="text-muted-foreground sm:hidden">Placar</span>
         <span>
           {bet.scoreA} - {bet.scoreB}
+          {bet.penaltyScoreA !== null && bet.penaltyScoreB !== null
+            ? ` (Pênaltis: ${bet.penaltyScoreA} - ${bet.penaltyScoreB})`
+            : ""}
         </span>
       </TableCell>
       <TableCell className="mt-2 flex justify-between gap-3 whitespace-normal p-0 text-xs sm:mt-0 sm:table-cell sm:p-2">

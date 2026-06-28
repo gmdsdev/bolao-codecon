@@ -63,6 +63,10 @@ function MatchTableRow({
 }) {
   const betScoreA = savedBet?.scoreA ?? match.betScoreA;
   const betScoreB = savedBet?.scoreB ?? match.betScoreB;
+  const betPenaltyScoreA =
+    savedBet?.penaltyScoreA ?? match.betPenaltyScoreA;
+  const betPenaltyScoreB =
+    savedBet?.penaltyScoreB ?? match.betPenaltyScoreB;
   const betModifier = savedBet?.modifier ?? match.betModifier;
   const isDraft = match.status === "draft";
   const isScored = match.scoreA !== null || match.scoreB !== null;
@@ -73,11 +77,19 @@ function MatchTableRow({
     hasBet && betScoreA !== null && betScoreB !== null
       ? `${betScoreA} - ${betScoreB}`
       : "-";
+  const penaltyBetLabel =
+    betPenaltyScoreA !== null && betPenaltyScoreB !== null
+      ? `${betPenaltyScoreA} - ${betPenaltyScoreB}`
+      : null;
   const modifierLabel =
     hasBet && betModifier ? getBetModifierLabel(betModifier) : "-";
   const finalScoreLabel = isScored
     ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
     : "-";
+  const penaltyScoreLabel =
+    match.penaltyScoreA !== null && match.penaltyScoreB !== null
+      ? `${match.penaltyScoreA} - ${match.penaltyScoreB}`
+      : null;
 
   const earnedPoints =
     isScored &&
@@ -92,6 +104,10 @@ function MatchTableRow({
           match.scoreA,
           match.scoreB,
           betModifier ?? "normal",
+          betPenaltyScoreA,
+          betPenaltyScoreB,
+          match.penaltyScoreA,
+          match.penaltyScoreB,
         )
       : null;
 
@@ -129,7 +145,11 @@ function MatchTableRow({
                 </div>
               </div>
             </TooltipTrigger>
-            <TooltipContent>Placar final</TooltipContent>
+            <TooltipContent>
+              {penaltyScoreLabel
+                ? `Placar final: ${finalScoreLabel}. Pênaltis: ${penaltyScoreLabel}`
+                : "Placar final"}
+            </TooltipContent>
           </Tooltip>
           <ItemActions className="ml-auto sm:ml-0">
             <Button
@@ -154,7 +174,10 @@ function MatchTableRow({
         {!isDraft && !hasBet && <span>Aposta não efetuada</span>}
         {hasBet && (
           <div className="grid gap-1 sm:grid-cols-3 sm:gap-3">
-            <span>Sua aposta: {betLabel}</span>
+            <span>
+              Sua aposta: {betLabel}
+              {penaltyBetLabel ? ` (Pênaltis: ${penaltyBetLabel})` : ""}
+            </span>
             <span>Modificador: {modifierLabel}</span>
             <span>
               Pontos ganhos:{" "}

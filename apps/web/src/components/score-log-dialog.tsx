@@ -20,8 +20,12 @@ export type ScoreLogEntry = {
   roundTitle: string;
   betScoreA: number;
   betScoreB: number;
+  betPenaltyScoreA: number | null;
+  betPenaltyScoreB: number | null;
   matchScoreA: number | null;
   matchScoreB: number | null;
+  matchPenaltyScoreA: number | null;
+  matchPenaltyScoreB: number | null;
   basePoints: number;
   modifierPoints: number;
   totalPoints: number;
@@ -108,6 +112,14 @@ function ScoreLogItem({
     entry.matchScoreA === null || entry.matchScoreB === null
       ? "- x -"
       : `${entry.matchScoreA} x ${entry.matchScoreB}`;
+  const penaltyBet =
+    entry.betPenaltyScoreA === null || entry.betPenaltyScoreB === null
+      ? null
+      : `${entry.betPenaltyScoreA} x ${entry.betPenaltyScoreB}`;
+  const penaltyResult =
+    entry.matchPenaltyScoreA === null || entry.matchPenaltyScoreB === null
+      ? null
+      : `${entry.matchPenaltyScoreA} x ${entry.matchPenaltyScoreB}`;
   const modifierLabel = getBetModifierLabel(entry.modifier);
 
   return (
@@ -131,8 +143,12 @@ function ScoreLogItem({
       <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
         <span>
           {betLabel}: {entry.betScoreA} x {entry.betScoreB}
+          {penaltyBet ? ` (Pênaltis: ${penaltyBet})` : ""}
         </span>
-        <span>Resultado: {finalScore}</span>
+        <span>
+          Resultado: {finalScore}
+          {penaltyResult ? ` (Pênaltis: ${penaltyResult})` : ""}
+        </span>
         <span>Base: {entry.basePoints} pts ({getBasePointsReason(entry)})</span>
         <span>
           {modifierLabel}: {formatSignedPoints(entry.modifierPoints)}
@@ -152,6 +168,10 @@ function ScoreLogItem({
 }
 
 function getBasePointsReason(entry: ScoreLogEntry) {
+  if (entry.basePoints > 3) {
+    return "tempo normal e pênaltis";
+  }
+
   if (entry.basePoints === 3) {
     return "placar exato";
   }

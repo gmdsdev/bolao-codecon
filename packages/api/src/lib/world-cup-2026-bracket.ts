@@ -51,6 +51,8 @@ export type CompletedKnockoutMatch = {
   teamBId: number | null;
   scoreA: number;
   scoreB: number;
+  penaltyScoreA?: number | null;
+  penaltyScoreB?: number | null;
 };
 
 export type KnockoutPlacement = {
@@ -160,7 +162,9 @@ export function getKnockoutPlacements(
     );
   }
 
-  if (match.scoreA === match.scoreB) {
+  const winnerSide = getKnockoutWinnerSide(match);
+
+  if (winnerSide === null) {
     throw new BracketRuleError(
       "Partidas eliminatórias precisam de um vencedor",
       "precondition",
@@ -172,14 +176,36 @@ export function getKnockoutPlacements(
 
   if (!slots) return [];
 
-  const winnerTeamId = match.scoreA > match.scoreB ? match.teamAId : match.teamBId;
-  const loserTeamId = match.scoreA > match.scoreB ? match.teamBId : match.teamAId;
+  const winnerTeamId = winnerSide === "teamA" ? match.teamAId : match.teamBId;
+  const loserTeamId = winnerSide === "teamA" ? match.teamBId : match.teamAId;
 
   return slots.map((slot) => ({
     matchNumber: slot.matchNumber,
     side: slot.side,
     teamId: "loser" in slot && slot.loser ? loserTeamId : winnerTeamId,
   }));
+}
+
+function getKnockoutWinnerSide(match: CompletedKnockoutMatch) {
+  if (match.scoreA > match.scoreB) {
+    return "teamA";
+  }
+
+  if (match.scoreB > match.scoreA) {
+    return "teamB";
+  }
+
+  if (
+    match.penaltyScoreA === null ||
+    match.penaltyScoreA === undefined ||
+    match.penaltyScoreB === null ||
+    match.penaltyScoreB === undefined ||
+    match.penaltyScoreA === match.penaltyScoreB
+  ) {
+    return null;
+  }
+
+  return match.penaltyScoreA > match.penaltyScoreB ? "teamA" : "teamB";
 }
 
 export function applyKnockoutPlacement(

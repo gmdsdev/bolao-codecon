@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   applyBetScoreModifier,
   calculateBetPoints,
+  calculateBetPointsWithPenalties,
   type BetScore,
 } from "./bet-scoring";
 
@@ -273,5 +274,49 @@ describe("applyBetScoreModifier", () => {
       scoreB: 5,
     });
     expect(score).toEqual({ scoreA: 5, scoreB: 4 });
+  });
+});
+
+describe("calculateBetPointsWithPenalties", () => {
+  test("adds regular time and penalty shootout points", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 5, penaltyScoreB: 4 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 4,
+      modifierPoints: 0,
+      totalPoints: 4,
+    });
+  });
+
+  test("applies modifiers to both regular time and penalties", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        "half_points",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: -3,
+      totalPoints: 3,
+    });
+  });
+
+  test("falls back to regular time scoring when penalties are missing", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 3,
+      modifierPoints: 0,
+      totalPoints: 3,
+    });
   });
 });

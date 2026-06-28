@@ -1,4 +1,4 @@
-import { calculateBetPoints as calculateBetPointsBreakdown } from "@codecon/api/lib/bet-scoring";
+import { calculateBetPointsWithPenalties as calculateBetPointsBreakdown } from "@codecon/api/lib/bet-scoring";
 
 import {
   BET_WHEEL_OPTIONS,
@@ -12,15 +12,23 @@ export function calculateBetPoints(
   matchScoreA: number,
   matchScoreB: number,
   modifier: string,
+  betPenaltyScoreA?: number | null,
+  betPenaltyScoreB?: number | null,
+  matchPenaltyScoreA?: number | null,
+  matchPenaltyScoreB?: number | null,
 ): number {
   return calculateBetPointsBreakdown(
     {
       scoreA: betScoreA,
       scoreB: betScoreB,
+      penaltyScoreA: betPenaltyScoreA,
+      penaltyScoreB: betPenaltyScoreB,
     },
     {
       scoreA: matchScoreA,
       scoreB: matchScoreB,
+      penaltyScoreA: matchPenaltyScoreA,
+      penaltyScoreB: matchPenaltyScoreB,
     },
     modifier,
   ).totalPoints;
