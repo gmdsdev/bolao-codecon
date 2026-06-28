@@ -86,10 +86,11 @@ function MatchTableRow({
   const finalScoreLabel = isScored
     ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
     : "-";
-  const penaltyScoreLabel =
-    match.penaltyScoreA !== null && match.penaltyScoreB !== null
-      ? `${match.penaltyScoreA} - ${match.penaltyScoreB}`
-      : null;
+  const hasPenaltyScore =
+    match.penaltyScoreA !== null && match.penaltyScoreB !== null;
+  const penaltyScoreLabel = hasPenaltyScore
+    ? `${match.penaltyScoreA} - ${match.penaltyScoreB}`
+    : null;
 
   const earnedPoints =
     isScored &&
@@ -138,10 +139,20 @@ function MatchTableRow({
               >
                 <div className="border border-border px-2 py-1 text-sm">
                   {match.scoreA ?? "-"}
+                  {hasPenaltyScore && (
+                    <span className="ml-1 text-[0.625rem] text-muted-foreground">
+                      ({match.penaltyScoreA})
+                    </span>
+                  )}
                 </div>
                 <div className="px-2 py-1 text-sm text-muted-foreground">:</div>
                 <div className="border border-border px-2 py-1 text-sm">
                   {match.scoreB ?? "-"}
+                  {hasPenaltyScore && (
+                    <span className="ml-1 text-[0.625rem] text-muted-foreground">
+                      ({match.penaltyScoreB})
+                    </span>
+                  )}
                 </div>
               </div>
             </TooltipTrigger>

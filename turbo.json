@@ -42,6 +42,9 @@
     "db:seed": {
       "cache": false
     },
+    "db:fill-group-scores": {
+      "cache": false
+    },
     "db:studio": {
       "cache": false,
       "persistent": true

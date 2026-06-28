@@ -176,6 +176,12 @@ function getBasePointsReason(entry: ScoreLogEntry) {
     return "placar exato";
   }
 
+  // 2 base points only happen on penalty matches: the correct outcome in both
+  // regular time (1) and the shootout (1).
+  if (entry.basePoints === 2) {
+    return "resultado certo (tempo normal e pênaltis)";
+  }
+
   if (entry.basePoints === 1) {
     return "resultado certo";
   }

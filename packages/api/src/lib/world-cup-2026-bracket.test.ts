@@ -237,6 +237,84 @@ describe("getKnockoutPlacements", () => {
     ).toEqual([{ matchNumber: 95, side: "teamBId", teamId: 401 }]);
   });
 
+  test("advances the penalty winner from the round of 16 to the quarter-finals", () => {
+    // Match 95 (oitavas) tied 1-1, team B wins on penalties -> quarter-final 100.
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 95,
+        teamAId: 501,
+        teamBId: 502,
+        scoreA: 1,
+        scoreB: 1,
+        penaltyScoreA: 2,
+        penaltyScoreB: 4,
+      }),
+    ).toEqual([{ matchNumber: 100, side: "teamAId", teamId: 502 }]);
+  });
+
+  test("advances the penalty winner from the quarter-finals to the semi-finals", () => {
+    // Match 100 (quartas) tied 2-2, team A wins on penalties -> semi-final 102.
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 100,
+        teamAId: 601,
+        teamBId: 602,
+        scoreA: 2,
+        scoreB: 2,
+        penaltyScoreA: 5,
+        penaltyScoreB: 4,
+      }),
+    ).toEqual([{ matchNumber: 102, side: "teamBId", teamId: 601 }]);
+  });
+
+  test("sends the penalty winner to the final and the loser to the third-place match", () => {
+    // Match 102 (semi) tied 0-0, team B wins on penalties -> final 104,
+    // while team A (penalty loser) drops to the third-place match 103.
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 102,
+        teamAId: 701,
+        teamBId: 702,
+        scoreA: 0,
+        scoreB: 0,
+        penaltyScoreA: 3,
+        penaltyScoreB: 5,
+      }),
+    ).toEqual([
+      { matchNumber: 104, side: "teamBId", teamId: 702 },
+      { matchNumber: 103, side: "teamBId", teamId: 701 },
+    ]);
+  });
+
+  test("rejects a tied knockout match when the penalties are also tied", () => {
+    expect(() =>
+      getKnockoutPlacements({
+        matchNumber: 95,
+        teamAId: 501,
+        teamBId: 502,
+        scoreA: 1,
+        scoreB: 1,
+        penaltyScoreA: 3,
+        penaltyScoreB: 3,
+      }),
+    ).toThrowError(BracketRuleError);
+  });
+
+  test("ignores penalties when regular time already has a winner", () => {
+    // Penalties present but regular time decided it; regular time must win.
+    expect(
+      getKnockoutPlacements({
+        matchNumber: 95,
+        teamAId: 501,
+        teamBId: 502,
+        scoreA: 2,
+        scoreB: 1,
+        penaltyScoreA: 1,
+        penaltyScoreB: 9,
+      }),
+    ).toEqual([{ matchNumber: 100, side: "teamAId", teamId: 501 }]);
+  });
+
   test("rejects knockout matches without both teams", () => {
     expect(() =>
       getKnockoutPlacements({

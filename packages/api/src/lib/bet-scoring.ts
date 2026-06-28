@@ -44,13 +44,8 @@ export function calculateBetPoints(
   modifier: string,
 ): BetPoints {
   const basePoints = calculateBaseBetPoints(betScore, matchScore);
-  const totalPoints = applyBetPointsModifier(basePoints, modifier);
 
-  return {
-    basePoints,
-    modifierPoints: totalPoints - basePoints,
-    totalPoints,
-  };
+  return buildBetPoints(basePoints, modifier);
 }
 
 export function calculateBetPointsWithPenalties(
@@ -58,28 +53,32 @@ export function calculateBetPointsWithPenalties(
   matchScore: BetWithOptionalPenaltyScore,
   modifier: string,
 ): BetPoints {
-  const regularPoints = calculateBetPoints(betScore, matchScore, modifier);
+  const regularBasePoints = calculateBaseBetPoints(betScore, matchScore);
 
   if (!hasPenaltyScore(betScore) || !hasPenaltyScore(matchScore)) {
-    return regularPoints;
+    return buildBetPoints(regularBasePoints, modifier);
   }
 
-  const penaltyPoints = calculateBetPoints(
-    {
-      scoreA: betScore.penaltyScoreA,
-      scoreB: betScore.penaltyScoreB,
-    },
-    {
-      scoreA: matchScore.penaltyScoreA,
-      scoreB: matchScore.penaltyScoreB,
-    },
-    modifier,
+  const penaltyBasePoints = calculateBaseBetPoints(
+    { scoreA: betScore.penaltyScoreA, scoreB: betScore.penaltyScoreB },
+    { scoreA: matchScore.penaltyScoreA, scoreB: matchScore.penaltyScoreB },
   );
 
+  // The wheel modifier represents a single consequence for the whole bet, so
+  // it is applied once to the combined regular-time + penalty base points.
+  // Multiplicative modifiers (double/half/invalid) yield the same result as
+  // applying them per segment, while additive ones (lucky_duck) correctly add
+  // their bonus only once.
+  return buildBetPoints(regularBasePoints + penaltyBasePoints, modifier);
+}
+
+function buildBetPoints(basePoints: number, modifier: string): BetPoints {
+  const totalPoints = applyBetPointsModifier(basePoints, modifier);
+
   return {
-    basePoints: regularPoints.basePoints + penaltyPoints.basePoints,
-    modifierPoints: regularPoints.modifierPoints + penaltyPoints.modifierPoints,
-    totalPoints: regularPoints.totalPoints + penaltyPoints.totalPoints,
+    basePoints,
+    modifierPoints: totalPoints - basePoints,
+    totalPoints,
   };
 }
 
