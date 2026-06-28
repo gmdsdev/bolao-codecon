@@ -41,6 +41,12 @@ export function MatchResultForm({
   const [scoreB, setScoreB] = useState(
     match.scoreB === null ? "" : String(match.scoreB),
   );
+  const [penaltyScoreA, setPenaltyScoreA] = useState(
+    match.penaltyScoreA === null ? "" : String(match.penaltyScoreA),
+  );
+  const [penaltyScoreB, setPenaltyScoreB] = useState(
+    match.penaltyScoreB === null ? "" : String(match.penaltyScoreB),
+  );
   const [teamAId, setTeamAId] = useState(
     match.teamAId === null ? "" : String(match.teamAId),
   );
@@ -85,6 +91,8 @@ export function MatchResultForm({
   const parsedTeamBId = Number(teamBId);
   const scoreAValue = parseScore(scoreA);
   const scoreBValue = parseScore(scoreB);
+  const penaltyScoreAValue = parseScore(penaltyScoreA);
+  const penaltyScoreBValue = parseScore(penaltyScoreB);
   const hasTeamA = teamAId !== "" && Number.isInteger(parsedTeamAId);
   const hasTeamB = teamBId !== "" && Number.isInteger(parsedTeamBId);
   const hasDifferentTeams =
@@ -92,6 +100,16 @@ export function MatchResultForm({
   const scoresAreBlank = scoreA.trim() === "" && scoreB.trim() === "";
   const scoresAreValid = scoreAValue !== null && scoreBValue !== null;
   const scoreFieldsAreValid = scoresAreBlank || scoresAreValid;
+  const requiresPenaltyScore =
+    !scoresAreBlank &&
+    scoresAreValid &&
+    scoreAValue === scoreBValue &&
+    match.roundNumber >= 4;
+  const penaltyScoresAreValid =
+    !requiresPenaltyScore ||
+    (penaltyScoreAValue !== null &&
+      penaltyScoreBValue !== null &&
+      penaltyScoreAValue !== penaltyScoreBValue);
   const expectedWinnerIsValid =
     expectedWinner === null ||
     (expectedWinner === "teamA" && hasTeamA) ||
@@ -103,6 +121,7 @@ export function MatchResultForm({
     isValidDatetimeLocal(matchDate) &&
     hasDifferentTeams &&
     scoreFieldsAreValid &&
+    penaltyScoresAreValid &&
     expectedWinnerIsValid;
   const canPublish =
     canSave &&
@@ -140,6 +159,8 @@ export function MatchResultForm({
       teamBId: hasTeamB ? parsedTeamBId : null,
       scoreA: scoresAreBlank ? null : scoreAValue,
       scoreB: scoresAreBlank ? null : scoreBValue,
+      penaltyScoreA: requiresPenaltyScore ? penaltyScoreAValue : null,
+      penaltyScoreB: requiresPenaltyScore ? penaltyScoreBValue : null,
       stadiumId: parsedStadiumId,
       date: datetimeLocalToIso(matchDate),
       expectedWinner,
@@ -273,10 +294,38 @@ export function MatchResultForm({
           }}
           scoreA={scoreA}
           scoreB={scoreB}
+          title="Tempo normal"
+          idPrefix="score"
           disabled={isPending || isComplete}
           scoreAInputRef={scoreAInputRef}
           onScoreAChange={setScoreA}
           onScoreBChange={setScoreB}
+        />
+      )}
+      {!isDraft && requiresPenaltyScore && (
+        <MatchScoreFields
+          match={{
+            ...match,
+            teamAName:
+              teams.find((team) => team.id === parsedTeamAId)?.name ??
+              match.teamAName,
+            teamAFlag:
+              teams.find((team) => team.id === parsedTeamAId)?.flag ??
+              match.teamAFlag,
+            teamBName:
+              teams.find((team) => team.id === parsedTeamBId)?.name ??
+              match.teamBName,
+            teamBFlag:
+              teams.find((team) => team.id === parsedTeamBId)?.flag ??
+              match.teamBFlag,
+          }}
+          scoreA={penaltyScoreA}
+          scoreB={penaltyScoreB}
+          title="Pênaltis"
+          idPrefix="penalty-score"
+          disabled={isPending || isComplete}
+          onScoreAChange={setPenaltyScoreA}
+          onScoreBChange={setPenaltyScoreB}
         />
       )}
 

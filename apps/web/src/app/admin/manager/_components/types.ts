@@ -9,6 +9,7 @@ export type Match = {
   status: string;
   teamAId: number | null;
   teamBId: number | null;
+  roundNumber: number;
   matchNumber: number | null;
   teamASource: string | null;
   teamBSource: string | null;
@@ -19,6 +20,8 @@ export type Match = {
   date: string;
   scoreA: number | null;
   scoreB: number | null;
+  penaltyScoreA: number | null;
+  penaltyScoreB: number | null;
   stadiumId: number;
   stadiumName: string;
   stadiumCity: string;

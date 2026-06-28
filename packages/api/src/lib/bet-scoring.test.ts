@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   applyBetScoreModifier,
   calculateBetPoints,
+  calculateBetPointsWithPenalties,
   type BetScore,
 } from "./bet-scoring";
 
@@ -273,5 +274,194 @@ describe("applyBetScoreModifier", () => {
       scoreB: 5,
     });
     expect(score).toEqual({ scoreA: 5, scoreB: 4 });
+  });
+});
+
+describe("calculateBetPointsWithPenalties", () => {
+  test("adds regular time and penalty shootout points", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 5, penaltyScoreB: 4 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 4,
+      modifierPoints: 0,
+      totalPoints: 4,
+    });
+  });
+
+  test("applies modifiers to both regular time and penalties", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        "half_points",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: -3,
+      totalPoints: 3,
+    });
+  });
+
+  test("falls back to regular time scoring when the bet has no penalties", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 3,
+      modifierPoints: 0,
+      totalPoints: 3,
+    });
+  });
+
+  test("falls back to regular time scoring when the match has no penalties", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: null, penaltyScoreB: null },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 3,
+      modifierPoints: 0,
+      totalPoints: 3,
+    });
+  });
+
+  test("awards only outcome points when the exact penalty score is missed", () => {
+    // Regular time exact (3) + correct penalty winner but wrong score (1).
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 5, penaltyScoreB: 3 },
+        { scoreA: 0, scoreB: 0, penaltyScoreA: 4, penaltyScoreB: 2 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 4,
+      modifierPoints: 0,
+      totalPoints: 4,
+    });
+  });
+
+  test("does not award penalty points when the penalty winner is wrong", () => {
+    // Regular time exact (3) + wrong penalty winner (0).
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 5, penaltyScoreB: 4 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 3, penaltyScoreB: 5 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 3,
+      modifierPoints: 0,
+      totalPoints: 3,
+    });
+  });
+
+  test("awards no points when both regular time and penalties miss", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 2, scoreB: 0, penaltyScoreA: 5, penaltyScoreB: 4 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 3, penaltyScoreB: 5 },
+        "normal",
+      ),
+    ).toEqual({
+      basePoints: 0,
+      modifierPoints: 0,
+      totalPoints: 0,
+    });
+  });
+
+  test("doubles the combined regular time and penalty points", () => {
+    // Regular exact (3) + penalty exact (3) = 6, doubled to 12.
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        "double_points",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: 6,
+      totalPoints: 12,
+    });
+  });
+
+  test("voids the combined points for an invalid bet", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        "invalid_bet",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: -6,
+      totalPoints: 0,
+    });
+  });
+
+  test("adds the lucky duck bonus only once to the combined points", () => {
+    // Regular exact (3) + penalty exact (3) = 6, lucky duck adds a single +1.
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 4, penaltyScoreB: 3 },
+        "lucky_duck",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: 1,
+      totalPoints: 7,
+    });
+  });
+
+  test("does not apply the lucky duck bonus when nothing scores", () => {
+    expect(
+      calculateBetPointsWithPenalties(
+        { scoreA: 2, scoreB: 0, penaltyScoreA: 5, penaltyScoreB: 4 },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 3, penaltyScoreB: 5 },
+        "lucky_duck",
+      ),
+    ).toEqual({
+      basePoints: 0,
+      modifierPoints: 0,
+      totalPoints: 0,
+    });
+  });
+
+  test("scores an inverted bet using the saved swapped scores", () => {
+    // A bet of regular 1-1 / penalties 2-0 inverted is saved as 1-1 / 0-2.
+    const savedRegular = applyBetScoreModifier(
+      { scoreA: 1, scoreB: 1 },
+      "invert_bet",
+    );
+    const savedPenalties = applyBetScoreModifier(
+      { scoreA: 2, scoreB: 0 },
+      "invert_bet",
+    );
+
+    expect(
+      calculateBetPointsWithPenalties(
+        {
+          scoreA: savedRegular.scoreA,
+          scoreB: savedRegular.scoreB,
+          penaltyScoreA: savedPenalties.scoreA,
+          penaltyScoreB: savedPenalties.scoreB,
+        },
+        { scoreA: 1, scoreB: 1, penaltyScoreA: 0, penaltyScoreB: 2 },
+        "invert_bet",
+      ),
+    ).toEqual({
+      basePoints: 6,
+      modifierPoints: 0,
+      totalPoints: 6,
+    });
   });
 });

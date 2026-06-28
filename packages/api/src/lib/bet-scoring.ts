@@ -13,6 +13,11 @@ export type BetScore = {
   scoreB: number;
 };
 
+export type BetWithOptionalPenaltyScore = BetScore & {
+  penaltyScoreA?: number | null;
+  penaltyScoreB?: number | null;
+};
+
 export type BetPoints = {
   basePoints: number;
   modifierPoints: number;
@@ -39,6 +44,35 @@ export function calculateBetPoints(
   modifier: string,
 ): BetPoints {
   const basePoints = calculateBaseBetPoints(betScore, matchScore);
+
+  return buildBetPoints(basePoints, modifier);
+}
+
+export function calculateBetPointsWithPenalties(
+  betScore: BetWithOptionalPenaltyScore,
+  matchScore: BetWithOptionalPenaltyScore,
+  modifier: string,
+): BetPoints {
+  const regularBasePoints = calculateBaseBetPoints(betScore, matchScore);
+
+  if (!hasPenaltyScore(betScore) || !hasPenaltyScore(matchScore)) {
+    return buildBetPoints(regularBasePoints, modifier);
+  }
+
+  const penaltyBasePoints = calculateBaseBetPoints(
+    { scoreA: betScore.penaltyScoreA, scoreB: betScore.penaltyScoreB },
+    { scoreA: matchScore.penaltyScoreA, scoreB: matchScore.penaltyScoreB },
+  );
+
+  // The wheel modifier represents a single consequence for the whole bet, so
+  // it is applied once to the combined regular-time + penalty base points.
+  // Multiplicative modifiers (double/half/invalid) yield the same result as
+  // applying them per segment, while additive ones (lucky_duck) correctly add
+  // their bonus only once.
+  return buildBetPoints(regularBasePoints + penaltyBasePoints, modifier);
+}
+
+function buildBetPoints(basePoints: number, modifier: string): BetPoints {
   const totalPoints = applyBetPointsModifier(basePoints, modifier);
 
   return {
@@ -46,6 +80,17 @@ export function calculateBetPoints(
     modifierPoints: totalPoints - basePoints,
     totalPoints,
   };
+}
+
+function hasPenaltyScore(
+  score: BetWithOptionalPenaltyScore,
+): score is BetScore & { penaltyScoreA: number; penaltyScoreB: number } {
+  return (
+    score.penaltyScoreA !== null &&
+    score.penaltyScoreA !== undefined &&
+    score.penaltyScoreB !== null &&
+    score.penaltyScoreB !== undefined
+  );
 }
 
 function calculateBaseBetPoints(betScore: BetScore, matchScore: BetScore) {

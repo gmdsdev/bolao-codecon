@@ -36,6 +36,8 @@ export function MatchList({
   const [savedBets, setSavedBets] = useState<Map<number, SavedBet>>(new Map());
   const [scoreA, setScoreA] = useState("");
   const [scoreB, setScoreB] = useState("");
+  const [penaltyScoreA, setPenaltyScoreA] = useState("");
+  const [penaltyScoreB, setPenaltyScoreB] = useState("");
   const [wheelOption, setWheelOption] = useState<
     (typeof BET_WHEEL_OPTIONS)[number] | null
   >(null);
@@ -71,6 +73,8 @@ export function MatchList({
           new Map(bets).set(bet.matchId, {
             scoreA: bet.scoreA,
             scoreB: bet.scoreB,
+            penaltyScoreA: bet.penaltyScoreA,
+            penaltyScoreB: bet.penaltyScoreB,
             modifier: bet.modifier as BetModifier,
           }),
         );
@@ -87,6 +91,21 @@ export function MatchList({
     setCurrentTimeMs(Date.now());
   }, []);
 
+  const requiresPenaltyScore =
+    selectedMatch !== null &&
+    selectedMatch.roundNumber >= 4 &&
+    scoreA.trim() !== "" &&
+    scoreB.trim() !== "" &&
+    Number(scoreA) === Number(scoreB);
+  const penaltyScoresAreValid =
+    !requiresPenaltyScore ||
+    (penaltyScoreA.trim() !== "" &&
+      penaltyScoreB.trim() !== "" &&
+      Number(penaltyScoreA) >= 0 &&
+      Number(penaltyScoreB) >= 0 &&
+      Number.isInteger(Number(penaltyScoreA)) &&
+      Number.isInteger(Number(penaltyScoreB)) &&
+      Number(penaltyScoreA) !== Number(penaltyScoreB));
   const canSubmit =
     selectedMatch !== null &&
     selectedMatch.status !== "draft" &&
@@ -100,7 +119,8 @@ export function MatchList({
     Number(scoreA) >= 0 &&
     Number(scoreB) >= 0 &&
     Number.isInteger(Number(scoreA)) &&
-    Number.isInteger(Number(scoreB));
+    Number.isInteger(Number(scoreB)) &&
+    penaltyScoresAreValid;
 
   const matchGroups = getGroupStageMatchGroups(matches);
 
@@ -121,6 +141,8 @@ export function MatchList({
     setSelectedMatch(match);
     setScoreA("");
     setScoreB("");
+    setPenaltyScoreA("");
+    setPenaltyScoreB("");
     setWheelOption(null);
     setWheelRotation(0);
     setIsWheelSpinning(false);
@@ -136,6 +158,8 @@ export function MatchList({
     setWheelRotation(0);
     setScoreA("");
     setScoreB("");
+    setPenaltyScoreA("");
+    setPenaltyScoreB("");
     createBet.reset();
   };
 
@@ -153,6 +177,8 @@ export function MatchList({
       matchId: selectedMatch.id,
       scoreA: Number(scoreA),
       scoreB: Number(scoreB),
+      penaltyScoreA: requiresPenaltyScore ? Number(penaltyScoreA) : null,
+      penaltyScoreB: requiresPenaltyScore ? Number(penaltyScoreB) : null,
     });
   };
 
@@ -187,6 +213,8 @@ export function MatchList({
         match={selectedMatch}
         scoreA={scoreA}
         scoreB={scoreB}
+        penaltyScoreA={penaltyScoreA}
+        penaltyScoreB={penaltyScoreB}
         wheelOption={wheelOption}
         wheelRotation={wheelRotation}
         isWheelSpinning={isWheelSpinning}
@@ -196,6 +224,8 @@ export function MatchList({
         onSubmit={handleSubmit}
         onScoreAChange={setScoreA}
         onScoreBChange={setScoreB}
+        onPenaltyScoreAChange={setPenaltyScoreA}
+        onPenaltyScoreBChange={setPenaltyScoreB}
       />
     </>
   );

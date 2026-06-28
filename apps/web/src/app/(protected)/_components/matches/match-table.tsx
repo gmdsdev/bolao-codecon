@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@codecon/ui/components/tooltip";
-import { GitBranch } from "lucide-react";
+import { CalendarClock, GitBranch, Globe, MapPin } from "lucide-react";
 
 type MatchTableProps = {
   matches: Match[];
@@ -63,6 +63,8 @@ function MatchTableRow({
 }) {
   const betScoreA = savedBet?.scoreA ?? match.betScoreA;
   const betScoreB = savedBet?.scoreB ?? match.betScoreB;
+  const betPenaltyScoreA = savedBet?.penaltyScoreA ?? match.betPenaltyScoreA;
+  const betPenaltyScoreB = savedBet?.penaltyScoreB ?? match.betPenaltyScoreB;
   const betModifier = savedBet?.modifier ?? match.betModifier;
   const isDraft = match.status === "draft";
   const isScored = match.scoreA !== null || match.scoreB !== null;
@@ -73,11 +75,23 @@ function MatchTableRow({
     hasBet && betScoreA !== null && betScoreB !== null
       ? `${betScoreA} - ${betScoreB}`
       : "-";
+  const penaltyBetLabel =
+    betPenaltyScoreA !== null && betPenaltyScoreB !== null
+      ? `${betPenaltyScoreA} - ${betPenaltyScoreB}`
+      : null;
   const modifierLabel =
     hasBet && betModifier ? getBetModifierLabel(betModifier) : "-";
   const finalScoreLabel = isScored
     ? `${match.scoreA ?? "-"} - ${match.scoreB ?? "-"}`
     : "-";
+  const stadiumLabel =
+    match.stadiumCity?.split(",")[0]?.trim() || match.stadiumName || null;
+  const dateLabel = formatMatchDateTime(match.date);
+  const hasPenaltyScore =
+    match.penaltyScoreA !== null && match.penaltyScoreB !== null;
+  const penaltyScoreLabel = hasPenaltyScore
+    ? `${match.penaltyScoreA} - ${match.penaltyScoreB}`
+    : null;
 
   const earnedPoints =
     isScored &&
@@ -92,6 +106,10 @@ function MatchTableRow({
           match.scoreA,
           match.scoreB,
           betModifier ?? "normal",
+          betPenaltyScoreA,
+          betPenaltyScoreB,
+          match.penaltyScoreA,
+          match.penaltyScoreB,
         )
       : null;
 
@@ -114,6 +132,32 @@ function MatchTableRow({
           </span>
         </ItemTitle>
         <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
+          {(stadiumLabel || dateLabel) && (
+            <Tooltip>
+              <TooltipTrigger
+                className="mr-auto flex shrink-0 cursor-default items-center text-muted-foreground sm:mr-2"
+                aria-label="Local, data e hora da partida"
+              >
+                <Globe className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-1 text-xs">
+                  {stadiumLabel && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="size-3.5 shrink-0" />
+                      {stadiumLabel}
+                    </span>
+                  )}
+                  {dateLabel && (
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarClock className="size-3.5 shrink-0" />
+                      {dateLabel}
+                    </span>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger>
               <div
@@ -122,14 +166,28 @@ function MatchTableRow({
               >
                 <div className="border border-border px-2 py-1 text-sm">
                   {match.scoreA ?? "-"}
+                  {hasPenaltyScore && (
+                    <span className="ml-1 text-[0.625rem] text-muted-foreground">
+                      ({match.penaltyScoreA})
+                    </span>
+                  )}
                 </div>
                 <div className="px-2 py-1 text-sm text-muted-foreground">:</div>
                 <div className="border border-border px-2 py-1 text-sm">
                   {match.scoreB ?? "-"}
+                  {hasPenaltyScore && (
+                    <span className="ml-1 text-[0.625rem] text-muted-foreground">
+                      ({match.penaltyScoreB})
+                    </span>
+                  )}
                 </div>
               </div>
             </TooltipTrigger>
-            <TooltipContent>Placar final</TooltipContent>
+            <TooltipContent>
+              {penaltyScoreLabel
+                ? `Placar final: ${finalScoreLabel}. Pênaltis: ${penaltyScoreLabel}`
+                : "Placar final"}
+            </TooltipContent>
           </Tooltip>
           <ItemActions className="ml-auto sm:ml-0">
             <Button
@@ -154,9 +212,12 @@ function MatchTableRow({
         {!isDraft && !hasBet && <span>Aposta não efetuada</span>}
         {hasBet && (
           <div className="grid gap-1 sm:grid-cols-3 sm:gap-3">
-            <span>Sua aposta: {betLabel}</span>
-            <span>Modificador: {modifierLabel}</span>
             <span>
+              Sua aposta: {betLabel}
+              {penaltyBetLabel ? ` (Pênaltis: ${penaltyBetLabel})` : ""}
+            </span>
+            <span className="text-center">Modificador: {modifierLabel}</span>
+            <span className="text-right">
               Pontos ganhos:{" "}
               {earnedPoints !== null ? `${earnedPoints} pts` : "-"}
             </span>
@@ -165,4 +226,20 @@ function MatchTableRow({
       </ItemContent>
     </Item>
   );
+}
+
+function formatMatchDateTime(date: string | Date) {
+  const parsed = new Date(date);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  }).format(parsed);
 }

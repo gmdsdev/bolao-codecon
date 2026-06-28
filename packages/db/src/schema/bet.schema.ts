@@ -16,6 +16,8 @@ export const bet = pgTable(
     id: serial("id").primaryKey(),
     scoreA: integer("score_a").notNull(),
     scoreB: integer("score_b").notNull(),
+    penaltyScoreA: integer("penalty_score_a"),
+    penaltyScoreB: integer("penalty_score_b"),
     modifier: text("modifier").notNull().default("normal"),
     userId: text("user_id")
       .notNull()

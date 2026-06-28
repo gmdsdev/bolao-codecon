@@ -38,6 +38,8 @@ export const betRouter = router({
         userId: bet.userId,
         scoreA: bet.scoreA,
         scoreB: bet.scoreB,
+        penaltyScoreA: bet.penaltyScoreA,
+        penaltyScoreB: bet.penaltyScoreB,
         modifier: bet.modifier,
         createdAt: bet.createdAt,
       })
@@ -104,6 +106,8 @@ export const betRouter = router({
             teamBFlag: sql<string>`coalesce(${teamB.flag}, '')`,
             scoreA: bet.scoreA,
             scoreB: bet.scoreB,
+            penaltyScoreA: bet.penaltyScoreA,
+            penaltyScoreB: bet.penaltyScoreB,
             modifier: bet.modifier,
             createdAt: bet.createdAt,
             totalPoints: rankingLog.totalPoints,
@@ -144,6 +148,8 @@ export const betRouter = router({
         matchId: idSchema,
         scoreA: scoreSchema,
         scoreB: scoreSchema,
+        penaltyScoreA: scoreSchema.nullable().optional(),
+        penaltyScoreB: scoreSchema.nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -153,8 +159,10 @@ export const betRouter = router({
           scoreB: match.scoreB,
           date: match.date,
           status: match.status,
+          roundNumber: round.number,
         })
         .from(match)
+        .innerJoin(round, eq(match.roundId, round.id))
         .where(eq(match.id, input.matchId))
         .limit(1);
 
@@ -194,12 +202,18 @@ export const betRouter = router({
 
       const modifier = getRandomBetModifier();
       const { scoreA, scoreB } = applyBetScoreModifier(input, modifier);
+      const penaltyScoreInput = getPenaltyScoreInput(input, matchRow.roundNumber);
+      const penaltyScore = penaltyScoreInput
+        ? applyBetScoreModifier(penaltyScoreInput, modifier)
+        : null;
 
       try {
         await db.insert(bet).values({
           matchId: input.matchId,
           scoreA,
           scoreB,
+          penaltyScoreA: penaltyScore?.scoreA ?? null,
+          penaltyScoreB: penaltyScore?.scoreB ?? null,
           modifier,
           userId: ctx.session.user.id,
         });
@@ -222,10 +236,52 @@ export const betRouter = router({
         matchId: input.matchId,
         scoreA,
         scoreB,
+        penaltyScoreA: penaltyScore?.scoreA ?? null,
+        penaltyScoreB: penaltyScore?.scoreB ?? null,
         modifier,
       };
     }),
 });
+
+function getPenaltyScoreInput(
+  input: {
+    scoreA: number;
+    scoreB: number;
+    penaltyScoreA?: number | null;
+    penaltyScoreB?: number | null;
+  },
+  roundNumber: number,
+) {
+  if (roundNumber < 4 || input.scoreA !== input.scoreB) {
+    return null;
+  }
+
+  if (input.penaltyScoreA === undefined || input.penaltyScoreB === undefined) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Informe o placar dos pênaltis para empates no mata-mata",
+    });
+  }
+
+  if (input.penaltyScoreA === null || input.penaltyScoreB === null) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Informe o placar dos pênaltis para empates no mata-mata",
+    });
+  }
+
+  if (input.penaltyScoreA === input.penaltyScoreB) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "O placar dos pênaltis precisa ter um vencedor",
+    });
+  }
+
+  return {
+    scoreA: input.penaltyScoreA,
+    scoreB: input.penaltyScoreB,
+  };
+}
 
 function getRandomBetModifier() {
   return betModifiers[randomInt(betModifiers.length)] ?? "normal";

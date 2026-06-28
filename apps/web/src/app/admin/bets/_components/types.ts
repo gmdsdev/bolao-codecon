@@ -13,6 +13,8 @@ export type BetLog = {
   teamBFlag: string;
   scoreA: number;
   scoreB: number;
+  penaltyScoreA: number | null;
+  penaltyScoreB: number | null;
   modifier: string;
   createdAt: string;
   totalPoints: number | null;

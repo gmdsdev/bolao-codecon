@@ -40,6 +40,7 @@
     "db:generate": "turbo -F @codecon/db db:generate",
     "db:migrate": "turbo -F @codecon/db db:migrate",
     "db:seed": "turbo -F @codecon/db db:seed",
+    "db:fill-group-scores": "turbo -F @codecon/api db:fill-group-scores",
     "db:start": "turbo -F @codecon/db db:start",
     "db:watch": "turbo -F @codecon/db db:watch",
     "db:stop": "turbo -F @codecon/db db:stop",

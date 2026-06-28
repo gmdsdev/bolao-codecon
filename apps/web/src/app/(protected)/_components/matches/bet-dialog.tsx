@@ -25,6 +25,8 @@ type BetDialogProps = {
   match: Match | null;
   scoreA: string;
   scoreB: string;
+  penaltyScoreA: string;
+  penaltyScoreB: string;
   wheelOption: BetWheelOption | null;
   wheelRotation: number;
   isWheelSpinning: boolean;
@@ -39,12 +41,16 @@ type BetDialogProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onScoreAChange: Dispatch<SetStateAction<string>>;
   onScoreBChange: Dispatch<SetStateAction<string>>;
+  onPenaltyScoreAChange: Dispatch<SetStateAction<string>>;
+  onPenaltyScoreBChange: Dispatch<SetStateAction<string>>;
 };
 
 export function BetDialog({
   match,
   scoreA,
   scoreB,
+  penaltyScoreA,
+  penaltyScoreB,
   wheelOption,
   wheelRotation,
   isWheelSpinning,
@@ -54,9 +60,19 @@ export function BetDialog({
   onSubmit,
   onScoreAChange,
   onScoreBChange,
+  onPenaltyScoreAChange,
+  onPenaltyScoreBChange,
 }: BetDialogProps) {
   const scoreAId = useId();
   const scoreBId = useId();
+  const penaltyScoreAId = useId();
+  const penaltyScoreBId = useId();
+  const showPenaltyScoreInputs =
+    match !== null &&
+    match.roundNumber >= 4 &&
+    scoreA.trim() !== "" &&
+    scoreB.trim() !== "" &&
+    Number(scoreA) === Number(scoreB);
 
   return (
     <Dialog
@@ -90,16 +106,32 @@ export function BetDialog({
                 isSpinning={isWheelSpinning}
               />
             ) : (
-              <ScoreInputs
-                match={match}
-                scoreA={scoreA}
-                scoreB={scoreB}
-                scoreAId={scoreAId}
-                scoreBId={scoreBId}
-                disabled={createBet.isPending}
-                onScoreAChange={onScoreAChange}
-                onScoreBChange={onScoreBChange}
-              />
+              <div className="grid gap-4">
+                <ScoreInputs
+                  match={match}
+                  title="Tempo normal"
+                  scoreA={scoreA}
+                  scoreB={scoreB}
+                  scoreAId={scoreAId}
+                  scoreBId={scoreBId}
+                  disabled={createBet.isPending}
+                  onScoreAChange={onScoreAChange}
+                  onScoreBChange={onScoreBChange}
+                />
+                {showPenaltyScoreInputs && (
+                  <ScoreInputs
+                    match={match}
+                    title="Pênaltis"
+                    scoreA={penaltyScoreA}
+                    scoreB={penaltyScoreB}
+                    scoreAId={penaltyScoreAId}
+                    scoreBId={penaltyScoreBId}
+                    disabled={createBet.isPending}
+                    onScoreAChange={onPenaltyScoreAChange}
+                    onScoreBChange={onPenaltyScoreBChange}
+                  />
+                )}
+              </div>
             )}
 
             {createBet.isError && (
