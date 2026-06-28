@@ -13,6 +13,8 @@ export type Match = {
   teamBName: string;
   teamBFlag: string;
   date: string | Date;
+  stadiumName: string | null;
+  stadiumCity: string | null;
   scoreA: number | null;
   scoreB: number | null;
   penaltyScoreA: number | null;
