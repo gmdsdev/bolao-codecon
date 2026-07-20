@@ -21,9 +21,13 @@ import { useState } from "react";
 import { LogoCard } from "@/components/bolao/logo-card";
 import { PrizeCard } from "@/components/bolao/prize-card";
 import { MySummaryCard } from "@/components/my-summary-card";
-import { RankingTable, type RankingTableUser } from "@/components/ranking-table";
+import {
+  RankingTable,
+  type RankingTableUser,
+} from "@/components/ranking-table";
 import { ScoreLogDialog } from "@/components/score-log-dialog";
 import { trpc } from "@/utils/trpc";
+import Confetti from "react-confetti-boom";
 
 import {
   TableErrorState,
@@ -45,66 +49,69 @@ export function RankingPage() {
   );
 
   return (
-    <Dialog
-      open={Boolean(selectedUser)}
-      onOpenChange={(open) => {
-        if (!open) {
-          setSelectedUser(null);
-        }
-      }}
-    >
-      <div className="flex min-h-[calc(100vh-2.5rem)] min-w-0 flex-col gap-3 p-2 sm:p-3 lg:flex-row">
-        <aside className="flex min-w-0 shrink-0 flex-col gap-3">
-          <LogoCard />
-        </aside>
+    <>
+      <Confetti mode="fall" colors={["#B02828", "#EEC142"]} />
+      <Dialog
+        open={Boolean(selectedUser)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedUser(null);
+          }
+        }}
+      >
+        <div className="flex min-h-[calc(100vh-2.5rem)] min-w-0 flex-col gap-3 p-2 sm:p-3 lg:flex-row">
+          <aside className="flex min-w-0 shrink-0 flex-col gap-3">
+            <LogoCard />
+          </aside>
 
-        <main className="min-w-0 w-full flex-1">
-          <Card className="h-min min-w-0">
-            <CardHeader>
-              <CardTitle>Classificação</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              {ranking.isLoading ? (
-                <TableLoadingState />
-              ) : ranking.error ? (
-                <TableErrorState message={ranking.error.message} />
-              ) : ranking.data?.length ? (
-                <RankingTable
-                  ranking={ranking.data}
-                  onSelectUser={setSelectedUser}
-                />
-              ) : (
-                <Empty className="py-8">
-                  <EmptyHeader>
-                    <EmptyMedia>
-                      <TrophyIcon className="size-8 text-muted-foreground" />
-                    </EmptyMedia>
-                    <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
-                    <EmptyDescription>
-                      As pontuações aparecerão aqui conforme as apostas forem
-                      resolvidas.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              )}
-            </CardContent>
-          </Card>
-        </main>
+          <main className="min-w-0 w-full flex-1">
+            <Card className="h-min min-w-0">
+              <CardHeader>
+                <CardTitle>Classificação</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                {ranking.isLoading ? (
+                  <TableLoadingState />
+                ) : ranking.error ? (
+                  <TableErrorState message={ranking.error.message} />
+                ) : ranking.data?.length ? (
+                  <RankingTable
+                    ranking={ranking.data}
+                    onSelectUser={setSelectedUser}
+                  />
+                ) : (
+                  <Empty className="py-8">
+                    <EmptyHeader>
+                      <EmptyMedia>
+                        <TrophyIcon className="size-8 text-muted-foreground" />
+                      </EmptyMedia>
+                      <EmptyTitle>Nenhuma classificação ainda</EmptyTitle>
+                      <EmptyDescription>
+                        As pontuações aparecerão aqui conforme as apostas forem
+                        resolvidas.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                )}
+              </CardContent>
+            </Card>
+          </main>
 
-        <aside className="flex min-w-0 shrink-0 flex-col gap-3 lg:w-72">
-          <MySummaryCard />
-          <PrizeCard />
-        </aside>
-      </div>
-      <ScoreLogDialog
-        betLabel="Aposta"
-        scoreLog={scoreLog}
-        description={
-          selectedUser
-            ? `Histórico das partidas que formaram a pontuação de ${selectedUser.userName}.`
-            : undefined
-        }
-      />
-    </Dialog>
+          <aside className="flex min-w-0 shrink-0 flex-col gap-3 lg:w-72">
+            <MySummaryCard />
+            <PrizeCard />
+          </aside>
+        </div>
+        <ScoreLogDialog
+          betLabel="Aposta"
+          scoreLog={scoreLog}
+          description={
+            selectedUser
+              ? `Histórico das partidas que formaram a pontuação de ${selectedUser.userName}.`
+              : undefined
+          }
+        />
+      </Dialog>
+    </>
   );
 }

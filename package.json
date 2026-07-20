@@ -50,6 +50,7 @@
   "dependencies": {
     "@codecon/env": "workspace:*",
     "dotenv": "catalog:",
+    "react-confetti-boom": "^2.0.1",
     "zod": "catalog:"
   },
   "devDependencies": {
